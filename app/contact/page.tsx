@@ -1,9 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { getPublicApiUrl } from '@/lib/publicEnv';
+
+const API = getPublicApiUrl();
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   return (
     <>
@@ -42,7 +47,39 @@ export default function ContactPage() {
           <div className="contact-form-wrap">
             <h3>Send us a message</h3>
             {!submitted ? (
-              <form id="contact-form" noValidate onSubmit={e => { e.preventDefault(); setSubmitted(true); }}>
+              <form id="contact-form" noValidate onSubmit={async (e) => {
+                e.preventDefault();
+                setError('');
+                setSubmitting(true);
+                const form = e.currentTarget;
+                const data = {
+                  name: (form.elements.namedItem('name') as HTMLInputElement).value,
+                  phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
+                  email: (form.elements.namedItem('email') as HTMLInputElement).value,
+                  eventType: (form.elements.namedItem('event-type') as HTMLSelectElement).value,
+                  eventDate: (form.elements.namedItem('event-date') as HTMLInputElement).value,
+                  message: (form.elements.namedItem('message') as HTMLTextAreaElement).value,
+                };
+                if (!data.name || !data.email || !data.message) {
+                  setError('Please fill in all required fields.');
+                  setSubmitting(false);
+                  return;
+                }
+                try {
+                  const res = await fetch(`${API}/api/contact`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                  });
+                  const json = await res.json();
+                  if (!res.ok) throw new Error(json?.message || 'Failed to send');
+                  setSubmitted(true);
+                } catch (err: unknown) {
+                  setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+                } finally {
+                  setSubmitting(false);
+                }
+              }}>
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="name">Your name *</label>
@@ -79,7 +116,10 @@ export default function ContactPage() {
                   <label htmlFor="message">Message *</label>
                   <textarea id="message" name="message" placeholder="Tell us about your wedding — venue, no. of functions, any special requests..." required />
                 </div>
-                <button type="submit" className="btn-submit">Send message →</button>
+                {error && <p style={{ color: '#b42318', fontSize: '0.9rem', marginBottom: 8 }}>{error}</p>}
+                <button type="submit" className="btn-submit" disabled={submitting}>
+                  {submitting ? 'Sending…' : 'Send message →'}
+                </button>
               </form>
             ) : (
               <div className="form-success" style={{ display: 'block' }}>
