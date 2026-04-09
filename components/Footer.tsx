@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getCoupleDashboardUrl } from '@/lib/publicEnv';
 
 const FOOTER_FAQS = [
   {
@@ -97,7 +98,7 @@ export default function Footer() {
           <div className="footer-cta-visual">
             <Image src="/couple.jpg" alt="Wedding couple" className="footer-couple-img" width={120} height={170} style={{ objectFit: 'contain', objectPosition: 'bottom' }} />
           </div>
-          <Link href="/templates" className="btn-footer-cta">Open couple dashboard</Link>
+          <Link href={getCoupleDashboardUrl()} className="btn-footer-cta">Open User Dashboard</Link>
         </div>
       </div>
 
