@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -14,6 +14,14 @@ type UsernameCheck = 'idle' | 'checking' | 'available' | 'taken' | 'invalid' | '
 type EmailCheck    = 'idle' | 'checking' | 'found' | 'new';
 
 export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<div className="onboarding-wrap"><div className="onboarding-card"><p>Loading…</p></div></div>}>
+      <OnboardingContent />
+    </Suspense>
+  );
+}
+
+function OnboardingContent() {
   const params      = useSearchParams();
   const paymentId   = params.get('paymentId') || '';
   const slug        = params.get('slug') || '';
