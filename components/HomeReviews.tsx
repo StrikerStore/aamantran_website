@@ -4,9 +4,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import ScrollReveal from '@/components/ScrollReveal';
 
 const HOME_REVIEWS = [
-  { avatar: '👰', text: '"Our guests kept saying how beautiful the invitation was. The envelope animation left everyone speechless. Sharing on WhatsApp was so easy."', name: 'Priya Sharma', loc: 'Married in Jaipur · Dec 2024' },
-  { avatar: '🤵', text: '"I saved at least ₹25,000 on printed cards and the RSVP tracking was a lifesaver. I knew exactly who was coming to which function. Amazing."', name: 'Kabir & Aisha', loc: 'Married in Mumbai · Nov 2024' },
-  { avatar: '👰', text: '"We had our invitation live and shared with guests within an hour of signing up. The whole process was so smooth — picked our template, filled in our details, and done!"', name: 'Sneha & Rohan', loc: 'Married in Hyderabad · Oct 2024' },
+  { avatar: '👰', text: '"Our guests kept saying how beautiful the invitation was. The envelope animation left everyone speechless. Sharing on WhatsApp was so easy."', name: 'Priya Sharma', loc: 'Married in Jaipur · Apr 2026' },
+  { avatar: '🤵', text: '"I saved at least ₹25,000 on printed cards and the RSVP tracking was a lifesaver. I knew exactly who was coming to which function. Amazing."', name: 'Kabir & Aisha', loc: 'Married in Mumbai · Apr 2026' },
+  { avatar: '👰', text: '"We had our invitation live and shared with guests within an hour of signing up. The whole process was so smooth — picked our template, filled in our details, and done!"', name: 'Sneha & Rohan', loc: 'Married in Hyderabad · Mar 2026' },
 ];
 
 function ReviewCard({ avatar, text, name, loc }: { avatar: string; text: string; name: string; loc: string }) {

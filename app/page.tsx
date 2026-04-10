@@ -127,7 +127,7 @@ export default function HomePage() {
 
           <div className="steps-row">
             {[
-              { num: '01', icon: '🎨', title: 'Choose your template', text: 'Browse 20+ hand-crafted designs. Pick the one that feels like you and pay once — securely via UPI or card.' },
+              { num: '01', icon: '✅', title: 'Choose your template', text: 'Browse 20+ hand-crafted designs. Pick the one that feels like you and pay once — securely via UPI or card.' },
               null, // connector
               { num: '02', icon: '✏️', title: 'Register & fill in your details', text: 'After payment, create your couple dashboard account. Enter names, dates, venues, photos, and music. Your invitation updates live as you type.' },
               null,
