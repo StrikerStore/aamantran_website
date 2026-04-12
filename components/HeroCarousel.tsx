@@ -33,7 +33,7 @@ function HeroImgCard({ slug, src, name, price, community }: {
       <Link href={`/templates/${slug}`} className={`c3d-inner ${theme}`} style={{ display: 'block', textDecoration: 'none' }}>
         <div className="tpl-bd center">
           <p className="tpl-couple-lg" style={{ fontSize: '1.4rem' }}>{name}</p>
-          <p className="tpl-date-badge" style={{ marginTop: 12 }}>₹{price.toLocaleString('en-IN')}</p>
+          <p className="tpl-date-badge" style={{ marginTop: 12 }}>₹{(price / 100).toLocaleString('en-IN')}</p>
         </div>
       </Link>
     );

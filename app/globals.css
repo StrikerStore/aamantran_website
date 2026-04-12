@@ -888,6 +888,7 @@ img { max-width: 100%; display: block; }
   background: var(--white);
 }
 .comparison-mobile-cards { display: none; }
+.comp-mobile-table { display: none; }
 .comp-col { display: flex; flex-direction: column; }
 
 /* ── Label column ── */
@@ -2072,62 +2073,60 @@ img { max-width: 100%; display: block; }
   .c3d-card { width: 152px; height: 236px; margin-left: -76px; margin-top: -118px; }
   .strip-track { animation-duration: 16s; }
   .comparison-table { display: none; }
-  .comparison-mobile-cards {
-    display: grid;
-    gap: 12px;
+  .comp-mobile-table { display: block; }
+
+  /* ── Compact mobile comparison table ── */
+  .comp-mobile-table {
     margin: 28px 0 22px;
-  }
-  .comp-mobile-card {
     border: 1px solid var(--border-soft);
-    border-radius: 14px;
+    border-radius: 16px;
     overflow: hidden;
     background: var(--white);
     box-shadow: var(--shadow-soft);
   }
-  .comp-mobile-best {
-    border-color: rgba(110,31,46,0.55);
-    box-shadow: 0 0 0 1px rgba(110,31,46,0.35), var(--shadow-card);
+  .cmt-header {
+    display: grid;
+    grid-template-columns: 1fr 68px 68px 80px;
+    border-bottom: 2px solid var(--border-soft);
   }
-  .comp-mobile-head {
-    min-height: 68px;
-    padding: 10px 14px;
+  .cmt-spacer { padding: 10px 12px; }
+  .cmt-col-head {
+    padding: 10px 4px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-size: 0.98rem;
+    gap: 3px;
+    font-size: 1rem;
     font-weight: 700;
-    position: relative;
+    color: #fff;
+    text-align: center;
+    line-height: 1.2;
   }
-  .comp-mobile-head .comp-best-badge {
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    font-size: 0.58rem;
-    letter-spacing: 0.08em;
-    padding: 2px 6px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.18);
-  }
-  .comp-mobile-body > div {
-    min-height: 42px;
-    padding: 10px 12px;
+  .cmt-col-head span { font-size: 0.65rem; font-weight: 600; opacity: 0.92; letter-spacing: 0.01em; }
+  .cmt-row {
+    display: grid;
+    grid-template-columns: 1fr 68px 68px 80px;
     border-top: 1px solid rgba(60,30,10,0.07);
-    display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
   }
-  .comp-mobile-body > div span {
-    font-size: 0.82rem;
+  .cmt-label {
+    padding: 11px 12px;
+    font-size: 0.79rem;
     color: var(--text-mid);
+    font-weight: 500;
   }
-  .comp-mobile-body > div strong {
-    font-size: 0.84rem;
-    color: var(--text-dark);
+  .cmt-cell {
+    padding: 11px 4px;
+    font-size: 0.85rem;
     font-weight: 700;
-    text-align: right;
+    text-align: center;
+    border-left: 1px solid rgba(60,30,10,0.07);
   }
+  .cmt-cell.good { color: #2a7a3b; background: rgba(42,122,59,0.05); }
+  .cmt-cell.mid  { color: #8a6000; }
+  .cmt-cell.bad  { color: #b03030; }
+  .cmt-row .cmt-cell:last-child { background: rgba(110,31,46,0.04); }
   .features-grid { grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
   .feat-card { padding: 18px 16px; border-radius: 12px; }
   .feat-card h3 {
@@ -2301,8 +2300,28 @@ img { max-width: 100%; display: block; }
   .faq-accordion { grid-template-columns: 1fr; gap: 0; }
 }
 
-@media (max-width: 420px) {
-  .footer-left { grid-template-columns: 1fr; }
+@media (max-width: 480px) {
+  .footer { padding: 28px 16px 0; }
+  .footer-inner { gap: 24px; padding-bottom: 28px; }
+  .footer-left {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 16px;
+  }
+  .footer-brand-col { grid-column: 1 / -1; }
+  .footer-brand-heading { font-size: 1.1rem; }
+  .footer-brand-logo { width: 36px; height: 36px; margin-bottom: 8px; }
+  .footer-cta-card {
+    grid-template-columns: 1fr;
+    grid-template-areas: "text" "button";
+    padding: 18px 16px;
+    min-height: auto;
+  }
+  .footer-cta-visual { display: none; }
+  .footer-cta-h3 { font-size: 1.05rem; }
+  .footer-cta-sub { margin-bottom: 14px; }
+  .btn-footer-cta { width: 100%; max-width: none; }
+  .footer-faq { padding: 24px 16px 20px; }
+  .footer-bottom { padding: 14px 0; }
 }
 
 @media (max-width: 768px) {

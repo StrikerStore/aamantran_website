@@ -204,55 +204,31 @@ export default function HomePage() {
               <div className="comp-cell good">✓ Yes</div>
             </div>
           </div>
-          <div className="comparison-mobile-cards" aria-label="Invitation comparison">
-            <article className="comp-mobile-card">
-              <header className="comp-mobile-head paper-header">
-                <span className="comp-icon">🖨️</span>
-                <span>Printed cards</span>
-              </header>
-              <div className="comp-mobile-body">
-                <div><span>{COMPARISON_ROWS[0]}</span><strong>₹10,000–₹40,000</strong></div>
-                <div><span>{COMPARISON_ROWS[1]}</span><strong>✗ None</strong></div>
-                <div><span>{COMPARISON_ROWS[2]}</span><strong>✗ Manual calls</strong></div>
-                <div><span>{COMPARISON_ROWS[3]}</span><strong>✗ Reprint needed</strong></div>
-                <div><span>{COMPARISON_ROWS[4]}</span><strong>✗ No</strong></div>
-                <div><span>{COMPARISON_ROWS[5]}</span><strong>✗ No</strong></div>
-                <div><span>{COMPARISON_ROWS[6]}</span><strong>✗ No</strong></div>
+          <div className="comp-mobile-table" aria-label="Invitation comparison">
+            {/* Column headers */}
+            <div className="cmt-header">
+              <div className="cmt-spacer" />
+              <div className="cmt-col-head paper-header">🖨️<span>Printed</span></div>
+              <div className="cmt-col-head video-header">🎥<span>Video</span></div>
+              <div className="cmt-col-head digital-header">✨<span>Aamantran</span></div>
+            </div>
+            {/* Rows */}
+            {[
+              { label: 'Cost',           paper: '₹40K+',   video: '₹5K',   digital: '₹999' },
+              { label: 'Guest updates',  paper: '✗',        video: '✗',     digital: '✓' },
+              { label: 'RSVP tracking',  paper: '✗',        video: '✗',     digital: '✓' },
+              { label: 'Edit anytime',   paper: '✗',        video: '✗',     digital: '✓' },
+              { label: 'WhatsApp ready', paper: '✗',        video: '~',     digital: '✓' },
+              { label: 'Photos & music', paper: '✗',        video: '~',     digital: '✓' },
+              { label: 'Guest mgmt',     paper: '✗',        video: '✗',     digital: '✓' },
+            ].map(row => (
+              <div key={row.label} className="cmt-row">
+                <div className="cmt-label">{row.label}</div>
+                <div className="cmt-cell bad">{row.paper}</div>
+                <div className="cmt-cell mid">{row.video}</div>
+                <div className="cmt-cell good">{row.digital}</div>
               </div>
-            </article>
-
-            <article className="comp-mobile-card">
-              <header className="comp-mobile-head video-header">
-                <span className="comp-icon">🎥</span>
-                <span>Video Invitation</span>
-              </header>
-              <div className="comp-mobile-body">
-                <div><span>{COMPARISON_ROWS[0]}</span><strong>₹4,000–₹5,000</strong></div>
-                <div><span>{COMPARISON_ROWS[1]}</span><strong>✗ None</strong></div>
-                <div><span>{COMPARISON_ROWS[2]}</span><strong>✗ None</strong></div>
-                <div><span>{COMPARISON_ROWS[3]}</span><strong>~ Re-edit needed, slow</strong></div>
-                <div><span>{COMPARISON_ROWS[4]}</span><strong>~ Shareable</strong></div>
-                <div><span>{COMPARISON_ROWS[5]}</span><strong>~ In video only</strong></div>
-                <div><span>{COMPARISON_ROWS[6]}</span><strong>✗ No</strong></div>
-              </div>
-            </article>
-
-            <article className="comp-mobile-card comp-mobile-best">
-              <header className="comp-mobile-head digital-header">
-                <span className="comp-best-badge">⭐ Recommended</span>
-                <span className="comp-icon">✨</span>
-                <span>Aamantran</span>
-              </header>
-              <div className="comp-mobile-body">
-                <div><span>{COMPARISON_ROWS[0]}</span><strong>From ₹999</strong></div>
-                <div><span>{COMPARISON_ROWS[1]}</span><strong>✓ Real-time</strong></div>
-                <div><span>{COMPARISON_ROWS[2]}</span><strong>✓ Live dashboard</strong></div>
-                <div><span>{COMPARISON_ROWS[3]}</span><strong>✓ Instant</strong></div>
-                <div><span>{COMPARISON_ROWS[4]}</span><strong>✓ Yes</strong></div>
-                <div><span>{COMPARISON_ROWS[5]}</span><strong>✓ Yes</strong></div>
-                <div><span>{COMPARISON_ROWS[6]}</span><strong>✓ Yes</strong></div>
-              </div>
-            </article>
+            ))}
           </div>
 
           <div className="comp-cta center">
