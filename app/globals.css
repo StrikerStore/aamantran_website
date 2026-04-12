@@ -2308,7 +2308,7 @@ img { max-width: 100%; display: block; }
     gap: 20px 16px;
   }
   .footer-brand-col { grid-column: 1 / -1; }
-  .footer-brand-heading { font-size: 1.1rem; }
+  .footer-brand-heading { font-size: 1.1 rem; max-width: 50%; }
   .footer-brand-logo { width: 36px; height: 36px; margin-bottom: 8px; }
   .footer-cta-card {
     grid-template-columns: 1fr;
