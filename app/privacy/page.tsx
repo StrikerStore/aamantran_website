@@ -32,7 +32,7 @@ export default function PrivacyPage() {
             <li><strong>Account information:</strong> Your name, email address, and phone number when you place an order or contact us.</li>
             <li><strong>Wedding details:</strong> Names of the couple, event dates, venue names, and ceremony details needed to create your invitation.</li>
             <li><strong>Guest information:</strong> Names, phone numbers, or email addresses of your guests if you use our guest management features. This data is provided by you and belongs to you.</li>
-            <li><strong>Payment information:</strong> We do not store your card or bank details. Payments are processed by third-party providers (Razorpay / UPI) and are subject to their privacy policies.</li>
+            <li><strong>Payment information:</strong> We do not store your card or bank details. Payments are processed by third-party providers (PayU / UPI) and are subject to their privacy policies.</li>
             <li><strong>Communications:</strong> Messages you send us via WhatsApp, email, or our contact form.</li>
           </ul>
 

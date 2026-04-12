@@ -31,12 +31,6 @@ interface PriceBreakup {
   finalAmount: number;
 }
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
 function rupees(paise: number) {
   return (paise / 100).toLocaleString('en-IN');
 }
@@ -50,6 +44,22 @@ function defaultBreakup(template: TemplateData): PriceBreakup {
   const gstAmount = Math.round((discountedAmount * gstPercent) / 100);
   const finalAmount = discountedAmount + gstAmount;
   return { baseAmount, discountAmount, discountPct, discountedAmount, gstPercent, gstAmount, finalAmount };
+}
+
+/** Submit a hidden form to PayU's payment URL */
+function submitPayUForm(payuUrl: string, params: Record<string, string>) {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = payuUrl;
+  Object.entries(params).forEach(([name, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = String(value ?? '');
+    form.appendChild(input);
+  });
+  document.body.appendChild(form);
+  form.submit();
 }
 
 export default function CheckoutPage() {
@@ -82,16 +92,6 @@ export default function CheckoutPage() {
       })
       .finally(() => setLoading(false));
   }, [slug]);
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
   function applyCoupon() {
     const code = couponCode.trim().toUpperCase();
@@ -147,7 +147,12 @@ export default function CheckoutPage() {
       const orderRes = await fetch(`${API}/api/checkout/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateSlug: slug, couponCode: appliedCoupon || undefined, customerEmail: customerEmail.trim() }),
+        body: JSON.stringify({
+          templateSlug:    slug,
+          couponCode:      appliedCoupon || undefined,
+          customerEmail:   customerEmail.trim(),
+          customerContact: contactDigits,
+        }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData?.message || 'Unable to start checkout');
@@ -166,47 +171,14 @@ export default function CheckoutPage() {
         return;
       }
 
-      const options = {
-        key: orderData.key,
-        amount: orderData.amount,
-        currency: orderData.currency || 'INR',
-        name: 'Aamantran',
-        description: `Template purchase: ${template.name}`,
-        order_id: orderData.orderId,
-        prefill: { email: customerEmail.trim(), contact: contactDigits },
-        handler: async function (response: any) {
-          const verifyRes = await fetch(`${API}/api/checkout/verify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              paymentId: orderData.paymentId,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-            }),
-          });
-
-          if (!verifyRes.ok) {
-            alert('Payment verification failed. Please contact support.');
-            return;
-          }
-
-          router.push(`/onboarding?paymentId=${encodeURIComponent(orderData.paymentId)}&slug=${encodeURIComponent(slug)}&template=${encodeURIComponent(template.name)}`);
-        },
-        theme: { color: '#6e1f2e' },
-      };
-
-      if (window.Razorpay) {
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-      } else {
-        alert('Razorpay failed to load. Please refresh and try again.');
-      }
+      // Submit form to PayU — browser navigates away; PayU will redirect back to surl/furl
+      submitPayUForm(orderData.payuUrl, orderData.payuParams);
     } catch (err: any) {
       alert(err?.message || 'Checkout failed');
-    } finally {
       setPaying(false);
     }
+    // Note: setPaying(false) is intentionally NOT called on success path
+    // because the page navigates away to PayU
   }
 
   if (loading) return <div className="checkout-wrap">Loading checkout…</div>;
@@ -265,7 +237,7 @@ export default function CheckoutPage() {
         {couponMsg && <p className="checkout-coupon-msg">{couponMsg}</p>}
 
         <button className="checkout-pay-btn" type="button" onClick={handlePayNow} disabled={!canPay}>
-          {paying ? 'Processing…' : 'Pay Now'}
+          {paying ? 'Redirecting to PayU…' : 'Pay Now'}
         </button>
       </div>
     </div>

@@ -36,7 +36,7 @@ export default function TermsPage() {
           <p>You are responsible for maintaining the security of your account credentials and for all activity that occurs under your account. Notify us immediately of any unauthorised access at <a href="mailto:aamantran@plexzuu.com">aamantran@plexzuu.com</a>.</p>
 
           <h2>4. Payments</h2>
-          <p>All payments are processed securely via Razorpay or UPI. Prices are shown in Indian Rupees (₹) and include applicable taxes. By completing a purchase, you authorise the charge for your <strong>digital e-invitation</strong> and related online services. <strong>No physical product is sold or delivered.</strong> See our <Link href="/refund">Refund Policy</Link> for cancellation terms.</p>
+          <p>All payments are processed securely via PayU or UPI. Prices are shown in Indian Rupees (₹) and include applicable taxes. By completing a purchase, you authorise the charge for your <strong>digital e-invitation</strong> and related online services. <strong>No physical product is sold or delivered.</strong> See our <Link href="/refund">Refund Policy</Link> for cancellation terms.</p>
 
           <h2>5. Content you provide</h2>
           <p>You retain ownership of all content you provide — names, photos, venue details, and guest information. By providing this content, you grant us a limited licence to use it solely for the purpose of creating and operating your invitation. You confirm that you have the right to use all photos and content you provide.</p>
