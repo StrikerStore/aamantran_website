@@ -81,14 +81,19 @@ function AuthorBlock({ r, stopProp }: { r: FeaturedReview; stopProp?: boolean })
 function ReviewFlipCard({ r }: { r: FeaturedReview }) {
   const stars = Math.max(1, Math.min(5, Math.round(r.rating || 5)));
   const hasPhoto = Boolean(r.couplePhotoUrl);
-  const [flipped, setFlipped] = useState(false);
-
-  // Auto-flip every 5 s when the card has a photo
+  // Auto-flip exactly once when the card has a photo, but only when it comes into view or after mount
+  const [hasAutoFlipped, setHasAutoFlipped] = useState(false);
   useEffect(() => {
-    if (!hasPhoto) return;
-    const t = window.setInterval(() => setFlipped((f) => !f), 5000);
-    return () => window.clearInterval(t);
-  }, [hasPhoto]);
+    if (!hasPhoto || hasAutoFlipped) return;
+    const t = window.setTimeout(() => {
+      setFlipped(true);
+      setHasAutoFlipped(true);
+      // Flip back after 4 seconds
+      const t2 = window.setTimeout(() => setFlipped(false), 4500);
+      return () => window.clearTimeout(t2);
+    }, 4000);
+    return () => window.clearTimeout(t);
+  }, [hasPhoto, hasAutoFlipped]);
 
   // ── No-photo card — plain, fixed portrait height, overflow clamped ──────────
   if (!hasPhoto) {
@@ -103,13 +108,15 @@ function ReviewFlipCard({ r }: { r: FeaturedReview }) {
           boxSizing: 'border-box',
         }}
       >
-        <div className="review-stars">{'★'.repeat(stars)}</div>
+        <div className="review-stars" style={{ marginBottom: 12 }}>{'★'.repeat(stars)}</div>
 
         {/* Scrollable text area with fade at bottom */}
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', marginBottom: 12 }}>
-          <p className="review-text" style={{ margin: 0 }}>
-            {r.reviewText || '"Loved the overall invitation experience."'}
-          </p>
+        <div style={{ flex: 1, position: 'relative', minHeight: 0, overflow: 'hidden', paddingBottom: 16 }}>
+          <div style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}>
+            <p className="review-text" style={{ margin: 0, paddingBottom: 24 }}>
+              {r.reviewText || '"Loved the overall invitation experience."'}
+            </p>
+          </div>
           {/* Fade-out bottom edge */}
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
@@ -118,7 +125,9 @@ function ReviewFlipCard({ r }: { r: FeaturedReview }) {
           }} />
         </div>
 
-        <AuthorBlock r={r} />
+        <div style={{ marginTop: 'auto', paddingTop: 16 }}>
+          <AuthorBlock r={r} />
+        </div>
       </article>
     );
   }
@@ -154,12 +163,14 @@ function ReviewFlipCard({ r }: { r: FeaturedReview }) {
             boxSizing: 'border-box',
           }}
         >
-          <div className="review-stars">{'★'.repeat(stars)}</div>
+          <div className="review-stars" style={{ marginBottom: 12 }}>{'★'.repeat(stars)}</div>
 
-          <div style={{ flex: 1, position: 'relative', overflow: 'hidden', marginBottom: 12 }}>
-            <p className="review-text" style={{ margin: 0 }}>
-              {r.reviewText || '"Loved the overall invitation experience."'}
-            </p>
+          <div style={{ flex: 1, position: 'relative', minHeight: 0, overflow: 'hidden', paddingBottom: 16 }}>
+            <div style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}>
+              <p className="review-text" style={{ margin: 0, paddingBottom: 24 }}>
+                {r.reviewText || '"Loved the overall invitation experience."'}
+              </p>
+            </div>
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
               background: 'linear-gradient(to bottom, transparent, var(--bg-card, #fff))',
@@ -167,9 +178,8 @@ function ReviewFlipCard({ r }: { r: FeaturedReview }) {
             }} />
           </div>
 
-          <AuthorBlock r={r} stopProp />
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 8, opacity: 0.6 }}>
-            📸 Click to see our photo
+          <div style={{ marginTop: 'auto', paddingTop: 16 }}>
+            <AuthorBlock r={r} stopProp />
           </div>
         </article>
 

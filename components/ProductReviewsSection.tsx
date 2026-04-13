@@ -18,14 +18,18 @@ const CARD_HEIGHT = 380;
 function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
   const stars = Math.max(1, Math.min(5, Math.round(r.rating || 0)));
   const hasPhoto = Boolean(r.couplePhotoUrl);
-  const [flipped, setFlipped] = useState(false);
-
-  // Auto-flip every 5 s when a photo exists
+  // Auto-flip exactly once when a photo exists
+  const [hasAutoFlipped, setHasAutoFlipped] = useState(false);
   useEffect(() => {
-    if (!hasPhoto) return;
-    const t = window.setInterval(() => setFlipped((f) => !f), 5000);
-    return () => window.clearInterval(t);
-  }, [hasPhoto]);
+    if (!hasPhoto || hasAutoFlipped) return;
+    const t = window.setTimeout(() => {
+      setFlipped(true);
+      setHasAutoFlipped(true);
+      const t2 = window.setTimeout(() => setFlipped(false), 4500);
+      return () => window.clearTimeout(t2);
+    }, 4000);
+    return () => window.clearTimeout(t);
+  }, [hasPhoto, hasAutoFlipped]);
 
   // ── No-photo card ──────────────────────────────────────────────────────────
   if (!hasPhoto) {
@@ -40,12 +44,14 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
           boxSizing: 'border-box',
         }}
       >
-        <div className="product-review-stars">{'★'.repeat(stars)}</div>
+        <div className="product-review-stars" style={{ marginBottom: 12 }}>{'★'.repeat(stars)}</div>
 
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', marginBottom: 12 }}>
-          <p className="product-review-text" style={{ margin: 0 }}>
-            {r.reviewText || 'Loved the overall invitation experience.'}
-          </p>
+        <div style={{ flex: 1, position: 'relative', minHeight: 0, overflow: 'hidden', paddingBottom: 16 }}>
+          <div style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}>
+            <p className="product-review-text" style={{ margin: 0, paddingBottom: 24 }}>
+              {r.reviewText || 'Loved the overall invitation experience.'}
+            </p>
+          </div>
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
             background: 'linear-gradient(to bottom, transparent, var(--bg-card, #fff))',
@@ -53,7 +59,7 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
           }} />
         </div>
 
-        <div className="product-review-author">
+        <div className="product-review-author" style={{ marginTop: 'auto', paddingTop: 16 }}>
           <strong>{r.coupleNames || 'Happy Couple'}</strong>
           <span>{r.location || 'India'}</span>
         </div>
@@ -92,12 +98,14 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
             boxSizing: 'border-box',
           }}
         >
-          <div className="product-review-stars">{'★'.repeat(stars)}</div>
+          <div className="product-review-stars" style={{ marginBottom: 12 }}>{'★'.repeat(stars)}</div>
 
-          <div style={{ flex: 1, position: 'relative', overflow: 'hidden', marginBottom: 12 }}>
-            <p className="product-review-text" style={{ margin: 0 }}>
-              {r.reviewText || 'Loved the overall invitation experience.'}
-            </p>
+          <div style={{ flex: 1, position: 'relative', minHeight: 0, overflow: 'hidden', paddingBottom: 16 }}>
+            <div style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}>
+              <p className="product-review-text" style={{ margin: 0, paddingBottom: 24 }}>
+                {r.reviewText || 'Loved the overall invitation experience.'}
+              </p>
+            </div>
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
               background: 'linear-gradient(to bottom, transparent, var(--bg-card, #fff))',
@@ -105,12 +113,9 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
             }} />
           </div>
 
-          <div className="product-review-author">
+          <div className="product-review-author" style={{ marginTop: 'auto', paddingTop: 16 }}>
             <strong>{r.coupleNames || 'Happy Couple'}</strong>
             <span>{r.location || 'India'}</span>
-          </div>
-          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 8, opacity: 0.6 }}>
-            📸 Click to see photo
           </div>
         </article>
 
