@@ -18,6 +18,7 @@ const CARD_HEIGHT = 380;
 function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
   const stars = Math.max(1, Math.min(5, Math.round(r.rating || 0)));
   const hasPhoto = Boolean(r.couplePhotoUrl);
+  const [flipped, setFlipped] = useState(false);
   // Auto-flip exactly once when a photo exists
   const [hasAutoFlipped, setHasAutoFlipped] = useState(false);
   useEffect(() => {

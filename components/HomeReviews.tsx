@@ -81,6 +81,7 @@ function AuthorBlock({ r, stopProp }: { r: FeaturedReview; stopProp?: boolean })
 function ReviewFlipCard({ r }: { r: FeaturedReview }) {
   const stars = Math.max(1, Math.min(5, Math.round(r.rating || 5)));
   const hasPhoto = Boolean(r.couplePhotoUrl);
+  const [flipped, setFlipped] = useState(false);
   // Auto-flip exactly once when the card has a photo, but only when it comes into view or after mount
   const [hasAutoFlipped, setHasAutoFlipped] = useState(false);
   useEffect(() => {
