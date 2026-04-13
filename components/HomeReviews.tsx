@@ -78,23 +78,36 @@ function AuthorBlock({ r, stopProp }: { r: FeaturedReview; stopProp?: boolean })
 }
 
 // ── Review Flip Card ──────────────────────────────────────────────────────────
-function ReviewFlipCard({ r }: { r: FeaturedReview }) {
+function ReviewFlipCard({ r, forceUnflip, onInteraction }: { r: FeaturedReview, forceUnflip?: number, onInteraction?: () => void }) {
   const stars = Math.max(1, Math.min(5, Math.round(r.rating || 5)));
   const hasPhoto = Boolean(r.couplePhotoUrl);
   const [flipped, setFlipped] = useState(false);
-  // Auto-flip exactly once when the card has a photo, but only when it comes into view or after mount
+
+  useEffect(() => {
+    if (forceUnflip) setFlipped(false);
+  }, [forceUnflip]);
+
+  const handleToggle = () => {
+    setFlipped(f => !f);
+    if (onInteraction) onInteraction();
+  };
+
+  // Auto-flip exactly once when the card has a photo
   const [hasAutoFlipped, setHasAutoFlipped] = useState(false);
   useEffect(() => {
     if (!hasPhoto || hasAutoFlipped) return;
     const t = window.setTimeout(() => {
       setFlipped(true);
       setHasAutoFlipped(true);
+      if (onInteraction) onInteraction();
       // Flip back after 4 seconds
-      const t2 = window.setTimeout(() => setFlipped(false), 4500);
+      const t2 = window.setTimeout(() => {
+        setFlipped(false);
+      }, 4500);
       return () => window.clearTimeout(t2);
     }, 4000);
     return () => window.clearTimeout(t);
-  }, [hasPhoto, hasAutoFlipped]);
+  }, [hasPhoto, hasAutoFlipped, onInteraction]);
 
   // ── No-photo card — plain, fixed portrait height, overflow clamped ──────────
   if (!hasPhoto) {
@@ -136,7 +149,7 @@ function ReviewFlipCard({ r }: { r: FeaturedReview }) {
   // ── Flip card — portrait, fixed height ─────────────────────────────────────
   return (
     <div
-      onClick={() => setFlipped((f) => !f)}
+      onClick={handleToggle}
       title="Click to flip"
       style={{ perspective: '1000px', cursor: 'pointer', height: CARD_HEIGHT }}
     >
@@ -225,6 +238,9 @@ export default function HomeReviews({ reviews: propReviews = [] }: { reviews?: F
   const [index, setIndex] = useState(1);
   const [animate, setAnimate] = useState(true);
   const [slideWidth, setSlideWidth] = useState(0);
+  const [forceUnflip, setForceUnflip] = useState(0);
+  const lastInteractionRef = useRef(Date.now());
+
   const mobileSlides = useMemo(
     () => [reviews[reviews.length - 1], ...reviews, reviews[0]],
     [reviews]
@@ -234,13 +250,40 @@ export default function HomeReviews({ reviews: propReviews = [] }: { reviews?: F
   const step = slideWidth + slideGap;
   const trackX = sidePeek - index * step;
 
+  const handleInteraction = () => {
+    lastInteractionRef.current = Date.now();
+  };
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setAnimate(true);
-      setIndex((prev) => prev + 1);
-    }, 3200);
-    return () => clearInterval(timer);
-  }, []);
+    if (reviews.length <= 1) return;
+    
+    let timer: number;
+    const checkAndScroll = () => {
+      const now = Date.now();
+      const timeSinceInteract = now - lastInteractionRef.current;
+      
+      // Delay scroll if user interacted recently (wait at least 8 seconds after click)
+      if (timeSinceInteract < 8000) {
+        timer = window.setTimeout(checkAndScroll, 8000 - timeSinceInteract);
+        return;
+      }
+      
+      // Time to scroll: first ensure active card is flipped back to text
+      setForceUnflip(f => f + 1);
+      
+      // Wait for flip animation to complete (700ms) before sliding
+      setTimeout(() => {
+        setAnimate(true);
+        setIndex(prev => prev + 1);
+        lastInteractionRef.current = Date.now();
+      }, 700);
+
+      timer = window.setTimeout(checkAndScroll, 8000);
+    };
+
+    timer = window.setTimeout(checkAndScroll, 8000);
+    return () => window.clearTimeout(timer);
+  }, [reviews.length]);
 
   useEffect(() => {
     if (index !== reviews.length + 1) return;
@@ -288,11 +331,23 @@ export default function HomeReviews({ reviews: propReviews = [] }: { reviews?: F
             transition: animate ? 'transform 520ms ease' : 'none',
           }}
         >
-          {mobileSlides.map((item, i) => (
-            <div key={`mobile-${item.id}-${i}`} className="reviews-mobile-slide" style={{ width: `${slideWidth}px` }}>
-              <ReviewFlipCard r={item} />
-            </div>
-          ))}
+          {mobileSlides.map((item, i) => {
+            const isClone = i === 0 || i === mobileSlides.length - 1;
+            const originalIndex = isClone 
+              ? (i === 0 ? reviews.length - 1 : 0) 
+              : i - 1;
+            const isCurrentlyActive = ((index - 1 + reviews.length) % reviews.length) === originalIndex;
+            
+            return (
+              <div key={`mobile-${item.id}-${i}`} className="reviews-mobile-slide" style={{ width: `${slideWidth}px` }}>
+                <ReviewFlipCard 
+                  r={item} 
+                  forceUnflip={isCurrentlyActive ? forceUnflip : undefined}
+                  onInteraction={isCurrentlyActive ? handleInteraction : undefined}
+                />
+              </div>
+            );
+          })}
         </div>
         <div className="reviews-mobile-dots" aria-hidden="true">
           {reviews.map((item, i) => (

@@ -15,10 +15,20 @@ export type ProductReviewItem = {
 const CARD_HEIGHT = 380;
 
 // ── Product Review Flip Card ──────────────────────────────────────────────────
-function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
+function ProductReviewFlipCard({ r, forceUnflip, onInteraction }: { r: ProductReviewItem, forceUnflip?: number, onInteraction?: () => void }) {
   const stars = Math.max(1, Math.min(5, Math.round(r.rating || 0)));
   const hasPhoto = Boolean(r.couplePhotoUrl);
   const [flipped, setFlipped] = useState(false);
+
+  useEffect(() => {
+    if (forceUnflip) setFlipped(false);
+  }, [forceUnflip]);
+
+  const handleToggle = () => {
+    setFlipped(f => !f);
+    if (onInteraction) onInteraction();
+  };
+
   // Auto-flip exactly once when a photo exists
   const [hasAutoFlipped, setHasAutoFlipped] = useState(false);
   useEffect(() => {
@@ -26,11 +36,12 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
     const t = window.setTimeout(() => {
       setFlipped(true);
       setHasAutoFlipped(true);
+      if (onInteraction) onInteraction();
       const t2 = window.setTimeout(() => setFlipped(false), 4500);
       return () => window.clearTimeout(t2);
     }, 4000);
     return () => window.clearTimeout(t);
-  }, [hasPhoto, hasAutoFlipped]);
+  }, [hasPhoto, hasAutoFlipped, onInteraction]);
 
   // ── No-photo card ──────────────────────────────────────────────────────────
   if (!hasPhoto) {
@@ -71,7 +82,7 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
   // ── Flip card — portrait fixed height ─────────────────────────────────────
   return (
     <div
-      onClick={() => setFlipped((f) => !f)}
+      onClick={handleToggle}
       title="Click to flip"
       style={{ perspective: '1000px', cursor: 'pointer', height: CARD_HEIGHT }}
     >
@@ -159,6 +170,8 @@ export default function ProductReviewsSection({ reviews }: { reviews: ProductRev
   const [index, setIndex] = useState(1);
   const [animate, setAnimate] = useState(true);
   const [slideWidth, setSlideWidth] = useState(0);
+  const [forceUnflip, setForceUnflip] = useState(0);
+  const lastInteractionRef = useRef(Date.now());
 
   const n = reviews.length;
   const mobileSlides = useMemo(() => {
@@ -171,13 +184,36 @@ export default function ProductReviewsSection({ reviews }: { reviews: ProductRev
   const step = slideWidth + slideGap;
   const trackX = sidePeek - index * step;
 
+  const handleInteraction = () => {
+    lastInteractionRef.current = Date.now();
+  };
+
   useEffect(() => {
     if (n <= 1) return;
-    const timer = window.setInterval(() => {
-      setAnimate(true);
-      setIndex((prev) => prev + 1);
-    }, 3200);
-    return () => window.clearInterval(timer);
+    
+    let timer: number;
+    const checkAndScroll = () => {
+      const now = Date.now();
+      const timeSinceInteract = now - lastInteractionRef.current;
+      
+      if (timeSinceInteract < 8000) {
+        timer = window.setTimeout(checkAndScroll, 8000 - timeSinceInteract);
+        return;
+      }
+      
+      setForceUnflip(f => f + 1);
+      
+      setTimeout(() => {
+        setAnimate(true);
+        setIndex(prev => prev + 1);
+        lastInteractionRef.current = Date.now();
+      }, 700);
+
+      timer = window.setTimeout(checkAndScroll, 8000);
+    };
+
+    timer = window.setTimeout(checkAndScroll, 8000);
+    return () => window.clearTimeout(timer);
   }, [n]);
 
   useEffect(() => {
@@ -225,11 +261,23 @@ export default function ProductReviewsSection({ reviews }: { reviews: ProductRev
             transition: animate ? 'transform 520ms ease' : 'none',
           }}
         >
-          {mobileSlides.map((item, i) => (
-            <div key={`${item.id}-${i}`} className="product-reviews-mobile-slide" style={{ width: `${slideWidth}px` }}>
-              <ProductReviewFlipCard r={item} />
-            </div>
-          ))}
+          {mobileSlides.map((item, i) => {
+            const isClone = i === 0 || i === mobileSlides.length - 1;
+            const originalIndex = isClone 
+              ? (i === 0 ? n - 1 : 0) 
+              : i - 1;
+            const isCurrentlyActive = ((index - 1 + n) % n) === originalIndex;
+
+            return (
+              <div key={`${item.id}-${i}`} className="product-reviews-mobile-slide" style={{ width: `${slideWidth}px` }}>
+                <ProductReviewFlipCard 
+                  r={item} 
+                  forceUnflip={isCurrentlyActive ? forceUnflip : undefined}
+                  onInteraction={isCurrentlyActive ? handleInteraction : undefined}
+                />
+              </div>
+            );
+          })}
         </div>
         <div className="product-reviews-mobile-dots" aria-hidden="true">
           {reviews.map((item, i) => (
