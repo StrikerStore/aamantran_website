@@ -4,7 +4,8 @@ import Link from 'next/link';
 import HeroCarousel from '@/components/HeroCarousel';
 import TemplatesCarousel from '@/components/TemplatesCarousel';
 import ScrollReveal from '@/components/ScrollReveal';
-import HomeReviews from '@/components/HomeReviews';
+import HomeReviews, { type FeaturedReview } from '@/components/HomeReviews';
+import { getPublicApiUrl } from '@/lib/publicEnv';
 
 export const metadata: Metadata = {
   title: 'Aamantran — Beautiful Digital Wedding Invitations',
@@ -25,9 +26,21 @@ const COMPARISON_ROWS = [
   'Photo & music gallery',
   'Google Maps embed',
 ];
-export default function HomePage() {
+async function getFeaturedReviews(): Promise<FeaturedReview[]> {
+  try {
+    const API = getPublicApiUrl();
+    const res = await fetch(`${API}/api/reviews/featured?limit=6`, { next: { revalidate: 120 } });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const featuredReviews = await getFeaturedReviews();
   return (
-    <>
+<>
       {/* ── HERO ── */}
       <section className="hero" id="hero">
         <div className="hero-inner">
@@ -243,7 +256,7 @@ export default function HomePage() {
           <p className="eyebrow center">What couples say</p>
           <h2 className="section-h2 center">Stories of <em>happy celebrations.</em></h2>
 
-          <HomeReviews />
+          <HomeReviews reviews={featuredReviews} />
         </div>
       </section>
 

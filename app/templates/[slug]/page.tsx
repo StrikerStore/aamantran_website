@@ -84,7 +84,8 @@ async function getTemplate(slug: string): Promise<Template | null> {
 
 async function getTemplateReviews(slug: string): Promise<ReviewItem[]> {
   try {
-    const res = await fetch(`${API}/api/templates/${slug}/reviews?limit=6`, { next: { revalidate: 60 } });
+    // no-store so newly submitted reviews appear on the next page load without waiting for cache expiry
+    const res = await fetch(`${API}/api/templates/${slug}/reviews?limit=6`, { cache: 'no-store' });
     if (!res.ok) return [];
     return res.json();
   } catch {
