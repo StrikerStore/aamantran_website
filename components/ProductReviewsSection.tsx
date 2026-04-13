@@ -11,8 +11,10 @@ export type ProductReviewItem = {
   couplePhotoUrl?: string | null;
 };
 
-// ── Flip Card ──────────────────────────────────────────────────────────────────
+// ── Fixed portrait height for all product review cards ─────────────────────────
+const CARD_HEIGHT = 380;
 
+// ── Product Review Flip Card ──────────────────────────────────────────────────
 function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
   const stars = Math.max(1, Math.min(5, Math.round(r.rating || 0)));
   const hasPhoto = Boolean(r.couplePhotoUrl);
@@ -21,15 +23,36 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
   // Auto-flip every 5 s when a photo exists
   useEffect(() => {
     if (!hasPhoto) return;
-    const t = window.setInterval(() => setFlipped(f => !f), 5000);
+    const t = window.setInterval(() => setFlipped((f) => !f), 5000);
     return () => window.clearInterval(t);
   }, [hasPhoto]);
 
+  // ── No-photo card ──────────────────────────────────────────────────────────
   if (!hasPhoto) {
     return (
-      <article className="product-review-card">
+      <article
+        className="product-review-card"
+        style={{
+          height: CARD_HEIGHT,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
+        }}
+      >
         <div className="product-review-stars">{'★'.repeat(stars)}</div>
-        <p className="product-review-text">{r.reviewText || 'Loved the overall invitation experience.'}</p>
+
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', marginBottom: 12 }}>
+          <p className="product-review-text" style={{ margin: 0 }}>
+            {r.reviewText || 'Loved the overall invitation experience.'}
+          </p>
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
+            background: 'linear-gradient(to bottom, transparent, var(--bg-card, #fff))',
+            pointerEvents: 'none',
+          }} />
+        </div>
+
         <div className="product-review-author">
           <strong>{r.coupleNames || 'Happy Couple'}</strong>
           <span>{r.location || 'India'}</span>
@@ -38,23 +61,18 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
     );
   }
 
+  // ── Flip card — portrait fixed height ─────────────────────────────────────
   return (
     <div
-      onClick={() => setFlipped(f => !f)}
+      onClick={() => setFlipped((f) => !f)}
       title="Click to flip"
-      style={{
-        perspective: '1000px',
-        cursor: 'pointer',
-        height: '100%',
-        minHeight: 240,
-      }}
+      style={{ perspective: '1000px', cursor: 'pointer', height: CARD_HEIGHT }}
     >
       <div
         style={{
           position: 'relative',
           width: '100%',
           height: '100%',
-          minHeight: 240,
           transformStyle: 'preserve-3d',
           transition: 'transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1)',
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -64,29 +82,42 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
         <article
           className="product-review-card"
           style={{
-            position: 'absolute',
-            inset: 0,
+            position: 'absolute', inset: 0,
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
             margin: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            boxSizing: 'border-box',
           }}
         >
           <div className="product-review-stars">{'★'.repeat(stars)}</div>
-          <p className="product-review-text">{r.reviewText || 'Loved the overall invitation experience.'}</p>
+
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden', marginBottom: 12 }}>
+            <p className="product-review-text" style={{ margin: 0 }}>
+              {r.reviewText || 'Loved the overall invitation experience.'}
+            </p>
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
+              background: 'linear-gradient(to bottom, transparent, var(--bg-card, #fff))',
+              pointerEvents: 'none',
+            }} />
+          </div>
+
           <div className="product-review-author">
             <strong>{r.coupleNames || 'Happy Couple'}</strong>
             <span>{r.location || 'India'}</span>
-            <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 4, opacity: 0.7 }}>
-              📸 Click to see photo
-            </span>
+          </div>
+          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 8, opacity: 0.6 }}>
+            📸 Click to see photo
           </div>
         </article>
 
-        {/* BACK — couple photo */}
+        {/* BACK — couple photo, portrait fill */}
         <div
           style={{
-            position: 'absolute',
-            inset: 0,
+            position: 'absolute', inset: 0,
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
@@ -98,17 +129,17 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
           <img
             src={r.couplePhotoUrl!}
             alt={r.coupleNames ? `${r.coupleNames} with their invitation` : 'Couple photo'}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
           />
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0,
             padding: '28px 14px 12px',
-            background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.80) 0%, transparent 100%)',
             color: '#fff',
           }}>
             <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{r.coupleNames || 'Happy Couple'}</div>
             {r.location && <div style={{ fontSize: '0.78rem', opacity: 0.85, marginTop: 2 }}>{r.location}</div>}
-            <div style={{ fontSize: '0.68rem', opacity: 0.6, marginTop: 4 }}>Click to flip back</div>
+            <div style={{ fontSize: '0.66rem', opacity: 0.55, marginTop: 6 }}>Click to flip back</div>
           </div>
         </div>
       </div>
@@ -116,8 +147,7 @@ function ProductReviewFlipCard({ r }: { r: ProductReviewItem }) {
   );
 }
 
-// ── Section ────────────────────────────────────────────────────────────────────
-
+// ── Section ───────────────────────────────────────────────────────────────────
 export default function ProductReviewsSection({ reviews }: { reviews: ProductReviewItem[] }) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(1);
@@ -139,7 +169,7 @@ export default function ProductReviewsSection({ reviews }: { reviews: ProductRev
     if (n <= 1) return;
     const timer = window.setInterval(() => {
       setAnimate(true);
-      setIndex(prev => prev + 1);
+      setIndex((prev) => prev + 1);
     }, 3200);
     return () => window.clearInterval(timer);
   }, [n]);
@@ -176,7 +206,7 @@ export default function ProductReviewsSection({ reviews }: { reviews: ProductRev
   return (
     <>
       <div className="product-reviews-grid product-reviews-desktop-grid">
-        {reviews.map(r => (
+        {reviews.map((r) => (
           <ProductReviewFlipCard key={r.id} r={r} />
         ))}
       </div>

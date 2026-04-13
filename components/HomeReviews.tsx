@@ -49,66 +49,92 @@ const FALLBACK_REVIEWS: FeaturedReview[] = [
   },
 ];
 
-// ── Flip Card ──────────────────────────────────────────────────────────────────
+// ── Fixed portrait dimensions for all review cards ─────────────────────────────
+const CARD_HEIGHT = 400;
 
+// ── Author block (shared) ─────────────────────────────────────────────────────
+function AuthorBlock({ r, stopProp }: { r: FeaturedReview; stopProp?: boolean }) {
+  return (
+    <div className="review-author">
+      <span className="review-avatar">💑</span>
+      <div>
+        <strong>{r.coupleNames || 'Happy Couple'}</strong>
+        <span>{r.location || 'India'}</span>
+        {r.template && (
+          <span style={{ display: 'block', fontSize: '0.78rem', marginTop: 2 }}>
+            Template:{' '}
+            <Link
+              href={`/templates/${r.template.slug}`}
+              onClick={stopProp ? (e) => e.stopPropagation() : undefined}
+              style={{ color: 'var(--accent, #8b3a3a)', textDecoration: 'underline', fontWeight: 500 }}
+            >
+              {r.template.name}
+            </Link>
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Review Flip Card ──────────────────────────────────────────────────────────
 function ReviewFlipCard({ r }: { r: FeaturedReview }) {
   const stars = Math.max(1, Math.min(5, Math.round(r.rating || 5)));
-  const [flipped, setFlipped] = useState(false);
   const hasPhoto = Boolean(r.couplePhotoUrl);
+  const [flipped, setFlipped] = useState(false);
 
   // Auto-flip every 5 s when the card has a photo
   useEffect(() => {
     if (!hasPhoto) return;
-    const t = window.setInterval(() => setFlipped(f => !f), 5000);
+    const t = window.setInterval(() => setFlipped((f) => !f), 5000);
     return () => window.clearInterval(t);
   }, [hasPhoto]);
 
+  // ── No-photo card — plain, fixed portrait height, overflow clamped ──────────
   if (!hasPhoto) {
-    // Plain card — no flip behaviour
     return (
-      <article className="review-card">
+      <article
+        className="review-card"
+        style={{
+          height: CARD_HEIGHT,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
+        }}
+      >
         <div className="review-stars">{'★'.repeat(stars)}</div>
-        <p className="review-text">{r.reviewText || '"Loved the overall invitation experience."'}</p>
-        <div className="review-author">
-          <span className="review-avatar">💑</span>
-          <div>
-            <strong>{r.coupleNames || 'Happy Couple'}</strong>
-            <span>{r.location || 'India'}</span>
-            {r.template && (
-              <span style={{ display: 'block', fontSize: '0.78rem', marginTop: 2 }}>
-                Template:{' '}
-                <Link
-                  href={`/templates/${r.template.slug}`}
-                  style={{ color: 'var(--accent, #8b3a3a)', textDecoration: 'underline', fontWeight: 500 }}
-                >
-                  {r.template.name}
-                </Link>
-              </span>
-            )}
-          </div>
+
+        {/* Scrollable text area with fade at bottom */}
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', marginBottom: 12 }}>
+          <p className="review-text" style={{ margin: 0 }}>
+            {r.reviewText || '"Loved the overall invitation experience."'}
+          </p>
+          {/* Fade-out bottom edge */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
+            background: 'linear-gradient(to bottom, transparent, var(--bg-card, #fff))',
+            pointerEvents: 'none',
+          }} />
         </div>
+
+        <AuthorBlock r={r} />
       </article>
     );
   }
 
-  // Flip card — click or auto-timer toggles front/back
+  // ── Flip card — portrait, fixed height ─────────────────────────────────────
   return (
     <div
-      onClick={() => setFlipped(f => !f)}
+      onClick={() => setFlipped((f) => !f)}
       title="Click to flip"
-      style={{
-        perspective: '1000px',
-        cursor: 'pointer',
-        height: '100%',
-        minHeight: 260,
-      }}
+      style={{ perspective: '1000px', cursor: 'pointer', height: CARD_HEIGHT }}
     >
       <div
         style={{
           position: 'relative',
           width: '100%',
           height: '100%',
-          minHeight: 260,
           transformStyle: 'preserve-3d',
           transition: 'transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1)',
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
@@ -118,44 +144,39 @@ function ReviewFlipCard({ r }: { r: FeaturedReview }) {
         <article
           className="review-card"
           style={{
-            position: 'absolute',
-            inset: 0,
+            position: 'absolute', inset: 0,
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
             margin: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            boxSizing: 'border-box',
           }}
         >
           <div className="review-stars">{'★'.repeat(stars)}</div>
-          <p className="review-text">{r.reviewText || '"Loved the overall invitation experience."'}</p>
-          <div className="review-author">
-            <span className="review-avatar">💑</span>
-            <div>
-              <strong>{r.coupleNames || 'Happy Couple'}</strong>
-              <span>{r.location || 'India'}</span>
-              {r.template && (
-                <span style={{ display: 'block', fontSize: '0.78rem', marginTop: 2 }}>
-                  Template:{' '}
-                  <Link
-                    href={`/templates/${r.template.slug}`}
-                    onClick={e => e.stopPropagation()}
-                    style={{ color: 'var(--accent, #8b3a3a)', textDecoration: 'underline', fontWeight: 500 }}
-                  >
-                    {r.template.name}
-                  </Link>
-                </span>
-              )}
-              <span style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 6, opacity: 0.7 }}>
-                📸 Click to see our photo
-              </span>
-            </div>
+
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden', marginBottom: 12 }}>
+            <p className="review-text" style={{ margin: 0 }}>
+              {r.reviewText || '"Loved the overall invitation experience."'}
+            </p>
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: 40,
+              background: 'linear-gradient(to bottom, transparent, var(--bg-card, #fff))',
+              pointerEvents: 'none',
+            }} />
+          </div>
+
+          <AuthorBlock r={r} stopProp />
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 8, opacity: 0.6 }}>
+            📸 Click to see our photo
           </div>
         </article>
 
-        {/* BACK — couple photo */}
+        {/* BACK — couple photo, portrait fill */}
         <div
           style={{
-            position: 'absolute',
-            inset: 0,
+            position: 'absolute', inset: 0,
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
@@ -167,18 +188,17 @@ function ReviewFlipCard({ r }: { r: FeaturedReview }) {
           <img
             src={r.couplePhotoUrl!}
             alt={r.coupleNames ? `${r.coupleNames} with their invitation` : 'Couple photo'}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
           />
-          {/* Name overlay at bottom */}
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0,
-            padding: '32px 16px 16px',
-            background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)',
+            padding: '36px 16px 16px',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.80) 0%, transparent 100%)',
             color: '#fff',
           }}>
             <div style={{ fontWeight: 700, fontSize: '1rem' }}>{r.coupleNames || 'Happy Couple'}</div>
             {r.location && <div style={{ fontSize: '0.8rem', opacity: 0.85, marginTop: 2 }}>{r.location}</div>}
-            <div style={{ fontSize: '0.7rem', opacity: 0.65, marginTop: 4 }}>Click to flip back</div>
+            <div style={{ fontSize: '0.68rem', opacity: 0.55, marginTop: 6 }}>Click to flip back</div>
           </div>
         </div>
       </div>
@@ -186,6 +206,7 @@ function ReviewFlipCard({ r }: { r: FeaturedReview }) {
   );
 }
 
+// ── Section ───────────────────────────────────────────────────────────────────
 export default function HomeReviews({ reviews: propReviews = [] }: { reviews?: FeaturedReview[] }) {
   const reviews = propReviews.length > 0 ? propReviews : FALLBACK_REVIEWS;
 
@@ -200,12 +221,12 @@ export default function HomeReviews({ reviews: propReviews = [] }: { reviews?: F
   const sidePeek = 6;
   const slideGap = 12;
   const step = slideWidth + slideGap;
-  const trackX = sidePeek - (index * step);
+  const trackX = sidePeek - index * step;
 
   useEffect(() => {
     const timer = setInterval(() => {
       setAnimate(true);
-      setIndex(prev => prev + 1);
+      setIndex((prev) => prev + 1);
     }, 3200);
     return () => clearInterval(timer);
   }, []);
@@ -228,7 +249,7 @@ export default function HomeReviews({ reviews: propReviews = [] }: { reviews?: F
   useEffect(() => {
     const updateSize = () => {
       const containerWidth = carouselRef.current?.clientWidth ?? 0;
-      const computed = Math.max(0, containerWidth - (sidePeek * 2));
+      const computed = Math.max(0, containerWidth - sidePeek * 2);
       setSlideWidth(computed);
     };
     updateSize();
@@ -238,14 +259,16 @@ export default function HomeReviews({ reviews: propReviews = [] }: { reviews?: F
 
   return (
     <>
+      {/* Desktop grid — ScrollReveal wrapper gets no review-card class; the card itself handles it */}
       <div className="reviews-grid reviews-desktop-grid">
         {reviews.map((r, i) => (
-          <ScrollReveal key={r.id} className="review-card" delay={i * 100}>
+          <ScrollReveal key={r.id} delay={i * 100}>
             <ReviewFlipCard r={r} />
           </ScrollReveal>
         ))}
       </div>
 
+      {/* Mobile carousel */}
       <div className="reviews-mobile-carousel" aria-label="Couple reviews" ref={carouselRef}>
         <div
           className="reviews-mobile-track"
