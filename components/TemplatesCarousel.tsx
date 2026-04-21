@@ -74,7 +74,7 @@ export default function TemplatesCarousel() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    fetch(`${API}/api/templates?limit=5&sort=popular`)
+    fetch(`${API}/api/templates?limit=5&sort=new`)
       .then(r => r.json())
       .then(d => setSlides(d.templates ?? []))
       .catch(() => setSlides([]))

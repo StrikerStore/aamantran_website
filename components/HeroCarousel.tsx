@@ -54,130 +54,14 @@ function HeroImgCard({ slug, src, name, price, community }: {
   );
 }
 
-// Static CSS-art showcase cards (always shown as extra variety)
-const STATIC_CARDS = [
-  {
-    key: 'navy',
-    content: (
-      <div className={`c3d-inner tpl-navy`}>
-        <div className="tpl-bd">
-          <p className="tpl-eyebrow">The</p>
-          <h3 className="tpl-headline">Countdown<br />begins</h3>
-          <p className="tpl-countdown">92D 14H 57M</p>
-          <div className="tpl-rule"></div>
-          <ul className="tpl-linklist">
-            <li>Navigation <span>Links</span></li>
-            <li>The Venue <span>Venue Guide</span></li>
-            <li>Bride and Groom <span>RSVP</span></li>
-            <li>Instagram</li>
-          </ul>
-          <p className="tpl-note">Our families are excited that you are able to join us in celebrating one of the happiest days of our lives.</p>
-          <p className="tpl-sig">with love · Abhishek &amp; Kanika</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: 'lanterns-dusk',
-    content: (
-      <div className="c3d-inner tpl-lanterns-dusk">
-        <div className="c3d-lantern-dots"></div>
-        <div className="tpl-bd center">
-          <div className="tpl-couple-silhouette"></div>
-          <p className="tpl-couple-lg">Abhishek<br />&amp; Kanika</p>
-          <p className="tpl-date-badge">January 25, 2026</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: 'blush',
-    content: (
-      <div className="c3d-inner tpl-blush">
-        <div className="tpl-blush-top"></div>
-        <div className="tpl-bd center">
-          <p className="tpl-lantern-row">✦ ✦ ✦</p>
-          <p className="tpl-serif-xl">ABHISHEK</p>
-          <p className="tpl-weds-txt">W E D S</p>
-          <p className="tpl-serif-xl">KANIKA</p>
-          <p className="tpl-lantern-row">✦ ✦ ✦</p>
-          <p className="tpl-date-badge pink">January 25, 2026</p>
-        </div>
-        <div className="tpl-blush-btm"></div>
-      </div>
-    ),
-  },
-  {
-    key: 'mughal',
-    content: (
-      <div className="c3d-inner tpl-mughal">
-        <div className="tpl-mughal-sky">
-          <div className="tpl-fountain"></div>
-        </div>
-        <div className="tpl-mughal-lawn"></div>
-        <div className="tpl-bd center mughal-overlay">
-          <p className="tpl-invite-txt">WE INVITE</p>
-          <p className="tpl-serif-xl gold">ABHISHEK</p>
-          <p className="tpl-and-txt">and</p>
-          <p className="tpl-serif-xl gold">KANIKA</p>
-          <p className="tpl-date-badge gold-bg">Sat · 25 Jan 2026</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: 'royal',
-    content: (
-      <div className="c3d-inner tpl-royal">
-        <div className="tpl-feathers"></div>
-        <div className="tpl-mandala-ring">
-          <div className="tpl-mandala-face">🕊️</div>
-        </div>
-        <div className="tpl-bd center royal-text">
-          <h3 className="tpl-shaadi">Shaadi</h3>
-          <p className="tpl-date-sm">Saturday, January 25th 2026</p>
-          <p className="tpl-venue-sm">Swan Hotel, Shamiyana</p>
-          <p className="tpl-date-sm">6pm Onwards</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: 'lanterns-night',
-    content: (
-      <div className="c3d-inner tpl-lanterns-night">
-        <div className="c3d-lantern-dots night"></div>
-        <div className="tpl-dome"></div>
-        <div className="tpl-bd center top-pad">
-          <p className="tpl-name-block">ABHISHEK<br />WEDS<br />KANIKA</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: 'rose',
-    content: (
-      <div className="c3d-inner tpl-rose">
-        <div className="tpl-rose-frame">
-          <div className="tpl-rose-inner">
-            <p className="tpl-serif-xl rose">Abhishek</p>
-            <p className="tpl-amp">&amp;</p>
-            <p className="tpl-serif-xl rose">Kanika</p>
-            <p className="tpl-date-badge rose-bg">January 25, 2026</p>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-];
-
 interface Card {
   key: string;
   content: React.ReactNode;
 }
 
 export default function HeroCarousel() {
-  const [cards, setCards] = useState<Card[]>(STATIC_CARDS);
+  const [cards, setCards] = useState<Card[]>([]);
+  const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(0);
   const trackRef    = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -185,13 +69,12 @@ export default function HeroCarousel() {
   const dragStartX  = useRef<number | null>(null);
   const animateRef  = useRef(false);
 
-  // Fetch DB templates and prepend them as image cards
+  // Fetch live DB templates (newest first)
   useEffect(() => {
-    fetch(`${API}/api/templates?limit=10&sort=popular`)
+    fetch(`${API}/api/templates?limit=10&sort=new`)
       .then(r => r.json())
       .then((d: { templates?: DbTemplate[] }) => {
         const dbTemplates = d.templates ?? [];
-        if (dbTemplates.length === 0) return;
 
         const dbCards: Card[] = dbTemplates.map(t => ({
           key: `db-${t.id}`,
@@ -202,16 +85,16 @@ export default function HeroCarousel() {
               <div className="tpl-bd center">
                 <p className="tpl-label" style={{ fontSize: '0.7rem', opacity: 0.7, marginBottom: 8 }}>New template</p>
                 <p className="tpl-couple-lg" style={{ fontSize: '1.4rem' }}>{t.name}</p>
-                <p className="tpl-date-badge" style={{ marginTop: 12 }}>₹{t.price.toLocaleString('en-IN')}</p>
+                <p className="tpl-date-badge" style={{ marginTop: 12 }}>₹{(t.price / 100).toLocaleString('en-IN')}</p>
               </div>
             </Link>
           ),
         }));
 
-        // Prepend DB cards, keep static cards after
-        setCards([...dbCards, ...STATIC_CARDS]);
+        setCards(dbCards);
       })
-      .catch(() => {/* keep static cards */});
+      .catch(() => setCards([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const TOTAL = cards.length;
@@ -248,6 +131,7 @@ export default function HeroCarousel() {
 
   const resetAuto = useCallback(() => {
     if (autoRef.current) clearInterval(autoRef.current);
+    if (TOTAL === 0) return;
     autoRef.current = setInterval(() => {
       setCurrent(c => (c + 1) % TOTAL);
     }, 3800);
@@ -266,11 +150,13 @@ export default function HeroCarousel() {
   }, [cards]);
 
   function rotate(dir: number) {
+    if (TOTAL === 0) return;
     setCurrent(c => ((c + dir) % TOTAL + TOTAL) % TOTAL);
     resetAuto();
   }
 
   function handleCardClick(i: number) {
+    if (TOTAL === 0) return;
     let diff = i - current;
     if (diff === 0) return;
     if (diff > TOTAL / 2) diff -= TOTAL;
@@ -309,23 +195,31 @@ export default function HeroCarousel() {
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        <div className="c3d-track" id="c3d-track" ref={trackRef}>
-          {cards.map((card, i) => (
-            <div
-              key={card.key}
-              className="c3d-card"
-              onClick={() => handleCardClick(i)}
-            >
-              {card.content}
-            </div>
-          ))}
-        </div>
+        {cards.length === 0 ? (
+          <div className="c3d-empty" style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--text-subtle)' }}>
+            {loading ? 'Loading templates…' : 'No templates available yet.'}
+          </div>
+        ) : (
+          <div className="c3d-track" id="c3d-track" ref={trackRef}>
+            {cards.map((card, i) => (
+              <div
+                key={card.key}
+                className="c3d-card"
+                onClick={() => handleCardClick(i)}
+              >
+                {card.content}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="c3d-nav-btns">
-        <button className="c3d-btn" onClick={() => rotate(-1)} aria-label="Previous">‹</button>
-        <button className="c3d-btn" onClick={() => rotate(1)} aria-label="Next">›</button>
-      </div>
+      {cards.length > 0 && (
+        <div className="c3d-nav-btns">
+          <button className="c3d-btn" onClick={() => rotate(-1)} aria-label="Previous">‹</button>
+          <button className="c3d-btn" onClick={() => rotate(1)} aria-label="Next">›</button>
+        </div>
+      )}
     </div>
   );
 }
