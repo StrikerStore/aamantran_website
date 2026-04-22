@@ -145,9 +145,7 @@ export default function HeroCarousel() {
       const scale = TOTAL <= 4 ? 0.8 + depth * 0.2 : 0.66 + depth * 0.34;
       const opacity = TOTAL <= 4
         ? Math.max(0.72, 0.82 + depth * 0.18)
-        : depth < 0.2
-          ? 0
-          : Math.max(0.26, 0.26 + depth * 0.74);
+        : Math.max(0.18, 0.22 + depth * 0.78);
       card.style.transition = animate
         ? 'transform 0.72s cubic-bezier(0.4,0,0.2,1), opacity 0.72s ease'
         : 'none';
