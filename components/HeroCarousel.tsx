@@ -17,7 +17,10 @@ const COMMUNITY_THEME: Record<string, string> = {
 
 interface DbTemplate {
   id: string; slug: string; name: string;
-  thumbnailUrl: string | null; community: string;
+  thumbnailUrl: string | null;
+  desktopThumbnailUrl?: string | null;
+  mobileThumbnailUrl?: string | null;
+  community: string;
   price: number;
 }
 
@@ -78,8 +81,14 @@ export default function HeroCarousel() {
 
         const dbCards: Card[] = dbTemplates.map(t => ({
           key: `db-${t.id}`,
-          content: t.thumbnailUrl ? (
-            <HeroImgCard slug={t.slug} src={resolveBackendPublicUrl(t.thumbnailUrl) || ''} name={t.name} price={t.price} community={t.community} />
+          content: (t.mobileThumbnailUrl || t.desktopThumbnailUrl || t.thumbnailUrl) ? (
+            <HeroImgCard
+              slug={t.slug}
+              src={resolveBackendPublicUrl(t.mobileThumbnailUrl || t.desktopThumbnailUrl || t.thumbnailUrl) || ''}
+              name={t.name}
+              price={t.price}
+              community={t.community}
+            />
           ) : (
             <Link href={`/templates/${t.slug}`} className={`c3d-inner ${COMMUNITY_THEME[t.community] ?? 'tpl-lanterns-dusk'}`} style={{ display: 'block', textDecoration: 'none' }}>
               <div className="tpl-bd center">
