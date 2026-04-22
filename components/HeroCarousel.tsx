@@ -139,7 +139,8 @@ export default function HeroCarousel() {
       const rad   = (angle * Math.PI) / 180;
       const x     = Math.sin(rad) * RADIUS;
       const z     = Math.cos(rad) * RADIUS;
-      const rotY  = -angle * 0.7;
+      const rawRotY = -angle * 0.7;
+      const rotY = Math.max(-78, Math.min(78, rawRotY));
       const depth = RADIUS === 0 ? 1 : (z + RADIUS) / (2 * RADIUS);
       const scale = TOTAL <= 4 ? 0.8 + depth * 0.2 : 0.66 + depth * 0.34;
       const opacity = TOTAL <= 4
