@@ -77,7 +77,7 @@ export default function HeroCarousel() {
     fetch(`${API}/api/templates?limit=10&sort=new`)
       .then(r => r.json())
       .then((d: { templates?: DbTemplate[] }) => {
-        const dbTemplates = d.templates ?? [];
+        const dbTemplates = (d.templates ?? []).slice(0, 10);
 
         const dbCards: Card[] = dbTemplates.map(t => ({
           key: `db-${t.id}`,
@@ -108,27 +108,43 @@ export default function HeroCarousel() {
 
   const TOTAL = cards.length;
 
-  const getRadius = () => {
+  const getCardWidth = () => {
+    if (typeof window === 'undefined') return 224;
+    if (window.innerWidth < 640) return 152;
+    if (window.innerWidth < 900) return 180;
+    return 224;
+  };
+
+  const getRadius = (total: number) => {
+    if (total <= 1) return 0;
+    const cardWidth = getCardWidth();
+    // Regular polygon circumradius: side / (2 * sin(pi / n)).
+    // Side is adjusted to keep cards slightly separated while still dense.
+    const desiredSide = cardWidth * 1.05;
+    const polygonRadius = desiredSide / (2 * Math.sin(Math.PI / total));
+
     if (typeof window === 'undefined') return 420;
-    if (window.innerWidth < 640) return 260;
-    if (window.innerWidth < 900) return 320;
-    return 420;
+    const maxRadius = window.innerWidth < 640 ? 235 : window.innerWidth < 900 ? 300 : 390;
+    const minRadius = window.innerWidth < 640 ? 110 : window.innerWidth < 900 ? 145 : 190;
+    return Math.max(minRadius, Math.min(polygonRadius, maxRadius));
   };
 
   const position = useCallback((animate: boolean) => {
     const track = trackRef.current;
-    if (!track) return;
+    if (!track || TOTAL === 0) return;
     const els = Array.from(track.querySelectorAll<HTMLElement>('.c3d-card'));
-    const RADIUS = getRadius();
+    const RADIUS = getRadius(TOTAL);
     els.forEach((card, i) => {
-      const angle = ((i - current) / TOTAL) * 360;
+      const angle = ((i - current) * 360) / TOTAL;
       const rad   = (angle * Math.PI) / 180;
       const x     = Math.sin(rad) * RADIUS;
       const z     = Math.cos(rad) * RADIUS;
-      const rotY  = -angle;
-      const depth = (z + RADIUS) / (2 * RADIUS);
-      const scale = 0.62 + depth * 0.38;
-      const opacity = depth < 0.15 ? 0 : Math.max(0, 0.35 + depth * 0.65);
+      const rotY  = -angle * 0.7;
+      const depth = RADIUS === 0 ? 1 : (z + RADIUS) / (2 * RADIUS);
+      const scale = TOTAL <= 4 ? 0.8 + depth * 0.2 : 0.66 + depth * 0.34;
+      const opacity = TOTAL <= 4
+        ? Math.max(0.72, 0.82 + depth * 0.18)
+        : Math.max(0.42, 0.42 + depth * 0.58);
       card.style.transition = animate
         ? 'transform 0.72s cubic-bezier(0.4,0,0.2,1), opacity 0.72s ease'
         : 'none';
