@@ -139,13 +139,15 @@ export default function HeroCarousel() {
       const rad   = (angle * Math.PI) / 180;
       const x     = Math.sin(rad) * RADIUS;
       const z     = Math.cos(rad) * RADIUS;
-      const rawRotY = -angle * 0.7;
-      const rotY = Math.max(-78, Math.min(78, rawRotY));
+      const rawRotY = -angle * 0.55;
+      const rotY = Math.max(-58, Math.min(58, rawRotY));
       const depth = RADIUS === 0 ? 1 : (z + RADIUS) / (2 * RADIUS);
       const scale = TOTAL <= 4 ? 0.8 + depth * 0.2 : 0.66 + depth * 0.34;
       const opacity = TOTAL <= 4
         ? Math.max(0.72, 0.82 + depth * 0.18)
-        : Math.max(0.42, 0.42 + depth * 0.58);
+        : depth < 0.2
+          ? 0
+          : Math.max(0.26, 0.26 + depth * 0.74);
       card.style.transition = animate
         ? 'transform 0.72s cubic-bezier(0.4,0,0.2,1), opacity 0.72s ease'
         : 'none';
