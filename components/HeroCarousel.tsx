@@ -136,10 +136,11 @@ export default function HeroCarousel() {
     const RADIUS = getRadius(TOTAL);
     els.forEach((card, i) => {
       const angle = ((i - current) * 360) / TOTAL;
+      const normalizedAngle = ((angle + 540) % 360) - 180;
       const rad   = (angle * Math.PI) / 180;
       const x     = Math.sin(rad) * RADIUS;
       const z     = Math.cos(rad) * RADIUS;
-      const rawRotY = -angle * 0.55;
+      const rawRotY = -normalizedAngle * 0.55;
       const rotY = Math.max(-58, Math.min(58, rawRotY));
       const depth = RADIUS === 0 ? 1 : (z + RADIUS) / (2 * RADIUS);
       const scale = TOTAL <= 4 ? 0.8 + depth * 0.2 : 0.66 + depth * 0.34;
