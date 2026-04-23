@@ -56,7 +56,6 @@ const CARD_HEIGHT = 400;
 function AuthorBlock({ r, stopProp }: { r: FeaturedReview; stopProp?: boolean }) {
   return (
     <div className="review-author">
-      <span className="review-avatar">💑</span>
       <div>
         <strong>{r.coupleNames || 'Happy Couple'}</strong>
         <span>{r.location || 'India'}</span>
