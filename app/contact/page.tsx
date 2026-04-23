@@ -25,7 +25,7 @@ export default function ContactPage() {
             <p>Whether you&apos;re exploring options, finalising details, or need a same-day turnaround — reach out and we&apos;ll make it work.</p>
 
             {[
-              { icon: '💬', title: 'WhatsApp (Fastest)', detail: <a href="https://wa.me/919999999999" target="_blank" rel="noopener noreferrer">+91 99999 99999</a> },
+              { icon: '💬', title: 'WhatsApp (Fastest)', detail: <a href="https://wa.me/919174773644" target="_blank" rel="noopener noreferrer">+91 91747 73644</a> },
               { icon: '✉️', title: 'Email', detail: <a href="mailto:aamantran@plexzuu.com">aamantran@plexzuu.com</a> },
               { icon: '🕐', title: 'Working Hours', detail: <span>Mon – Sat, 9 AM – 9 PM IST</span> },
               { icon: '⚡', title: 'Response Time', detail: <span>Usually within 2–4 hours</span> },

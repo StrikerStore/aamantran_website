@@ -74,6 +74,12 @@ export default function AboutPage() {
           <h2>Ready to create yours?</h2>
           <p>Join hundreds of couples who gave their guests a moment of magic before the big day arrived.</p>
           <Link href="/templates" className="btn-white">Create your invitation →</Link>
+          <p style={{ marginTop: 16, fontSize: '0.95rem', opacity: 0.85 }}>
+            Questions? WhatsApp us at{' '}
+            <a href="https://wa.me/919174773644" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', fontWeight: 600, textDecoration: 'underline' }}>
+              +91 91747 73644
+            </a>
+          </p>
         </div>
       </main>
     </>
