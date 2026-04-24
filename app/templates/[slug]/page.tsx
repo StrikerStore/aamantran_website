@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductReviewsSection from '@/components/ProductReviewsSection';
 import TemplateCTA from '@/components/TemplateCTA';
+import PixelViewContent from '@/components/PixelViewContent';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
 
@@ -281,6 +282,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
             </div>
 
             {/* CTA buttons */}
+            <PixelViewContent slug={slug} price={t.price} name={t.name} />
             <TemplateCTA slug={slug} demoUrl={demoUrl} price={t.price} name={t.name} />
             <p className="einv-disclaimer product-einv-disclaimer">
               This is a <strong>digital e-invitation</strong> — you get an online invitation to share with guests.{' '}

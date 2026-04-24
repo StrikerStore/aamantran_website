@@ -6,6 +6,7 @@ import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import StickyBar from '@/components/StickyBar';
 import ScrollToTopButton from '@/components/ScrollToTopButton';
+import PixelTracker from '@/components/PixelTracker';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.aamantran.online'),
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <PixelTracker />
         <Nav />
         {children}
         <StickyBar />
