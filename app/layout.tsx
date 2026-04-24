@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <meta name="facebook-domain-verification" content="25bvvc73v1lqxz48seosqan7n116od" />
+        <meta name="facebook-domain-verification" content="m8thmetutgvygnesnqx172k5kcka64" />
         {/* Favicons: explicit links so the tab icon is reliable (metadata + app/favicon.ico can be cached oddly in dev). */}
         <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
