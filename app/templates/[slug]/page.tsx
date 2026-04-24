@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductReviewsSection from '@/components/ProductReviewsSection';
+import TemplateCTA from '@/components/TemplateCTA';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
 
@@ -280,14 +281,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
             </div>
 
             {/* CTA buttons */}
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-              <Link href={`/checkout/${slug}`} className="btn-primary">
-                Buy Now →
-              </Link>
-              <a href={demoUrl} className="btn-secondary">
-                Live Demo
-              </a>
-            </div>
+            <TemplateCTA slug={slug} demoUrl={demoUrl} price={t.price} name={t.name} />
             <p className="einv-disclaimer product-einv-disclaimer">
               This is a <strong>digital e-invitation</strong> — you get an online invitation to share with guests.{' '}
               <strong>No physical product</strong> (printed cards or similar) is included or shipped.

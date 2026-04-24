@@ -88,7 +88,19 @@ export default function CheckoutPage() {
       .then(r => (r.ok ? r.json() : null))
       .then(data => {
         setTemplate(data);
-        if (data) setBreakup(defaultBreakup(data));
+        if (data) {
+          const bp = defaultBreakup(data);
+          setBreakup(bp);
+          if (typeof window !== 'undefined' && (window as any).fbq) {
+            (window as any).fbq('track', 'InitiateCheckout', {
+              value: bp.finalAmount / 100,
+              currency: 'INR',
+              content_ids: [slug],
+              content_name: data.name,
+              content_type: 'product',
+            });
+          }
+        }
       })
       .finally(() => setLoading(false));
   }, [slug]);
@@ -156,6 +168,16 @@ export default function CheckoutPage() {
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData?.message || 'Unable to start checkout');
+
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'Purchase', {
+          value: (breakup?.finalAmount ?? 0) / 100,
+          currency: 'INR',
+          content_ids: [slug],
+          content_name: template.name,
+          content_type: 'product',
+        });
+      }
 
       if (DUMMY_PAYMENT_MODE) {
         const mockRes = await fetch(`${API}/api/checkout/mock-success`, {
