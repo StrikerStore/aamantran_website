@@ -131,8 +131,8 @@ export default function HeroCarousel() {
     if (total <= 1) return 0;
     // 5-card fan uses a fixed arc radius so all cards stay within the viewport
     if (total === 5) {
-      if (typeof window === 'undefined') return 300;
-      return window.innerWidth < 900 ? 220 : 300;
+      if (typeof window === 'undefined') return 320;
+      return window.innerWidth < 900 ? 220 : 320;
     }
     const cardWidth = getCardWidth();
     const desiredSide = cardWidth * 1.05;
@@ -145,7 +145,8 @@ export default function HeroCarousel() {
 
   // Fan arc angles for 5-card display: all outward so none hide behind another
   // rel: 0=center, 1=right-inner, 2=right-outer, 3=left-outer, 4=left-inner
-  const FAN5 = [0, 40, 80, -80, -40] as const;
+  // Outer cards at ±90° = maximum x spread; inner at ±30° keeps gap clear
+  const FAN5 = [0, 30, 90, -90, -30] as const;
 
   const position = useCallback((animate: boolean) => {
     const track = trackRef.current;
@@ -183,7 +184,7 @@ export default function HeroCarousel() {
       const opacity = TOTAL <= 4
         ? Math.max(0.72, 0.82 + depth * 0.18)
         : TOTAL === 5
-          ? Math.max(0.42, 0.38 + depth * 0.62)
+          ? Math.max(0.55, 0.38 + depth * 0.62)
           : Math.max(0.18, 0.22 + depth * 0.78);
 
       card.style.transition = (animate && !isWrap)
