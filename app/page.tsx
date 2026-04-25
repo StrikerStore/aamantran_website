@@ -63,7 +63,18 @@ async function getFeaturedReviews(): Promise<ReviewsResponse> {
     const API = getPublicApiUrl();
     const res = await fetch(`${API}/api/reviews/featured?limit=50`, { next: { revalidate: 120 } });
     if (!res.ok) return { reviews: [], avgRating: 0, totalCount: 0 };
-    return res.json();
+    const data = await res.json();
+    // Tolerate older backend that returned a bare array.
+    if (Array.isArray(data)) {
+      const ratings = data.map((r: ReviewItem) => Number(r.rating) || 0);
+      const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+      return { reviews: data, avgRating: Number(avg.toFixed(2)), totalCount: data.length };
+    }
+    return {
+      reviews: Array.isArray(data?.reviews) ? data.reviews : [],
+      avgRating: Number(data?.avgRating ?? 0),
+      totalCount: Number(data?.totalCount ?? 0),
+    };
   } catch {
     return { reviews: [], avgRating: 0, totalCount: 0 };
   }

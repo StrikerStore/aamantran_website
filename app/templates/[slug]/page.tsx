@@ -77,12 +77,26 @@ async function getTemplate(slug: string): Promise<Template | null> {
   }
 }
 
+function normalizeReviewsResponse(data: unknown): ReviewsResponse {
+  if (Array.isArray(data)) {
+    const ratings = data.map((r: ReviewItem) => Number(r.rating) || 0);
+    const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+    return { reviews: data, avgRating: Number(avg.toFixed(2)), totalCount: data.length };
+  }
+  const d = data as { reviews?: ReviewItem[]; avgRating?: number; totalCount?: number } | null;
+  return {
+    reviews: Array.isArray(d?.reviews) ? d!.reviews : [],
+    avgRating: Number(d?.avgRating ?? 0),
+    totalCount: Number(d?.totalCount ?? 0),
+  };
+}
+
 async function getTemplateReviews(slug: string): Promise<ReviewsResponse> {
   try {
     // no-store so newly submitted reviews appear on the next page load without waiting for cache expiry
     const res = await fetch(`${API}/api/templates/${slug}/reviews?limit=50`, { cache: 'no-store' });
     if (!res.ok) return { reviews: [], avgRating: 0, totalCount: 0 };
-    return res.json();
+    return normalizeReviewsResponse(await res.json());
   } catch {
     return { reviews: [], avgRating: 0, totalCount: 0 };
   }
@@ -92,7 +106,7 @@ async function getFeaturedReviews(): Promise<ReviewsResponse> {
   try {
     const res = await fetch(`${API}/api/reviews/featured?limit=50`, { next: { revalidate: 60 } });
     if (!res.ok) return { reviews: [], avgRating: 0, totalCount: 0 };
-    return res.json();
+    return normalizeReviewsResponse(await res.json());
   } catch {
     return { reviews: [], avgRating: 0, totalCount: 0 };
   }
