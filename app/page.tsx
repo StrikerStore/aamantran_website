@@ -4,8 +4,40 @@ import Link from 'next/link';
 import HeroCarousel from '@/components/HeroCarousel';
 import TemplatesCarousel from '@/components/TemplatesCarousel';
 import ScrollReveal from '@/components/ScrollReveal';
-import HomeReviews, { type FeaturedReview } from '@/components/HomeReviews';
+import ReviewsSection, { type ReviewItem } from '@/components/ReviewsSection';
 import { getPublicApiUrl } from '@/lib/publicEnv';
+
+type ReviewsResponse = { reviews: ReviewItem[]; avgRating: number; totalCount: number };
+
+const FALLBACK_REVIEWS: ReviewItem[] = [
+  {
+    id: 'fb-1',
+    rating: 5,
+    reviewText: '"Our guests kept saying how beautiful the invitation was. The envelope animation left everyone speechless. Sharing on WhatsApp was so easy."',
+    coupleNames: 'Priya & Rahul',
+    location: 'Jaipur',
+    couplePhotoUrl: null,
+    template: null,
+  },
+  {
+    id: 'fb-2',
+    rating: 5,
+    reviewText: '"I saved at least ₹25,000 on printed cards and the RSVP tracking was a lifesaver. I knew exactly who was coming to which function."',
+    coupleNames: 'Kabir & Aisha',
+    location: 'Mumbai',
+    couplePhotoUrl: null,
+    template: null,
+  },
+  {
+    id: 'fb-3',
+    rating: 5,
+    reviewText: '"We had our invitation live and shared with guests within an hour of signing up. Picked our template, filled in details, and done!"',
+    coupleNames: 'Sneha & Rohan',
+    location: 'Hyderabad',
+    couplePhotoUrl: null,
+    template: null,
+  },
+];
 
 export const metadata: Metadata = {
   title: 'Aamantran — Beautiful Digital Wedding Invitations',
@@ -26,19 +58,22 @@ const COMPARISON_ROWS = [
   'Photo & music gallery',
   'Google Maps embed',
 ];
-async function getFeaturedReviews(): Promise<FeaturedReview[]> {
+async function getFeaturedReviews(): Promise<ReviewsResponse> {
   try {
     const API = getPublicApiUrl();
-    const res = await fetch(`${API}/api/reviews/featured?limit=6`, { next: { revalidate: 120 } });
-    if (!res.ok) return [];
+    const res = await fetch(`${API}/api/reviews/featured?limit=50`, { next: { revalidate: 120 } });
+    if (!res.ok) return { reviews: [], avgRating: 0, totalCount: 0 };
     return res.json();
   } catch {
-    return [];
+    return { reviews: [], avgRating: 0, totalCount: 0 };
   }
 }
 
 export default async function HomePage() {
-  const featuredReviews = await getFeaturedReviews();
+  const featured = await getFeaturedReviews();
+  const reviewsToShow = featured.reviews.length > 0 ? featured.reviews : FALLBACK_REVIEWS;
+  const avgRating = featured.reviews.length > 0 ? featured.avgRating : 5;
+  const totalCount = featured.reviews.length > 0 ? featured.totalCount : FALLBACK_REVIEWS.length;
   return (
 <>
       {/* ── HERO ── */}
@@ -256,7 +291,12 @@ export default async function HomePage() {
           <p className="eyebrow center">What couples say</p>
           <h2 className="section-h2 center">Stories of <em>happy celebrations.</em></h2>
 
-          <HomeReviews reviews={featuredReviews} />
+          <ReviewsSection
+            reviews={reviewsToShow}
+            avgRating={avgRating}
+            totalCount={totalCount}
+            showTemplateLink
+          />
         </div>
       </section>
 

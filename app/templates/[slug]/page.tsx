@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import ProductReviewsSection from '@/components/ProductReviewsSection';
+import ReviewsSection, { type ReviewItem } from '@/components/ReviewsSection';
 import TemplateCTA from '@/components/TemplateCTA';
 import PixelViewContent from '@/components/PixelViewContent';
 import { getPublicApiUrl } from '@/lib/publicEnv';
@@ -21,14 +21,7 @@ interface Template {
   avgRating: string | number | null; reviewCount: number;
 }
 
-interface ReviewItem {
-  id: string;
-  rating: number;
-  reviewText: string | null;
-  coupleNames: string | null;
-  location: string | null;
-  createdAt: string;
-}
+type ReviewsResponse = { reviews: ReviewItem[]; avgRating: number; totalCount: number };
 
 interface RelatedTemplate {
   id: string;
@@ -84,24 +77,24 @@ async function getTemplate(slug: string): Promise<Template | null> {
   }
 }
 
-async function getTemplateReviews(slug: string): Promise<ReviewItem[]> {
+async function getTemplateReviews(slug: string): Promise<ReviewsResponse> {
   try {
     // no-store so newly submitted reviews appear on the next page load without waiting for cache expiry
-    const res = await fetch(`${API}/api/templates/${slug}/reviews?limit=6`, { cache: 'no-store' });
-    if (!res.ok) return [];
+    const res = await fetch(`${API}/api/templates/${slug}/reviews?limit=50`, { cache: 'no-store' });
+    if (!res.ok) return { reviews: [], avgRating: 0, totalCount: 0 };
     return res.json();
   } catch {
-    return [];
+    return { reviews: [], avgRating: 0, totalCount: 0 };
   }
 }
 
-async function getFeaturedReviews(): Promise<ReviewItem[]> {
+async function getFeaturedReviews(): Promise<ReviewsResponse> {
   try {
-    const res = await fetch(`${API}/api/reviews/featured?limit=6`, { next: { revalidate: 60 } });
-    if (!res.ok) return [];
+    const res = await fetch(`${API}/api/reviews/featured?limit=50`, { next: { revalidate: 60 } });
+    if (!res.ok) return { reviews: [], avgRating: 0, totalCount: 0 };
     return res.json();
   } catch {
-    return [];
+    return { reviews: [], avgRating: 0, totalCount: 0 };
   }
 }
 
@@ -129,7 +122,6 @@ const PLACEHOLDER_REVIEWS: ReviewItem[] = [
     reviewText: 'Beautiful template and super easy to customize. Our guests loved the invitation experience.',
     coupleNames: 'Riya & Kunal',
     location: 'Jaipur',
-    createdAt: new Date().toISOString(),
   },
   {
     id: 'ph-2',
@@ -137,7 +129,6 @@ const PLACEHOLDER_REVIEWS: ReviewItem[] = [
     reviewText: 'The RSVP tracking made planning so much easier. Design looked premium on mobile.',
     coupleNames: 'Ananya & Dev',
     location: 'Mumbai',
-    createdAt: new Date().toISOString(),
   },
   {
     id: 'ph-3',
@@ -145,7 +136,6 @@ const PLACEHOLDER_REVIEWS: ReviewItem[] = [
     reviewText: 'Quick setup and lovely look. Sharing on WhatsApp worked perfectly for our family groups.',
     coupleNames: 'Meera & Arjun',
     location: 'Bengaluru',
-    createdAt: new Date().toISOString(),
   },
 ];
 
@@ -163,7 +153,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   const t = await getTemplate(slug);
   if (!t) notFound();
-  const [productReviews, featuredReviews, relatedTemplates] = await Promise.all([
+  const [productReviewsResp, featuredReviewsResp, relatedTemplates] = await Promise.all([
     getTemplateReviews(slug),
     getFeaturedReviews(),
     getRelatedTemplates(t.community, slug),
@@ -184,14 +174,28 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
     ? resolveBackendPublicUrl(t.mobileThumbnailUrl)
     : desktopThumbSrc;
   const demoUrl   = `${API}/demo/${t.slug}`;
-  const reviewsToShow =
-    productReviews.length > 0 ? productReviews : featuredReviews.length > 0 ? featuredReviews : PLACEHOLDER_REVIEWS;
-  const reviewSourceLabel =
-    productReviews.length > 0
-      ? 'What couples say about this template'
-      : featuredReviews.length > 0
-        ? 'What couples say on Aamantran'
-        : 'Sample feedback';
+  const useProduct = productReviewsResp.reviews.length > 0;
+  const useFeatured = !useProduct && featuredReviewsResp.reviews.length > 0;
+  const reviewsToShow = useProduct
+    ? productReviewsResp.reviews
+    : useFeatured
+      ? featuredReviewsResp.reviews
+      : PLACEHOLDER_REVIEWS;
+  const reviewsAvg = useProduct
+    ? productReviewsResp.avgRating
+    : useFeatured
+      ? featuredReviewsResp.avgRating
+      : 5;
+  const reviewsTotal = useProduct
+    ? productReviewsResp.totalCount
+    : useFeatured
+      ? featuredReviewsResp.totalCount
+      : PLACEHOLDER_REVIEWS.length;
+  const reviewSourceLabel = useProduct
+    ? 'What couples say about this template'
+    : useFeatured
+      ? 'What couples say on Aamantran'
+      : 'Sample feedback';
 
   return (
     <div style={{ paddingTop: 80 }}>
@@ -328,7 +332,12 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
             <h2>Reviews</h2>
             <p>{reviewSourceLabel}</p>
           </div>
-          <ProductReviewsSection reviews={reviewsToShow} />
+          <ReviewsSection
+            reviews={reviewsToShow}
+            avgRating={reviewsAvg}
+            totalCount={reviewsTotal}
+            showTemplateLink={!useProduct}
+          />
         </section>
 
         <section className="product-section">
