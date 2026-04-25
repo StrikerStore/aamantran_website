@@ -117,6 +117,8 @@ export default function HeroCarousel() {
   }, []);
 
   const TOTAL = cards.length;
+  // Tracks each card's previous fan angle to detect wrap-around jumps
+  const prevAnglesRef = useRef<Map<number, number>>(new Map());
 
   const getCardWidth = () => {
     if (typeof window === 'undefined') return 224;
@@ -127,17 +129,23 @@ export default function HeroCarousel() {
 
   const getRadius = (total: number) => {
     if (total <= 1) return 0;
+    // 5-card fan uses a fixed arc radius so all cards stay within the viewport
+    if (total === 5) {
+      if (typeof window === 'undefined') return 300;
+      return window.innerWidth < 900 ? 220 : 300;
+    }
     const cardWidth = getCardWidth();
-    // Regular polygon circumradius: side / (2 * sin(pi / n)).
-    // Side is adjusted to keep cards slightly separated while still dense.
     const desiredSide = cardWidth * 1.05;
     const polygonRadius = desiredSide / (2 * Math.sin(Math.PI / total));
-
     if (typeof window === 'undefined') return 420;
     const maxRadius = window.innerWidth < 640 ? 235 : window.innerWidth < 900 ? 300 : 390;
     const minRadius = window.innerWidth < 640 ? 110 : window.innerWidth < 900 ? 145 : 190;
     return Math.max(minRadius, Math.min(polygonRadius, maxRadius));
   };
+
+  // Fan arc angles for 5-card display: all outward so none hide behind another
+  // rel: 0=center, 1=right-inner, 2=right-outer, 3=left-outer, 4=left-inner
+  const FAN5 = [0, 40, 80, -80, -40] as const;
 
   const position = useCallback((animate: boolean) => {
     const track = trackRef.current;
@@ -145,8 +153,22 @@ export default function HeroCarousel() {
     const els = Array.from(track.querySelectorAll<HTMLElement>('.c3d-card'));
     const RADIUS = getRadius(TOTAL);
     els.forEach((card, i) => {
-      const angle = ((i - current) * 360) / TOTAL;
-      const normalizedAngle = ((angle + 540) % 360) - 180;
+      let angle: number;
+      let normalizedAngle: number;
+
+      if (TOTAL === 5) {
+        const rel = ((i - current) % TOTAL + TOTAL) % TOTAL;
+        angle = FAN5[rel];
+        normalizedAngle = angle; // already in [-90, 90]
+      } else {
+        angle = ((i - current) * 360) / TOTAL;
+        normalizedAngle = ((angle + 540) % 360) - 180;
+      }
+
+      // Suppress transition for cards that would wrap >100° (instant teleport)
+      const prevAngle = prevAnglesRef.current.get(i);
+      const isWrap = TOTAL === 5 && prevAngle !== undefined && Math.abs(angle - prevAngle) > 100;
+
       const rad   = (angle * Math.PI) / 180;
       const x     = Math.sin(rad) * RADIUS;
       const z     = Math.cos(rad) * RADIUS;
@@ -156,19 +178,22 @@ export default function HeroCarousel() {
       const scale = TOTAL <= 4
         ? 0.8 + depth * 0.2
         : TOTAL === 5
-          ? Math.max(0.72, 0.70 + depth * 0.30)   // 5-card fan: outer cards ~73% size
+          ? Math.max(0.72, 0.70 + depth * 0.30)
           : 0.66 + depth * 0.34;
       const opacity = TOTAL <= 4
         ? Math.max(0.72, 0.82 + depth * 0.18)
         : TOTAL === 5
-          ? Math.max(0.42, 0.38 + depth * 0.62)   // 5-card fan: outer cards ~44% opacity
+          ? Math.max(0.42, 0.38 + depth * 0.62)
           : Math.max(0.18, 0.22 + depth * 0.78);
-      card.style.transition = animate
+
+      card.style.transition = (animate && !isWrap)
         ? 'transform 0.72s cubic-bezier(0.4,0,0.2,1), opacity 0.72s ease'
         : 'none';
       card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${rotY}deg) scale(${scale})`;
       card.style.opacity   = String(opacity);
       card.style.zIndex    = String(Math.round(z + RADIUS));
+
+      prevAnglesRef.current.set(i, angle);
     });
   }, [current, TOTAL]);
 
