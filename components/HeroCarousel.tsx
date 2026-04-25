@@ -100,7 +100,17 @@ export default function HeroCarousel() {
           ),
         }));
 
-        setCards(dbCards);
+        // Pad to 5 cards only on desktop for the wider fan display
+        let finalCards = dbCards;
+        const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 900;
+        if (isDesktop && dbCards.length > 0 && dbCards.length < 5) {
+          finalCards = [...dbCards];
+          while (finalCards.length < 5) {
+            const src = dbCards[finalCards.length % dbCards.length];
+            finalCards.push({ key: `pad-${finalCards.length}`, content: src.content });
+          }
+        }
+        setCards(finalCards);
       })
       .catch(() => setCards([]))
       .finally(() => setLoading(false));
@@ -143,10 +153,16 @@ export default function HeroCarousel() {
       const rawRotY = -normalizedAngle * 0.55;
       const rotY = Math.max(-58, Math.min(58, rawRotY));
       const depth = RADIUS === 0 ? 1 : (z + RADIUS) / (2 * RADIUS);
-      const scale = TOTAL <= 4 ? 0.8 + depth * 0.2 : 0.66 + depth * 0.34;
+      const scale = TOTAL <= 4
+        ? 0.8 + depth * 0.2
+        : TOTAL === 5
+          ? Math.max(0.72, 0.70 + depth * 0.30)   // 5-card fan: outer cards ~73% size
+          : 0.66 + depth * 0.34;
       const opacity = TOTAL <= 4
         ? Math.max(0.72, 0.82 + depth * 0.18)
-        : Math.max(0.18, 0.22 + depth * 0.78);
+        : TOTAL === 5
+          ? Math.max(0.42, 0.38 + depth * 0.62)   // 5-card fan: outer cards ~44% opacity
+          : Math.max(0.18, 0.22 + depth * 0.78);
       card.style.transition = animate
         ? 'transform 0.72s cubic-bezier(0.4,0,0.2,1), opacity 0.72s ease'
         : 'none';
