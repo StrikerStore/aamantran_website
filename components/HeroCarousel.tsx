@@ -117,8 +117,6 @@ export default function HeroCarousel() {
   }, []);
 
   const TOTAL = cards.length;
-  // Tracks each card's previous fan angle to detect wrap-around jumps
-  const prevAnglesRef = useRef<Map<number, number>>(new Map());
 
   const getCardWidth = () => {
     if (typeof window === 'undefined') return 224;
@@ -166,10 +164,6 @@ export default function HeroCarousel() {
         normalizedAngle = ((angle + 540) % 360) - 180;
       }
 
-      // Suppress transition for cards that would wrap >100° (instant teleport)
-      const prevAngle = prevAnglesRef.current.get(i);
-      const isWrap = TOTAL === 5 && prevAngle !== undefined && Math.abs(angle - prevAngle) > 100;
-
       const rad   = (angle * Math.PI) / 180;
       const x     = Math.sin(rad) * RADIUS;
       const z     = Math.cos(rad) * RADIUS;
@@ -187,14 +181,12 @@ export default function HeroCarousel() {
           ? Math.max(0.55, 0.38 + depth * 0.62)
           : Math.max(0.18, 0.22 + depth * 0.78);
 
-      card.style.transition = (animate && !isWrap)
+      card.style.transition = animate
         ? 'transform 0.72s cubic-bezier(0.4,0,0.2,1), opacity 0.72s ease'
         : 'none';
       card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${rotY}deg) scale(${scale})`;
       card.style.opacity   = String(opacity);
       card.style.zIndex    = String(Math.round(z + RADIUS));
-
-      prevAnglesRef.current.set(i, angle);
     });
   }, [current, TOTAL]);
 
