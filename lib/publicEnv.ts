@@ -21,3 +21,7 @@ export function getCoupleDashboardUrl(): string {
 export function getInstagramHandle(): string {
   return process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE?.trim() ?? 'aamantran_4u';
 }
+
+export function getYouTubeHandle(): string {
+  return process.env.NEXT_PUBLIC_YOUTUBE_HANDLE?.trim() ?? 'aamatran_4u';
+}
