@@ -48,10 +48,6 @@ export default function Nav() {
 
       {/* Mobile menu */}
       <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
-        <Link href="/" className="mobile-menu-brand" onClick={() => setMenuOpen(false)}>
-          <Image src="/logo.png" alt="" width={36} height={36} className="logo-img" />
-          <span className="logo-name">Aamantran</span>
-        </Link>
         <Link href="/#features" onClick={() => setMenuOpen(false)}>Features</Link>
         <Link href="/templates" onClick={() => setMenuOpen(false)}>Templates</Link>
         <Link href="/#how" onClick={() => setMenuOpen(false)}>How it works</Link>
