@@ -1681,6 +1681,49 @@ img { max-width: 100%; display: block; }
 }
 .pricing-offer a:hover { color: var(--burgundy-dark); }
 
+/* ── INSTAGRAM ── */
+.instagram-section {
+  padding: 100px 24px;
+  background: var(--white);
+  text-align: center;
+}
+.ig-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.ig-icon-wrap {
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(220, 39, 67, 0.28);
+  color: #fff;
+  flex-shrink: 0;
+}
+.ig-sub {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  color: var(--text-mid);
+  max-width: 460px;
+  line-height: 1.65;
+  margin-top: -4px;
+}
+.ig-handle {
+  color: var(--burgundy);
+  font-weight: 600;
+}
+.ig-btn { margin-top: 4px; }
+
+@media (max-width: 768px) {
+  .instagram-section { padding: 72px 16px; }
+  .ig-sub { font-size: 0.96rem; }
+}
+
 /* ── FINAL CTA ── */
 .final-cta {
   padding: 120px 24px;

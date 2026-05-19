@@ -5,6 +5,7 @@ import HeroCarousel from '@/components/HeroCarousel';
 import TemplatesCarousel from '@/components/TemplatesCarousel';
 import ScrollReveal from '@/components/ScrollReveal';
 import ReviewsSection, { type ReviewItem } from '@/components/ReviewsSection';
+import InstagramSection from '@/components/InstagramSection';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 
 type ReviewsResponse = { reviews: ReviewItem[]; avgRating: number; totalCount: number };
@@ -310,6 +311,9 @@ export default async function HomePage() {
           />
         </div>
       </section>
+
+      {/* ── INSTAGRAM ── */}
+      <InstagramSection />
 
       {/* ── FINAL CTA ── */}
       <section className="final-cta" id="final-cta">

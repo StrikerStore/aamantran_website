@@ -214,7 +214,11 @@ export default function CheckoutPage() {
           <span className="checkout-brand-name">Aamantran</span>
         </Link>
         <h1>Checkout</h1>
-        <p className="checkout-sub">Secure payment for your invitation template</p>
+        <p className="checkout-sub">
+          {DUMMY_PAYMENT_MODE
+            ? 'Test mode — completing purchase does not charge a card or open PayU.'
+            : 'Secure payment for your invitation template'}
+        </p>
 
         <div className="checkout-contact-row">
           <input
@@ -259,7 +263,13 @@ export default function CheckoutPage() {
         {couponMsg && <p className="checkout-coupon-msg">{couponMsg}</p>}
 
         <button className="checkout-pay-btn" type="button" onClick={handlePayNow} disabled={!canPay}>
-          {paying ? 'Redirecting to PayU…' : 'Pay Now'}
+          {paying
+            ? DUMMY_PAYMENT_MODE
+              ? 'Completing test purchase…'
+              : 'Redirecting to PayU…'
+            : DUMMY_PAYMENT_MODE
+              ? 'Complete purchase (test — no payment)'
+              : 'Pay Now'}
         </button>
       </div>
     </div>

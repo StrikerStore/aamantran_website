@@ -17,3 +17,7 @@ export function getCoupleDashboardUrl(): string {
   if (v) return v.replace(/\/$/, '');
   return process.env.NODE_ENV === 'production' ? PROD_APP : 'http://localhost:3001';
 }
+
+export function getInstagramHandle(): string {
+  return process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE?.trim() ?? 'aamantran_4u';
+}
