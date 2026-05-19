@@ -26,6 +26,7 @@ function OnboardingContent() {
   const paymentId   = params.get('paymentId') || '';
   const slug        = params.get('slug') || '';
   const templateName = params.get('template') || 'your selected template';
+  const orderId     = params.get('orderId') || '';
 
   // Field state
   const [email,    setEmail]    = useState('');
@@ -160,6 +161,12 @@ function OnboardingContent() {
         {done ? (
           <div className="onboarding-success">
             <h2>Registration successful</h2>
+            {orderId && (
+              <p className="onboarding-order-id">
+                Order ID: <strong>{orderId}</strong>
+                <span className="onboarding-order-id-note">Save this for any support queries.</span>
+              </p>
+            )}
             <p>You can customise your template using the User Dashboard.</p>
             <a href={USER_DASHBOARD_URL} className="btn-primary large">
               Open User Dashboard →
