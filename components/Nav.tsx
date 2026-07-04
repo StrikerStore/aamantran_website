@@ -34,6 +34,7 @@ export default function Nav() {
             <li><Link href="/templates">Templates</Link></li>
             <li><Link href="/#how">How it works</Link></li>
             <li><Link href="/#reviews">Reviews</Link></li>
+            <li><Link href="/blog">Blog</Link></li>
           </ul>
           <Link href="/templates" className="btn-nav">Browse Templates</Link>
           <button
@@ -52,6 +53,7 @@ export default function Nav() {
         <Link href="/templates" onClick={() => setMenuOpen(false)}>Templates</Link>
         <Link href="/#how" onClick={() => setMenuOpen(false)}>How it works</Link>
         <Link href="/#reviews" onClick={() => setMenuOpen(false)}>Reviews</Link>
+        <Link href="/blog" onClick={() => setMenuOpen(false)}>Blog</Link>
         <Link href="/templates" className="mob-cta" onClick={() => setMenuOpen(false)}>Browse Templates</Link>
       </div>
     </nav>

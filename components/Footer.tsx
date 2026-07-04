@@ -87,6 +87,7 @@ export default function Footer() {
             <Link href="/about">About Us</Link>
             <Link href="/contact">Contact us</Link>
             <Link href="/faq">FAQs</Link>
+            <Link href="/blog">Blog</Link>
             <Link href="/privacy">Privacy Policy</Link>
             <Link href="/refund">Refund Policy</Link>
             <Link href="/terms">Terms</Link>
