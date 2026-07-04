@@ -19,8 +19,12 @@ function safeUrl(url: string): string {
 
 function markdownToHtml(md: string): string {
   if (!md) return '';
+  // Normalise line endings first. Browsers submit <textarea> content with CRLF,
+  // and JS's "." / "$" don't match a trailing "\r", which would make every
+  // heading, list item and blockquote fall through to a plain paragraph.
+  const normalised = md.replace(/\r\n?/g, '\n');
   // Escape everything first — the parser below only ever inserts its own tags.
-  let html = escapeHtml(md)
+  let html = escapeHtml(normalised)
     // Code blocks (must be before other replacements)
     .replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) =>
       `<pre><code class="lang-${lang || 'text'}">${code}</code></pre>`)

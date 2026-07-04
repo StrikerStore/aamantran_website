@@ -65,7 +65,8 @@ export default async function BlogPage() {
       <JsonLd data={blogJsonLd} />
       <section className="blog-index-hero">
         <div className="blog-index-hero-inner">
-          <h1 className="blog-index-title">Wedding Inspiration & Tips</h1>
+          <p className="blog-index-eyebrow">The Aamantran Journal</p>
+          <h1 className="blog-index-title">Wedding Inspiration &amp; <em>Tips</em></h1>
           <p className="blog-index-subtitle">
             Ideas, guides, and stories to help you create the perfect invitation for your special day.
           </p>
@@ -129,23 +130,35 @@ export default async function BlogPage() {
 const blogIndexStyles = `
 /* ── Blog Index Hero ── */
 .blog-index-hero {
-  background: linear-gradient(135deg, #fdf6ef 0%, #fef1e6 40%, #fce8d8 100%);
+  background: var(--cream);
   padding: 80px 24px 60px;
   text-align: center;
+  border-bottom: 1px solid var(--border-soft);
 }
 .blog-index-hero-inner { max-width: 660px; margin: 0 auto; }
+.blog-index-eyebrow {
+  font-family: var(--font-body);
+  font-size: .76rem;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 14px;
+}
 .blog-index-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
   font-weight: 500;
-  color: #3a2a1f;
+  color: var(--text-dark);
   margin: 0 0 14px;
   letter-spacing: -0.02em;
+  line-height: 1.1;
 }
+.blog-index-title em { color: var(--burgundy); font-style: italic; }
 .blog-index-subtitle {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 1.05rem;
-  color: #7a6b5d;
+  color: var(--text-mid);
   margin: 0;
   line-height: 1.6;
 }
@@ -154,13 +167,13 @@ const blogIndexStyles = `
 .blog-index-section {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 48px 24px 80px;
+  padding: 56px 24px 80px;
 }
 .blog-index-empty {
   text-align: center;
   padding: 60px 20px;
-  color: #9a8b7d;
-  font-family: 'DM Sans', sans-serif;
+  color: var(--text-light);
+  font-family: var(--font-body);
 }
 .blog-index-grid {
   display: grid;
@@ -172,17 +185,18 @@ const blogIndexStyles = `
 .blog-card {
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border-radius: 16px;
+  background: var(--white);
+  border-radius: var(--radius);
   overflow: hidden;
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 2px 12px rgba(60,40,20,.06), 0 0 0 1px rgba(60,40,20,.04);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
   transition: transform 0.28s cubic-bezier(.4,0,.2,1), box-shadow 0.28s cubic-bezier(.4,0,.2,1);
 }
 .blog-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 28px rgba(60,40,20,.1), 0 0 0 1px rgba(60,40,20,.06);
+  box-shadow: var(--shadow-card);
 }
 
 .blog-card-image-wrap {
@@ -190,7 +204,7 @@ const blogIndexStyles = `
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #f8f2ec;
+  background: var(--cream-dark);
 }
 .blog-card-image {
   width: 100%;
@@ -205,8 +219,8 @@ const blogIndexStyles = `
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #fdf6ef, #fce8d8);
-  color: #b0a090;
+  background: linear-gradient(135deg, var(--cream), var(--cream-deeper));
+  color: var(--text-subtle);
 }
 
 .blog-card-body {
@@ -223,31 +237,34 @@ const blogIndexStyles = `
   flex-wrap: wrap;
 }
 .blog-card-tag {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: .7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .06em;
-  color: #9d6b3a;
-  background: #fdf0e2;
+  color: var(--burgundy);
+  background: rgba(110,31,46,0.08);
+  border: 1px solid rgba(110,31,46,0.14);
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
 }
 
 .blog-card-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.35rem;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
   font-weight: 600;
-  color: #3a2a1f;
+  color: var(--text-dark);
   margin: 0 0 8px;
   line-height: 1.3;
   letter-spacing: -0.01em;
+  transition: color 0.2s ease;
 }
+.blog-card:hover .blog-card-title { color: var(--burgundy); }
 
 .blog-card-excerpt {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: .88rem;
-  color: #7a6b5d;
+  color: var(--text-mid);
   margin: 0 0 16px;
   line-height: 1.55;
   display: -webkit-box;
@@ -258,9 +275,9 @@ const blogIndexStyles = `
 }
 
 .blog-card-meta {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: .78rem;
-  color: #a0917f;
+  color: var(--text-light);
   display: flex;
   align-items: center;
   gap: 6px;
