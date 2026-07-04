@@ -4,8 +4,10 @@ import { notFound } from 'next/navigation';
 import ReviewsSection, { type ReviewItem } from '@/components/ReviewsSection';
 import TemplateCTA from '@/components/TemplateCTA';
 import PixelViewContent from '@/components/PixelViewContent';
+import JsonLd from '@/components/JsonLd';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
+import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
 
 const API = getPublicApiUrl();
 
@@ -157,10 +159,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const t = await getTemplate(slug);
   if (!t) return { title: 'Template Not Found' };
-  return {
-    title: `${t.name} — Aamantran`,
-    description: t.aboutText,
-  };
+  const description = t.aboutText
+    ? t.aboutText.slice(0, 160)
+    : `${t.name} — a hand-crafted digital wedding invitation template with WhatsApp sharing and RSVP tracking, from Aamantran.`;
+  const thumbnail = resolveBackendPublicUrl(t.desktopThumbnailUrl || t.thumbnailUrl || t.mobileThumbnailUrl);
+  return buildPageMetadata({
+    title: `${t.name} — Digital Wedding Invitation Template`,
+    description,
+    path: `/templates/${t.slug}`,
+    ...(thumbnail ? { ogImage: thumbnail } : {}),
+  });
 }
 
 export default async function TemplatePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -211,8 +219,45 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
       ? 'What couples say on Aamantran'
       : 'Sample feedback';
 
+  const pageUrl = `${SITE_URL}/templates/${t.slug}`;
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: t.name,
+    description: t.aboutText || `${t.name} — digital wedding invitation template by ${SITE_NAME}.`,
+    ...(desktopThumbSrc ? { image: [desktopThumbSrc] } : {}),
+    brand: { '@type': 'Brand', name: SITE_NAME },
+    offers: {
+      '@type': 'Offer',
+      url: pageUrl,
+      priceCurrency: 'INR',
+      price: (t.price / 100).toFixed(2),
+      availability: 'https://schema.org/InStock',
+    },
+    ...(rating > 0 && t.reviewCount > 0
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: rating.toFixed(1),
+            reviewCount: t.reviewCount,
+          },
+        }
+      : {}),
+  };
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Templates', item: `${SITE_URL}/templates` },
+      { '@type': 'ListItem', position: 3, name: t.name, item: pageUrl },
+    ],
+  };
+
   return (
     <div style={{ paddingTop: 80 }}>
+      <JsonLd data={productJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <div className="product-wrap">
         {/* Breadcrumb */}
         <div className="breadcrumb">

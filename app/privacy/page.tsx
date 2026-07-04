@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { buildPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy — Aamantran',
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Privacy Policy',
   description: "Aamantran's Privacy Policy — how we collect, use, and protect your personal information.",
-};
+  path: '/privacy',
+});
 
 export default function PrivacyPage() {
   return (

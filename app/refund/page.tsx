@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { buildPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Refund Policy — Aamantran',
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Refund Policy',
   description: "Aamantran's Refund Policy — clear, fair, and straightforward. Know your options before you purchase.",
-};
+  path: '/refund',
+});
 
 export default function RefundPage() {
   return (

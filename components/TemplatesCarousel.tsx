@@ -24,7 +24,7 @@ const DEMO_NAMES: Record<string, [string, string]> = {
   universal: ['Rohan', 'Sneha'],
 };
 
-interface DbTemplate {
+export interface CarouselTemplate {
   id: string; slug: string; name: string;
   thumbnailUrl: string | null;
   desktopThumbnailUrl?: string | null;
@@ -65,20 +65,23 @@ function CarouselThumb({ src, theme, name, name1, name2 }: {
   );
 }
 
-export default function TemplatesCarousel() {
+export default function TemplatesCarousel({ initialTemplates }: { initialTemplates?: CarouselTemplate[] }) {
   const router = useRouter();
   const carouselRef = useRef<HTMLDivElement>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [slides, setSlides] = useState<DbTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [slides, setSlides] = useState<CarouselTemplate[]>(initialTemplates ?? []);
+  const [loading, setLoading] = useState(!initialTemplates);
+
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    if (initialTemplates) return; // server-prefetched — no client fetch needed
     fetch(`${API}/api/templates?limit=5&sort=new`)
       .then(r => r.json())
       .then(d => setSlides(d.templates ?? []))
       .catch(() => setSlides([]))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { buildPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'About Us — Aamantran',
+export const metadata: Metadata = buildPageMetadata({
+  title: 'About Us',
   description: 'Learn the story behind Aamantran — built by people who believe every Indian love story deserves a beautiful, modern invitation.',
-};
+  path: '/about',
+});
 
 export default function AboutPage() {
   return (

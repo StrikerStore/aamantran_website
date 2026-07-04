@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { buildPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Terms of Service — Aamantran',
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Terms of Service',
   description: "Aamantran's Terms of Service — the rules and guidelines that govern your use of our platform.",
-};
+  path: '/terms',
+});
 
 export default function TermsPage() {
   return (

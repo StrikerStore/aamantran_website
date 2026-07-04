@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { track } from '@/lib/track';
 
 interface Props {
   name: string;
@@ -19,6 +20,7 @@ export default function PixelViewContent({ name, price, slug }: Props) {
         currency: 'INR',
       });
     }
+    track('view_template', { slug, value: price / 100 });
   }, []);
 
   return null;

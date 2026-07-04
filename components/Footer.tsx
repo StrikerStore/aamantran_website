@@ -53,7 +53,7 @@ export default function Footer() {
           <div className="footer-brand-col">
             <Image
               src="/logo.png"
-              alt=""
+              alt="Aamantran logo"
               width={48}
               height={48}
               className="footer-brand-logo"
@@ -123,6 +123,12 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <p>© 2026 Aamantran. Made with ❤️ for Indian celebrations.</p>
+        <p style={{ fontSize: '0.78rem', opacity: 0.75, marginTop: 6 }}>
+          Have an idea to improve Aamantran?{' '}
+          <a href="mailto:aamantran@plexzuu.com" style={{ color: 'inherit', textDecoration: 'underline' }}>
+            We&apos;d love to hear it
+          </a>
+        </p>
       </div>
     </footer>
   );

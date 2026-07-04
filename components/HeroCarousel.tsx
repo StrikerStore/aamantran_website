@@ -62,9 +62,47 @@ interface Card {
   content: React.ReactNode;
 }
 
-export default function HeroCarousel() {
-  const [cards, setCards] = useState<Card[]>([]);
-  const [loading, setLoading] = useState(true);
+function buildCards(templates: DbTemplate[]): Card[] {
+  return templates.slice(0, 10).map(t => ({
+    key: `db-${t.id}`,
+    content: (t.mobileThumbnailUrl || t.desktopThumbnailUrl || t.thumbnailUrl) ? (
+      <HeroImgCard
+        slug={t.slug}
+        src={resolveBackendPublicUrl(t.mobileThumbnailUrl || t.desktopThumbnailUrl || t.thumbnailUrl) || ''}
+        name={t.name}
+        price={t.price}
+        community={t.community}
+      />
+    ) : (
+      <Link href={`/templates/${t.slug}`} className={`c3d-inner ${COMMUNITY_THEME[t.community] ?? 'tpl-lanterns-dusk'}`} style={{ display: 'block', textDecoration: 'none' }}>
+        <div className="tpl-bd center">
+          <p className="tpl-label" style={{ fontSize: '0.7rem', opacity: 0.7, marginBottom: 8 }}>New template</p>
+          <p className="tpl-couple-lg" style={{ fontSize: '1.4rem' }}>{t.name}</p>
+          <p className="tpl-date-badge" style={{ marginTop: 12 }}>₹{(t.price / 100).toLocaleString('en-IN')}</p>
+        </div>
+      </Link>
+    ),
+  }));
+}
+
+// Pad to 5 cards only on desktop for the wider fan display (client-only —
+// server rendering can't know the viewport, so this runs after hydration).
+function padForDesktop(dbCards: Card[]): Card[] {
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 900;
+  if (!isDesktop || dbCards.length === 0 || dbCards.length >= 5) return dbCards;
+  const finalCards = [...dbCards];
+  while (finalCards.length < 5) {
+    const src = dbCards[finalCards.length % dbCards.length];
+    finalCards.push({ key: `pad-${finalCards.length}`, content: src.content });
+  }
+  return finalCards;
+}
+
+export default function HeroCarousel({ initialTemplates }: { initialTemplates?: DbTemplate[] }) {
+  // Server-prefetched templates render immediately (no loading flash);
+  // without them we fall back to the original client-side fetch.
+  const [cards, setCards] = useState<Card[]>(() => (initialTemplates ? buildCards(initialTemplates) : []));
+  const [loading, setLoading] = useState(!initialTemplates);
   const [current, setCurrent] = useState(0);
   const trackRef    = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -72,48 +110,19 @@ export default function HeroCarousel() {
   const dragStartX  = useRef<number | null>(null);
   const animateRef  = useRef(false);
 
-  // Fetch live DB templates (newest first)
   useEffect(() => {
+    if (initialTemplates) {
+      setCards(prev => padForDesktop(prev));
+      return;
+    }
     fetch(`${API}/api/templates?limit=10&sort=new`)
       .then(r => r.json())
       .then((d: { templates?: DbTemplate[] }) => {
-        const dbTemplates = (d.templates ?? []).slice(0, 10);
-
-        const dbCards: Card[] = dbTemplates.map(t => ({
-          key: `db-${t.id}`,
-          content: (t.mobileThumbnailUrl || t.desktopThumbnailUrl || t.thumbnailUrl) ? (
-            <HeroImgCard
-              slug={t.slug}
-              src={resolveBackendPublicUrl(t.mobileThumbnailUrl || t.desktopThumbnailUrl || t.thumbnailUrl) || ''}
-              name={t.name}
-              price={t.price}
-              community={t.community}
-            />
-          ) : (
-            <Link href={`/templates/${t.slug}`} className={`c3d-inner ${COMMUNITY_THEME[t.community] ?? 'tpl-lanterns-dusk'}`} style={{ display: 'block', textDecoration: 'none' }}>
-              <div className="tpl-bd center">
-                <p className="tpl-label" style={{ fontSize: '0.7rem', opacity: 0.7, marginBottom: 8 }}>New template</p>
-                <p className="tpl-couple-lg" style={{ fontSize: '1.4rem' }}>{t.name}</p>
-                <p className="tpl-date-badge" style={{ marginTop: 12 }}>₹{(t.price / 100).toLocaleString('en-IN')}</p>
-              </div>
-            </Link>
-          ),
-        }));
-
-        // Pad to 5 cards only on desktop for the wider fan display
-        let finalCards = dbCards;
-        const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 900;
-        if (isDesktop && dbCards.length > 0 && dbCards.length < 5) {
-          finalCards = [...dbCards];
-          while (finalCards.length < 5) {
-            const src = dbCards[finalCards.length % dbCards.length];
-            finalCards.push({ key: `pad-${finalCards.length}`, content: src.content });
-          }
-        }
-        setCards(finalCards);
+        setCards(padForDesktop(buildCards(d.templates ?? [])));
       })
       .catch(() => setCards([]))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const TOTAL = cards.length;

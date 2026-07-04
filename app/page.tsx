@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import HeroCarousel from '@/components/HeroCarousel';
-import TemplatesCarousel from '@/components/TemplatesCarousel';
+import TemplatesCarousel, { type CarouselTemplate } from '@/components/TemplatesCarousel';
 import ScrollReveal from '@/components/ScrollReveal';
 import ReviewsSection, { type ReviewItem } from '@/components/ReviewsSection';
 import InstagramSection from '@/components/InstagramSection';
@@ -41,9 +41,11 @@ const FALLBACK_REVIEWS: ReviewItem[] = [
 ];
 
 export const metadata: Metadata = {
-  title: 'Aamantran — Beautiful Digital Wedding Invitations',
+  // `absolute` opts out of the layout's "%s — Aamantran" template (the brand is already in the title).
+  title: { absolute: 'Aamantran — Beautiful Digital Wedding Invitations for India' },
   description:
     'Stunning digital invitations your guests will open, save, and remember — with seamless RSVP, WhatsApp sharing, and every ceremony covered in one elegant link.',
+  alternates: { canonical: '/' },
 };
 
 const CHECKLIST_ITEMS = [
@@ -59,6 +61,19 @@ const COMPARISON_ROWS = [
   'Photo & music gallery',
   'Google Maps embed',
 ];
+// Prefetched server-side so the hero renders instantly with no "Loading templates…" flash.
+async function getHomepageTemplates(): Promise<CarouselTemplate[]> {
+  try {
+    const API = getPublicApiUrl();
+    const res = await fetch(`${API}/api/templates?limit=10&sort=new`, { next: { revalidate: 120 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.templates ?? []) as CarouselTemplate[];
+  } catch {
+    return [];
+  }
+}
+
 async function getFeaturedReviews(): Promise<ReviewsResponse> {
   try {
     const API = getPublicApiUrl();
@@ -82,7 +97,10 @@ async function getFeaturedReviews(): Promise<ReviewsResponse> {
 }
 
 export default async function HomePage() {
-  const featured = await getFeaturedReviews();
+  const [featured, fetchedTemplates] = await Promise.all([getFeaturedReviews(), getHomepageTemplates()]);
+  // Empty server fetch (API hiccup at revalidate time) → undefined, so the
+  // carousels fall back to their own client-side fetch instead of "No templates".
+  const homeTemplates = fetchedTemplates.length > 0 ? fetchedTemplates : undefined;
   const reviewsToShow = featured.reviews.length > 0 ? featured.reviews : FALLBACK_REVIEWS;
   const avgRating = featured.reviews.length > 0 ? featured.avgRating : 5;
   const totalCount = featured.reviews.length > 0 ? featured.totalCount : FALLBACK_REVIEWS.length;
@@ -103,7 +121,7 @@ export default async function HomePage() {
             Stunning digital invitations your guests will open, save, and remember — with seamless RSVP, WhatsApp sharing, and every ceremony covered in one elegant link.
           </p>
         </div>
-        <HeroCarousel />
+        <HeroCarousel initialTemplates={homeTemplates} />
       </section>
 
       {/* ── CHECKLIST STRIP ── */}
@@ -129,7 +147,7 @@ export default async function HomePage() {
           <h2 className="section-h2 center">Choose your <em>style.</em></h2>
           <p className="section-body center">Every template is hand-crafted — warm, romantic, and made to feel authentically yours.</p>
         </div>
-        <TemplatesCarousel />
+        <TemplatesCarousel initialTemplates={homeTemplates?.slice(0, 5)} />
         <div className="center" style={{ marginTop: 40 }}>
           <Link href="/templates" className="btn-primary">Browse all templates →</Link>
         </div>
@@ -318,9 +336,9 @@ export default async function HomePage() {
       {/* ── FINAL CTA ── */}
       <section className="final-cta" id="final-cta">
         <div className="container">
-          <h2 className="final-h2">Have an idea to improve Aamantran?</h2>
-          <p className="final-sub">Share your suggestions, feedback, or collaboration ideas with us. We would love to hear from you and build together.</p>
-          <a href="mailto:aamantran@plexzuu.com" className="btn-primary large">Mail us at aamantran@plexzuu.com →</a>
+          <h2 className="final-h2">Your invitation could be live tonight.</h2>
+          <p className="final-sub">Pick a template, add your details, and share it on WhatsApp — most couples are done in under 30 minutes. One-time payment, from ₹999.</p>
+          <Link href="/templates" className="btn-primary large">Create your invitation →</Link>
         </div>
       </section>
     </>

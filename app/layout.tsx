@@ -6,13 +6,37 @@ import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import StickyBar from '@/components/StickyBar';
 import ScrollToTopButton from '@/components/ScrollToTopButton';
+import WhatsAppButton from '@/components/WhatsAppButton';
 import PixelTracker from '@/components/PixelTracker';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
+import JsonLd from '@/components/JsonLd';
+import { getInstagramHandle, getYouTubeHandle } from '@/lib/publicEnv';
+import { CONTACT_EMAIL, DEFAULT_OG_IMAGE, SITE_NAME, SITE_TAGLINE, SITE_URL, WHATSAPP_NUMBER } from '@/lib/seo';
+
+const DEFAULT_TITLE = `${SITE_NAME} — ${SITE_TAGLINE}`;
+const DEFAULT_DESCRIPTION =
+  'Create stunning digital wedding invitations your guests will cherish. WhatsApp-ready, RSVP management, multi-event support. Starting at ₹999.';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.aamantran.online'),
-  title: 'Aamantran — Beautiful Digital Wedding Invitations',
-  description:
-    'Create stunning digital wedding invitations your guests will cherish. WhatsApp-ready, RSVP management, multi-event support. Starting at ₹999.',
+  metadataBase: new URL(SITE_URL),
+  title: { default: DEFAULT_TITLE, template: `%s — ${SITE_NAME}` },
+  description: DEFAULT_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    locale: 'en_IN',
+    url: '/',
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630, alt: DEFAULT_TITLE }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
   icons: {
     icon: [
       { url: '/logo.png', type: 'image/png', sizes: '32x32' },
@@ -20,6 +44,35 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: '/logo.png', sizes: '180x180', type: 'image/png' }],
   },
+};
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE_NAME,
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
+  description:
+    'Aamantran is a digital wedding invitation platform in India that lets couples create WhatsApp-ready invitation websites with live RSVP tracking, multi-event support, photo galleries and background music — starting at ₹999.',
+  email: CONTACT_EMAIL,
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer support',
+    telephone: WHATSAPP_NUMBER,
+    email: CONTACT_EMAIL,
+    availableLanguage: ['English', 'Hindi'],
+  },
+  sameAs: [
+    `https://www.instagram.com/${getInstagramHandle()}`,
+    `https://www.youtube.com/@${getYouTubeHandle()}`,
+  ],
+};
+
+const webSiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_NAME,
+  url: SITE_URL,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -39,11 +92,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <JsonLd data={organizationJsonLd} />
+        <JsonLd data={webSiteJsonLd} />
         <PixelTracker />
+        <AnalyticsTracker />
         <Nav />
         {children}
         <StickyBar />
         <ScrollToTopButton />
+        <WhatsAppButton />
         <Footer />
         <Script src="/meta-pixel.js" strategy="beforeInteractive" />
         <noscript>
