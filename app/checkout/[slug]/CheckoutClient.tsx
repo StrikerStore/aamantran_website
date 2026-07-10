@@ -294,7 +294,7 @@ export default function CheckoutClient() {
               onChange={e => setMarketingOptIn(e.target.checked)}
               style={{ marginTop: 2, flexShrink: 0 }}
             />
-            <span>Email me helpful reminders and offers if I don&apos;t finish my order. (optional)</span>
+            <span>If I step away before finishing, email me a one-time link so I can pick up where I left off. (optional)</span>
           </label>
         </div>
 
