@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getInstagramHandle, getYouTubeHandle } from '@/lib/publicEnv';
 import { getCoupleDashboardUrl } from '@/lib/publicEnv';
+import CookiePrefsLink from './CookiePrefsLink';
 
 const FOOTER_FAQS = [
   {
@@ -91,6 +92,7 @@ export default function Footer() {
             <Link href="/privacy">Privacy Policy</Link>
             <Link href="/refund">Refund Policy</Link>
             <Link href="/terms">Terms</Link>
+            <CookiePrefsLink />
           </div>
         </div>
 

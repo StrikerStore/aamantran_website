@@ -77,11 +77,13 @@ export default function CheckoutClient() {
   const [paying, setPaying] = useState(false);
   const [couponMsg, setCouponMsg] = useState('');
   const [breakup, setBreakup] = useState<PriceBreakup | null>(null);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim());
   const contactDigits = customerContact.replace(/\D/g, '');
   const contactValid = /^[6-9]\d{9}$/.test(contactDigits);
-  const canPay = emailValid && contactValid && !paying;
+  const canPay = emailValid && contactValid && agreeTerms && !paying;
 
   useEffect(() => {
     if (!slug) return;
@@ -156,6 +158,10 @@ export default function CheckoutClient() {
       alert('Please enter a valid email and 10-digit mobile number.');
       return;
     }
+    if (!agreeTerms) {
+      alert('Please accept the Terms of Service and Privacy Policy to continue.');
+      return;
+    }
     setPaying(true);
     try {
       const orderRes = await fetch(`${API}/api/checkout/order`, {
@@ -166,6 +172,8 @@ export default function CheckoutClient() {
           couponCode:      appliedCoupon || undefined,
           customerEmail:   customerEmail.trim(),
           customerContact: contactDigits,
+          consent:         agreeTerms,
+          marketingOptIn,
         }),
       });
       const orderData = await orderRes.json();
@@ -263,6 +271,32 @@ export default function CheckoutClient() {
           <button type="button" onClick={applyCoupon}>Apply</button>
         </div>
         {couponMsg && <p className="checkout-coupon-msg">{couponMsg}</p>}
+
+        <div style={{ marginTop: 16, display: 'grid', gap: 8, fontSize: '0.82rem', color: 'var(--text-subtle, #8a7a6f)', textAlign: 'left' }}>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={agreeTerms}
+              onChange={e => setAgreeTerms(e.target.checked)}
+              style={{ marginTop: 2, flexShrink: 0 }}
+            />
+            <span>
+              I am 18 or older and agree to the{' '}
+              <Link href="/terms" target="_blank" style={{ textDecoration: 'underline', color: 'inherit' }}>Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" target="_blank" style={{ textDecoration: 'underline', color: 'inherit' }}>Privacy Policy</Link>.
+            </span>
+          </label>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={marketingOptIn}
+              onChange={e => setMarketingOptIn(e.target.checked)}
+              style={{ marginTop: 2, flexShrink: 0 }}
+            />
+            <span>Email me helpful reminders and offers if I don&apos;t finish my order. (optional)</span>
+          </label>
+        </div>
 
         <button className="checkout-pay-btn" type="button" onClick={handlePayNow} disabled={!canPay}>
           {paying

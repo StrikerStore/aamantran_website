@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import './globals.css';
 import './extra.css';
 import Nav from '@/components/Nav';
@@ -9,6 +8,7 @@ import ScrollToTopButton from '@/components/ScrollToTopButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import PixelTracker from '@/components/PixelTracker';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
+import CookieConsent from '@/components/CookieConsent';
 import JsonLd from '@/components/JsonLd';
 import { getInstagramHandle, getYouTubeHandle } from '@/lib/publicEnv';
 import { CONTACT_EMAIL, DEFAULT_OG_IMAGE, SITE_NAME, SITE_TAGLINE, SITE_URL, WHATSAPP_NUMBER } from '@/lib/seo';
@@ -102,12 +102,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ScrollToTopButton />
         <WhatsAppButton />
         <Footer />
-        <Script src="/meta-pixel.js" strategy="beforeInteractive" />
-        <noscript>
-          <img height="1" width="1" style={{display:'none'}}
-            src="https://www.facebook.com/tr?id=1508326357602212&ev=PageView&noscript=1"
-          />
-        </noscript>
+        {/* Meta Pixel loads only after consent — see privacy policy §14 */}
+        <CookieConsent />
       </body>
     </html>
   );

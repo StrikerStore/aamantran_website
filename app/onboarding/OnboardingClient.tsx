@@ -274,6 +274,12 @@ function OnboardingContent() {
               {submitting ? 'Registering…' : isLinkedFlow ? 'Link to My Account' : 'Create Account'}
             </button>
 
+            <p className="onboarding-help" style={{ fontSize: '0.78rem' }}>
+              By {isLinkedFlow ? 'linking this purchase' : 'creating an account'} you agree to our{' '}
+              <Link href="/terms" target="_blank">Terms of Service</Link> and{' '}
+              <Link href="/privacy" target="_blank">Privacy Policy</Link>.
+            </p>
+
             <p className="onboarding-help">
               Already registered? <Link href={USER_DASHBOARD_URL}>Go to User Dashboard</Link>
             </p>

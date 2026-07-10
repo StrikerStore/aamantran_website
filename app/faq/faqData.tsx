@@ -70,8 +70,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       { q: 'Does the invitation work on all devices?', a: "Yes. Every invitation is fully responsive and works beautifully on all smartphones, tablets, and desktops — Android, iOS, Windows, Mac." },
       {
         q: 'Is my guest data safe?',
-        a: <span>Your guest data belongs to you. We never share, sell, or use it for marketing. Guest RSVP data is automatically deleted 90 days after your event date. Read more in our <Link href="/privacy">Privacy Policy</Link>.</span>,
-        aText: 'Your guest data belongs to you. We never share, sell, or use it for marketing. Guest RSVP data is automatically deleted 90 days after your event date. Read more in our Privacy Policy.',
+        a: <span>Your guest data belongs to you. We never share, sell, or use it for marketing. Guest and RSVP data is automatically deleted 90 days after your invitation expires — we email you 48 hours beforehand so you can export it first. Read more in our <Link href="/privacy">Privacy Policy</Link>.</span>,
+        aText: 'Your guest data belongs to you. We never share, sell, or use it for marketing. Guest and RSVP data is automatically deleted 90 days after your invitation expires — we email you 48 hours beforehand so you can export it first. Read more in our Privacy Policy.',
       },
     ],
   },

@@ -19,10 +19,11 @@ export default function TermsPage() {
 
       <main className="page-body">
         <div className="prose">
-          <span className="last-updated">Last updated: 5 April 2026</span>
+          <span className="last-updated">Last updated: 8 July 2026</span>
 
           <h2>1. Acceptance of terms</h2>
-          <p><strong>Aamantran</strong> is a brand under <strong>PLEXZUU</strong>. By accessing or using Aamantran&apos;s services, you agree to be bound by these Terms of Service. If you do not agree, please do not use our platform.</p>
+          <p><strong>Aamantran</strong> is a brand under <strong>PLEXZUU</strong>. By accessing or using Aamantran&apos;s services, you agree to be bound by these Terms of Service and consent to the processing of your personal data as described in our <Link href="/privacy">Privacy Policy</Link>. If you do not agree, please do not use our platform.</p>
+          <p><strong>Eligibility:</strong> You must be at least 18 years of age to purchase an invitation or create an account. By using Aamantran, you represent that you are 18 or older.</p>
 
           <h2>2. What we provide</h2>
           <p>Aamantran is a digital wedding invitation platform that allows couples to create, customise, and share digital invitations and manage RSVPs from their guests. <strong>All purchases are for digital e-invitations only.</strong> We do not print, ship, or deliver any physical products (including printed cards, paper invitations, or merchandise).</p>
@@ -41,7 +42,7 @@ export default function TermsPage() {
           <p>All payments are processed securely via PayU or UPI. Prices are shown in Indian Rupees (₹) and include applicable taxes. By completing a purchase, you authorise the charge for your <strong>digital e-invitation</strong> and related online services. <strong>No physical product is sold or delivered.</strong> See our <Link href="/refund">Refund Policy</Link> for cancellation terms.</p>
 
           <h2>5. Content you provide</h2>
-          <p>You retain ownership of all content you provide — names, photos, venue details, and guest information. By providing this content, you grant us a limited licence to use it solely for the purpose of creating and operating your invitation. You confirm that you have the right to use all photos and content you provide.</p>
+          <p>You retain ownership of all content you provide — names, photos, venue details, and guest information. By providing this content, you grant us a limited licence to use it solely for the purpose of creating and operating your invitation. You confirm that you have the right to use all photos and content you provide, and that you are entitled to share the guest details you upload for the purpose of managing your event. Guest data is processed and retained as described in our <Link href="/privacy">Privacy Policy</Link>.</p>
 
           <h2>6. Prohibited uses</h2>
           <p>You may not use Aamantran to:</p>
