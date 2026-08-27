@@ -18,6 +18,18 @@ export function getCoupleDashboardUrl(): string {
   return process.env.NODE_ENV === 'production' ? PROD_APP : 'http://localhost:3001';
 }
 
+/**
+ * Meta (Facebook) Pixel ID. Set NEXT_PUBLIC_META_PIXEL_ID on Railway so the
+ * pixel can be swapped without a code change (e.g. when moving ad accounts).
+ * Returns '' when unconfigured — CookieConsent then skips loading the pixel
+ * entirely rather than initialising a dead ID.
+ */
+const PROD_META_PIXEL_ID = '1582625776865803';
+
+export function getMetaPixelId(): string {
+  return process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim() || PROD_META_PIXEL_ID;
+}
+
 export function getInstagramHandle(): string {
   return process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE?.trim() ?? 'aamantran_4u';
 }

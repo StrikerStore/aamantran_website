@@ -179,15 +179,9 @@ export default function CheckoutClient() {
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData?.message || 'Unable to start checkout');
 
-      if (typeof window !== 'undefined' && (window as any).fbq) {
-        (window as any).fbq('track', 'Purchase', {
-          value: (breakup?.finalAmount ?? 0) / 100,
-          currency: 'INR',
-          content_ids: [slug],
-          content_name: template.name,
-          content_type: 'product',
-        });
-      }
+      // NOTE: the Meta `Purchase` event is deliberately NOT fired here — at this
+      // point the order only exists as `pending` and the visitor has not paid yet.
+      // It fires on /onboarding, which PayU only reaches after a verified payment.
 
       if (DUMMY_PAYMENT_MODE) {
         const mockRes = await fetch(`${API}/api/checkout/mock-success`, {
@@ -199,7 +193,7 @@ export default function CheckoutClient() {
           const mockData = await mockRes.json().catch(() => ({}));
           throw new Error(mockData?.message || 'Mock payment failed');
         }
-        router.push(`/onboarding?paymentId=${encodeURIComponent(orderData.paymentId)}&slug=${encodeURIComponent(slug)}&template=${encodeURIComponent(template.name)}`);
+        router.push(`/onboarding?paymentId=${encodeURIComponent(orderData.paymentId)}&slug=${encodeURIComponent(slug)}&template=${encodeURIComponent(template.name)}&amount=${breakup?.finalAmount ?? 0}`);
         return;
       }
 

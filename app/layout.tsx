@@ -79,7 +79,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <meta name="facebook-domain-verification" content="m8thmetutgvygnesnqx172k5kcka64" />
+        {/*
+          Meta domain verification: intentionally absent. aamantran.online is still
+          claimed by our previous (permanently suspended) business portfolio, so it
+          cannot be verified under the current one. Verification only gates Aggregated
+          Event Measurement — ads and the Pixel run fine without it. If the domain is
+          ever released, or we move to a new root domain, re-add:
+            <meta name="facebook-domain-verification" content="..." />
+        */}
         {/* Favicons: explicit links so the tab icon is reliable (metadata + app/favicon.ico can be cached oddly in dev). */}
         <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />

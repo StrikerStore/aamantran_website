@@ -28,6 +28,7 @@ function OnboardingContent() {
   const slug        = params.get('slug') || '';
   const templateName = params.get('template') || 'your selected template';
   const orderId     = params.get('orderId') || '';
+  const amountPaise = Number(params.get('amount') || 0);
 
   // Field state
   const [email,    setEmail]    = useState('');
@@ -48,8 +49,44 @@ function OnboardingContent() {
   // Landing here means PayU redirected after a successful payment — record the
   // purchase once per payment (deduped across reloads within the browser session).
   useEffect(() => {
-    if (paymentId) trackOnce(`purchase_${paymentId}`, 'purchase', { slug, orderId });
-  }, [paymentId, slug, orderId]);
+    if (!paymentId) return;
+    trackOnce(`purchase_${paymentId}`, 'purchase', { slug, orderId });
+
+    // Meta Pixel Purchase. Fired here rather than at checkout so it only counts
+    // payments PayU actually confirmed. Tagged with eventID so Meta dedupes on
+    // its side too (and can match a future Conversions API event).
+    const key = `aam_fbq_purchase_${paymentId}`;
+    try {
+      if (sessionStorage.getItem(key)) return; // already sent this payment
+    } catch {
+      // storage blocked — fall through and send anyway
+    }
+
+    // The pixel is injected by the consent gate in the layout, whose effect runs
+    // *after* this one, so fbq may not exist yet. Retry briefly, and only mark
+    // the event as sent once it has actually gone out.
+    let attempts = 0;
+    const send = () => {
+      const fbq = (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq;
+      if (!fbq) return false;
+      fbq('track', 'Purchase', {
+        value: amountPaise / 100,
+        currency: 'INR',
+        content_ids: [slug],
+        content_name: templateName,
+        content_type: 'product',
+      }, { eventID: paymentId });
+      try { sessionStorage.setItem(key, '1'); } catch { /* storage blocked */ }
+      return true;
+    };
+
+    if (send()) return;
+    const timer = setInterval(() => {
+      // Give up after ~2s — consent was likely declined, so no pixel will load.
+      if (send() || ++attempts >= 20) clearInterval(timer);
+    }, 100);
+    return () => clearInterval(timer);
+  }, [paymentId, slug, orderId, amountPaise, templateName]);
 
   // ── Email lookup ─────────────────────────────────────────────────────
   const lookupEmail = useCallback(async (raw: string) => {

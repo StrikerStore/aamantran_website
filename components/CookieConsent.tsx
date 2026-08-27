@@ -2,6 +2,9 @@
 
 import { useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import { getMetaPixelId } from '@/lib/publicEnv';
+
+const META_PIXEL_ID = getMetaPixelId();
 
 const CONSENT_KEY = 'aamantran-cookie-consent'; // 'accepted' | 'declined'
 const CHANGE_EVENT = 'aamantran:cookie-consent-change';
@@ -37,17 +40,42 @@ function getServerSnapshot() {
 
 /** Load the Meta Pixel exactly once, only after explicit consent. */
 function loadMetaPixel() {
+  if (!META_PIXEL_ID) return; // no pixel configured — nothing to load
   if (document.getElementById('meta-pixel-script')) return;
+
+  const w = window as unknown as Record<string, unknown>;
+  if (w.fbq) return;
+
+  // Standard Meta bootstrap stub: queues calls until fbevents.js has loaded,
+  // so the init/PageView below are safe to fire immediately.
+  type Fbq = {
+    (...args: unknown[]): void;
+    callMethod?: (...args: unknown[]) => void;
+    queue: unknown[][];
+    push: unknown;
+    loaded: boolean;
+    version: string;
+  };
+  const n = function (...args: unknown[]) {
+    if (n.callMethod) n.callMethod(...args);
+    else n.queue.push(args);
+  } as Fbq;
+  n.queue = [];
+  n.push = n;
+  n.loaded = true;
+  n.version = '2.0';
+  w.fbq = n;
+  if (!w._fbq) w._fbq = n;
+
   const s = document.createElement('script');
   s.id = 'meta-pixel-script';
-  s.src = '/meta-pixel.js';
+  s.src = 'https://connect.facebook.net/en_US/fbevents.js';
   s.async = true;
-  // meta-pixel.js only runs init; fire the first PageView ourselves
-  // (PixelTracker handles subsequent route changes).
-  s.onload = () => {
-    (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq?.('track', 'PageView');
-  };
   document.head.appendChild(s);
+
+  // Fire the first PageView ourselves (PixelTracker handles route changes).
+  n('init', META_PIXEL_ID);
+  n('track', 'PageView');
 }
 
 /**
