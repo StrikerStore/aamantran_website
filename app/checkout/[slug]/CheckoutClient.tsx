@@ -29,6 +29,9 @@ interface OfferCoupon {
   label: string;
   condition: string;
   expiresAt: string | null;
+  eligible: boolean;
+  /** Why this offer cannot be used yet, e.g. "Add INR 1,999 more to unlock this offer". */
+  unlockMessage: string | null;
 }
 
 interface PriceBreakup {
@@ -306,23 +309,28 @@ export default function CheckoutClient() {
 
         {offers.length > 0 && (
           <div className="checkout-offers">
-            <p className="checkout-offers-title">Available offers</p>
+            <p className="checkout-offers-title">Offers</p>
             {offers.map(o => {
-              const applied = appliedCoupon === o.code;
+              const locked = !o.eligible;
+              const applied = !locked && appliedCoupon === o.code;
               return (
-                <div key={o.code} className={`checkout-offer${applied ? ' is-applied' : ''}`}>
+                <div
+                  key={o.code}
+                  className={`checkout-offer${applied ? ' is-applied' : ''}${locked ? ' is-locked' : ''}`}
+                >
                   <div className="checkout-offer-main">
                     <span className="checkout-offer-code">{o.code}</span>
                     <span className="checkout-offer-label">{o.label}</span>
                   </div>
                   {o.condition && <p className="checkout-offer-cond">{o.condition}</p>}
+                  {locked && o.unlockMessage && <p className="checkout-offer-unlock">{o.unlockMessage}</p>}
                   <button
                     type="button"
                     className="checkout-offer-btn"
-                    disabled={applied}
+                    disabled={locked || applied}
                     onClick={() => applyOffer(o.code)}
                   >
-                    {applied ? 'Applied' : `Save INR ${rupees(o.discountAmount)}`}
+                    {locked ? 'Locked' : applied ? 'Applied' : `Save INR ${rupees(o.discountAmount)}`}
                   </button>
                 </div>
               );
