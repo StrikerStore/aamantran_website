@@ -22,6 +22,15 @@ interface TemplateData {
   thumbnailUrl: string | null;
 }
 
+interface OfferCoupon {
+  code: string;
+  discountPercent: number;
+  discountAmount: number;
+  label: string;
+  condition: string;
+  expiresAt: string | null;
+}
+
 interface PriceBreakup {
   baseAmount: number;
   discountAmount: number;
@@ -79,6 +88,7 @@ export default function CheckoutClient() {
   const [breakup, setBreakup] = useState<PriceBreakup | null>(null);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [offers, setOffers] = useState<OfferCoupon[]>([]);
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim());
   const contactDigits = customerContact.replace(/\D/g, '');
@@ -109,8 +119,36 @@ export default function CheckoutClient() {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  function applyCoupon() {
-    const code = couponCode.trim().toUpperCase();
+  // Offers are advisory: the authoritative price always comes from
+  // /coupon-preview when a code is applied, so a failure here is silent.
+  useEffect(() => {
+    if (!slug) return;
+    const email = emailValid ? customerEmail.trim() : '';
+    const controller = new AbortController();
+
+    // Debounced because this re-runs while the customer is still typing.
+    const timer = setTimeout(() => {
+      const qs = new URLSearchParams({ templateSlug: String(slug) });
+      if (email) qs.set('customerEmail', email);
+      fetch(`${API}/api/checkout/coupons?${qs.toString()}`, { signal: controller.signal })
+        .then(r => (r.ok ? r.json() : null))
+        .then(d => setOffers(Array.isArray(d?.coupons) ? d.coupons : []))
+        .catch(() => { /* offers are optional; the code input still works */ });
+    }, email ? 400 : 0);
+
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [slug, emailValid, customerEmail]);
+
+  function applyOffer(code: string) {
+    setCouponCode(code);
+    applyCoupon(code);
+  }
+
+  function applyCoupon(overrideCode?: string) {
+    // Only trust a real string: passing this as a bare event handler would
+    // otherwise hand us a MouseEvent.
+    const raw = typeof overrideCode === 'string' ? overrideCode : couponCode;
+    const code = raw.trim().toUpperCase();
     if (!code) {
       setAppliedCoupon('');
       setCouponMsg('');
@@ -262,9 +300,35 @@ export default function CheckoutClient() {
             value={couponCode}
             onChange={e => setCouponCode(e.target.value)}
           />
-          <button type="button" onClick={applyCoupon}>Apply</button>
+          <button type="button" onClick={() => applyCoupon()}>Apply</button>
         </div>
         {couponMsg && <p className="checkout-coupon-msg">{couponMsg}</p>}
+
+        {offers.length > 0 && (
+          <div className="checkout-offers">
+            <p className="checkout-offers-title">Available offers</p>
+            {offers.map(o => {
+              const applied = appliedCoupon === o.code;
+              return (
+                <div key={o.code} className={`checkout-offer${applied ? ' is-applied' : ''}`}>
+                  <div className="checkout-offer-main">
+                    <span className="checkout-offer-code">{o.code}</span>
+                    <span className="checkout-offer-label">{o.label}</span>
+                  </div>
+                  {o.condition && <p className="checkout-offer-cond">{o.condition}</p>}
+                  <button
+                    type="button"
+                    className="checkout-offer-btn"
+                    disabled={applied}
+                    onClick={() => applyOffer(o.code)}
+                  >
+                    {applied ? 'Applied' : `Save INR ${rupees(o.discountAmount)}`}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         <div style={{ marginTop: 16, display: 'grid', gap: 8, fontSize: '0.82rem', color: 'var(--text-subtle, #8a7a6f)', textAlign: 'left' }}>
           <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>

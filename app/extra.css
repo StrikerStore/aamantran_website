@@ -668,6 +668,66 @@
   cursor: pointer;
 }
 .checkout-coupon-msg { font-size: 0.82rem; color: var(--text-light); margin-bottom: 14px; }
+
+/* Available offers - the coupons a customer can actually use on this order.
+   Rendered only when the list is non-empty, so there is no empty state. */
+.checkout-offers {
+  border: 1px dashed var(--border-soft);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  display: grid;
+  gap: 10px;
+}
+.checkout-offers-title {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+.checkout-offer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "main btn" "cond btn";
+  align-items: center;
+  gap: 2px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  background: var(--white);
+}
+.checkout-offer.is-applied { border-color: var(--burgundy); background: #6e1f2e0a; }
+.checkout-offer-main { grid-area: main; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.checkout-offer-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--burgundy);
+}
+.checkout-offer-label { font-size: 0.86rem; color: var(--text-dark); font-weight: 600; }
+.checkout-offer-cond { grid-area: cond; margin: 0; font-size: 0.74rem; color: var(--text-subtle); }
+.checkout-offer-btn {
+  grid-area: btn;
+  border: 1px solid var(--burgundy);
+  color: var(--burgundy);
+  background: transparent;
+  border-radius: var(--radius-pill);
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.checkout-offer-btn:hover:not(:disabled) { background: var(--burgundy); color: var(--white); }
+.checkout-offer-btn:disabled { opacity: 0.6; cursor: default; }
+
+@media (max-width: 520px) {
+  .checkout-offer { grid-template-columns: 1fr; grid-template-areas: "main" "cond" "btn"; gap: 6px; }
+  .checkout-offer-btn { justify-self: stretch; text-align: center; }
+}
 .checkout-error-msg { font-size: 0.82rem; color: #b42318; margin: 2px 2px 10px; }
 .checkout-pay-btn {
   width: 100%;
