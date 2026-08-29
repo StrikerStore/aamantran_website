@@ -310,31 +310,33 @@ export default function CheckoutClient() {
         {offers.length > 0 && (
           <div className="checkout-offers">
             <p className="checkout-offers-title">Offers</p>
-            {offers.map(o => {
-              const locked = !o.eligible;
-              const applied = !locked && appliedCoupon === o.code;
-              return (
-                <div
-                  key={o.code}
-                  className={`checkout-offer${applied ? ' is-applied' : ''}${locked ? ' is-locked' : ''}`}
-                >
-                  <div className="checkout-offer-main">
-                    <span className="checkout-offer-code">{o.code}</span>
-                    <span className="checkout-offer-label">{o.label}</span>
-                  </div>
-                  {o.condition && <p className="checkout-offer-cond">{o.condition}</p>}
-                  {locked && o.unlockMessage && <p className="checkout-offer-unlock">{o.unlockMessage}</p>}
-                  <button
-                    type="button"
-                    className="checkout-offer-btn"
-                    disabled={locked || applied}
-                    onClick={() => applyOffer(o.code)}
+            <div className="checkout-offers-list">
+              {offers.map(o => {
+                const locked = !o.eligible;
+                const applied = !locked && appliedCoupon === o.code;
+                return (
+                  <div
+                    key={o.code}
+                    className={`checkout-offer${applied ? ' is-applied' : ''}${locked ? ' is-locked' : ''}`}
                   >
-                    {locked ? 'Locked' : applied ? 'Applied' : `Save INR ${rupees(o.discountAmount)}`}
-                  </button>
-                </div>
-              );
-            })}
+                    <div className="checkout-offer-main">
+                      <span className="checkout-offer-code">{o.code}</span>
+                      <span className="checkout-offer-label">{o.label}</span>
+                    </div>
+                    {o.condition && <p className="checkout-offer-cond">{o.condition}</p>}
+                    {locked && o.unlockMessage && <p className="checkout-offer-unlock">{o.unlockMessage}</p>}
+                    <button
+                      type="button"
+                      className="checkout-offer-btn"
+                      disabled={locked || applied}
+                      onClick={() => applyOffer(o.code)}
+                    >
+                      {locked ? 'Locked' : applied ? 'Applied' : `Save INR ${rupees(o.discountAmount)}`}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

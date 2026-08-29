@@ -669,9 +669,11 @@
 }
 .checkout-coupon-msg { font-size: 0.82rem; color: var(--text-light); margin-bottom: 14px; }
 
-/* Available offers - the coupons a customer can actually use on this order.
+/* Available offers - every coupon an admin advertises, usable ones first.
    Rendered only when the list is non-empty, so there is no empty state. */
 .checkout-offers {
+  /* Height of one card, so the list below can show exactly two of them. */
+  --checkout-offer-slot: 6rem;
   border: 1px dashed var(--border-soft);
   border-radius: 12px;
   padding: 12px 14px;
@@ -686,6 +688,23 @@
   text-transform: uppercase;
   color: var(--text-subtle);
 }
+/* Two cards stay in view and the rest are scrolled to, so a long campaign
+   cannot push the pay button off the screen. */
+.checkout-offers-list {
+  display: grid;
+  gap: 10px;
+  max-height: calc(2 * var(--checkout-offer-slot) + 10px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  scroll-snap-type: y proximity;
+}
+.checkout-offers-list::-webkit-scrollbar { width: 6px; }
+.checkout-offers-list::-webkit-scrollbar-thumb {
+  background: var(--border-soft);
+  border-radius: var(--radius-pill);
+}
 .checkout-offer {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -696,6 +715,7 @@
   border: 1px solid var(--border-soft);
   border-radius: 10px;
   background: var(--white);
+  scroll-snap-align: start;
 }
 .checkout-offer.is-applied { border-color: var(--burgundy); background: #6e1f2e0a; }
 .checkout-offer.is-locked { opacity: 0.55; background: var(--cream); }
@@ -735,6 +755,9 @@
 .checkout-offer-btn:disabled { opacity: 0.6; cursor: default; }
 
 @media (max-width: 520px) {
+  /* The card stacks into four rows here, so a slot has to be much taller for
+     two of them to sit in the scroll area. */
+  .checkout-offers { --checkout-offer-slot: 9.5rem; }
   .checkout-offer { grid-template-columns: 1fr; grid-template-areas: "main" "cond" "unlock" "btn"; gap: 6px; }
   .checkout-offer-btn { justify-self: stretch; text-align: center; }
 }
