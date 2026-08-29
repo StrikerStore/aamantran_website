@@ -24,7 +24,7 @@ export function getCoupleDashboardUrl(): string {
  * Returns '' when unconfigured — CookieConsent then skips loading the pixel
  * entirely rather than initialising a dead ID.
  */
-const PROD_META_PIXEL_ID = '1582625776865803';
+const PROD_META_PIXEL_ID = '1106272148422147';
 
 export function getMetaPixelId(): string {
   return process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim() || PROD_META_PIXEL_ID;
