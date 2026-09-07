@@ -3,7 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-export default function StickyBar() {
+/**
+ * `startingPrice` is passed in rather than fetched here: this is a client
+ * component, and the figure is already resolved server-side for the page
+ * metadata, so re-fetching it in the browser would be a second round trip for a
+ * value that is effectively static.
+ */
+export default function StickyBar({ startingPrice }: { startingPrice: string }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -17,7 +23,7 @@ export default function StickyBar() {
 
   return (
     <div className={`sticky-bar${visible ? ' visible' : ''}`} id="sticky-bar">
-      <p>Beautiful digital invitations <strong>starting at ₹999</strong></p>
+      <p>Beautiful digital invitations <strong>starting at {startingPrice}</strong></p>
       <Link href="/templates" className="btn-sticky">Browse templates →</Link>
     </div>
   );

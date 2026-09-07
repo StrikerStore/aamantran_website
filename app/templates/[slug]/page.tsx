@@ -8,6 +8,7 @@ import JsonLd from '@/components/JsonLd';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
 import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
+import { CURRENCY, IS_INTL, formatMoney, formatInr, formatUsd, priceFor, originalPriceFor, STOREFRONT } from '@/lib/storefront';
 
 const API = getPublicApiUrl();
 
@@ -19,6 +20,9 @@ interface Template {
   community: string;
   bestFor: string; languages: string;
   price: number; originalPrice: number | null;
+  // Derived server-side from the INR price; both currencies ship together
+  // because this page is statically cached and cannot pick one per visitor.
+  priceUsd: number | null; originalPriceUsd: number | null;
   aboutText: string; buyerCount: number;
   avgRating: string | number | null; reviewCount: number;
 }
@@ -34,6 +38,7 @@ interface RelatedTemplate {
   mobileThumbnailUrl?: string | null;
   community: string;
   price: number;
+  priceUsd: number | null;
 }
 
 function rupees(paise: number) {
@@ -181,8 +186,17 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
     getRelatedTemplates(t.community, slug),
   ]);
 
-  const discountPct = t.originalPrice
-    ? Math.round((1 - t.price / t.originalPrice) * 100)
+  // Computed from the pair actually being shown, never mixing a dollar price
+  // with a rupee original.
+  //
+  // The percentage does NOT match across storefronts, and an earlier version of
+  // this comment wrongly said it did: price and MRP each round up to their own
+  // $10 tier, which breaks the ratio. Royal reads 50% off in India and 47% off
+  // here. Both are real derived prices; the difference is accepted.
+  const shownPrice    = priceFor(t);
+  const shownOriginal = originalPriceFor(t);
+  const discountPct = shownPrice != null && shownOriginal
+    ? Math.round((1 - shownPrice / shownOriginal) * 100)
     : null;
 
   const rating    = Number(t.avgRating ?? 0);
@@ -195,7 +209,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
   const mobileThumbSrc = t.mobileThumbnailUrl
     ? resolveBackendPublicUrl(t.mobileThumbnailUrl)
     : desktopThumbSrc;
-  const demoUrl   = `${API}/demo/${t.slug}`;
+  const demoUrl   = `${API}/demo/${t.slug}?storefront=${STOREFRONT}`;
   const useProduct = productReviewsResp.reviews.length > 0;
   const useFeatured = !useProduct && featuredReviewsResp.reviews.length > 0;
   const reviewsToShow = useProduct
@@ -230,8 +244,8 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
     offers: {
       '@type': 'Offer',
       url: pageUrl,
-      priceCurrency: 'INR',
-      price: (t.price / 100).toFixed(2),
+      priceCurrency: CURRENCY,
+      price: ((shownPrice ?? t.price) / 100).toFixed(2),
       availability: 'https://schema.org/InStock',
     },
     ...(rating > 0 && t.reviewCount > 0
@@ -329,13 +343,13 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
 
             {/* Price */}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 24 }}>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 400, color: 'var(--text-dark)' }}>
-                ₹{rupees(t.price)}
+              <span className="product-price-main">
+                {formatMoney(shownPrice ?? t.price)}
               </span>
-              {t.originalPrice && (
+              {shownOriginal && (
                 <>
-                  <span style={{ fontSize: '1rem', color: 'var(--text-subtle)', textDecoration: 'line-through' }}>
-                    ₹{rupees(t.originalPrice)}
+                  <span className="product-price-was">
+                    {formatMoney(shownOriginal)}
                   </span>
                   <span style={{ fontSize: '0.75rem', background: '#e8f5e9', color: '#2e7d32', padding: '3px 8px', borderRadius: 4, fontWeight: 600 }}>
                     {discountPct}% off
@@ -345,8 +359,8 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
             </div>
 
             {/* CTA buttons */}
-            <PixelViewContent slug={slug} price={t.price} name={t.name} />
-            <TemplateCTA slug={slug} demoUrl={demoUrl} price={t.price} name={t.name} />
+            <PixelViewContent slug={slug} price={t.price} priceUsd={t.priceUsd} name={t.name} />
+            <TemplateCTA slug={slug} demoUrl={demoUrl} price={t.price} priceUsd={t.priceUsd} name={t.name} />
             <p className="einv-disclaimer product-einv-disclaimer">
               This is a <strong>digital e-invitation</strong> — you get an online invitation to share with guests.{' '}
               <strong>No physical product</strong> (printed cards or similar) is included or shipped.
@@ -430,7 +444,11 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
                   </div>
                   <div className="product-related-info">
                     <p className="product-related-name">{item.name}</p>
-                    <span className="product-related-price">INR {rupees(item.price)}</span>
+                    <span className="product-related-price">
+                      {CURRENCY} {IS_INTL
+                        ? (item.priceUsd != null ? formatUsd(item.priceUsd) : '—')
+                        : formatInr(item.price)}
+                    </span>
                   </div>
                 </Link>
               ))}

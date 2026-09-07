@@ -11,13 +11,21 @@ import AnalyticsTracker from '@/components/AnalyticsTracker';
 import CookieConsent from '@/components/CookieConsent';
 import JsonLd from '@/components/JsonLd';
 import { getInstagramHandle, getYouTubeHandle } from '@/lib/publicEnv';
-import { CONTACT_EMAIL, DEFAULT_OG_IMAGE, SITE_NAME, SITE_TAGLINE, SITE_URL, WHATSAPP_NUMBER } from '@/lib/seo';
+import { CONTACT_EMAIL, DEFAULT_OG_IMAGE, OG_LOCALE, SITE_NAME, SITE_TAGLINE, SITE_URL, WHATSAPP_NUMBER } from '@/lib/seo';
+import { IS_INTL } from '@/lib/storefront';
+import { getStartingPrice } from '@/lib/startingPrice';
 
 const DEFAULT_TITLE = `${SITE_NAME} — ${SITE_TAGLINE}`;
-const DEFAULT_DESCRIPTION =
-  'Create stunning digital wedding invitations your guests will cherish. WhatsApp-ready, RSVP management, multi-event support. Starting at ₹999.';
+const describe = (from: string) =>
+  `Create stunning digital wedding invitations your guests will cherish. WhatsApp-ready, RSVP management, multi-event support. Starting at ${from}.`;
 
-export const metadata: Metadata = {
+// Async because the "starting at" figure is read from the catalogue rather than
+// hard-coded — a rupee amount baked into the root description would be wrong on
+// the dollar storefront, and a hard-coded dollar one would go stale.
+export async function generateMetadata(): Promise<Metadata> {
+  const startingPrice = await getStartingPrice();
+  const DEFAULT_DESCRIPTION = describe(startingPrice);
+  return {
   metadataBase: new URL(SITE_URL),
   title: { default: DEFAULT_TITLE, template: `%s — ${SITE_NAME}` },
   description: DEFAULT_DESCRIPTION,
@@ -25,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
-    locale: 'en_IN',
+    locale: OG_LOCALE,
     url: '/',
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
@@ -44,7 +52,8 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: '/logo.png', sizes: '180x180', type: 'image/png' }],
   },
-};
+  };
+}
 
 const organizationJsonLd = {
   '@context': 'https://schema.org',
@@ -52,8 +61,9 @@ const organizationJsonLd = {
   name: SITE_NAME,
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
-  description:
-    'Aamantran is a digital wedding invitation platform in India that lets couples create WhatsApp-ready invitation websites with live RSVP tracking, multi-event support, photo galleries and background music — starting at ₹999.',
+  description: IS_INTL
+    ? 'Aamantran is a digital wedding invitation platform that lets couples create WhatsApp-ready invitation websites with live RSVP tracking, multi-event support, photo galleries and background music.'
+    : 'Aamantran is a digital wedding invitation platform in India that lets couples create WhatsApp-ready invitation websites with live RSVP tracking, multi-event support, photo galleries and background music.',
   email: CONTACT_EMAIL,
   contactPoint: {
     '@type': 'ContactPoint',
@@ -75,7 +85,10 @@ const webSiteJsonLd = {
   url: SITE_URL,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Same cached fetch generateMetadata uses, so this is one request per hour,
+  // not one per render.
+  const startingPrice = await getStartingPrice();
   return (
     <html lang="en">
       <head>
@@ -105,7 +118,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AnalyticsTracker />
         <Nav />
         {children}
-        <StickyBar />
+        <StickyBar startingPrice={startingPrice} />
         <ScrollToTopButton />
         <WhatsAppButton />
         <Footer />

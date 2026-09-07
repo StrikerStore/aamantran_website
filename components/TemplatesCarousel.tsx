@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
+import { CURRENCY, IS_INTL, formatInr, formatUsd, STOREFRONT } from '@/lib/storefront';
 
 const API = getPublicApiUrl();
 
@@ -31,6 +32,7 @@ export interface CarouselTemplate {
   mobileThumbnailUrl?: string | null;
   community: string;
   price: number; originalPrice: number | null;
+  priceUsd: number | null; originalPriceUsd: number | null;
   buyerCount?: number;
   bestFor?: string;
 }
@@ -142,7 +144,7 @@ export default function TemplatesCarousel({ initialTemplates }: { initialTemplat
             null;
           const thumbSrc = rawThumb ? resolveBackendPublicUrl(rawThumb) : null;
           const [name1, name2] = DEMO_NAMES[key] ?? ['Sample', 'Couple'];
-          const demoUrl  = `${API}/demo/${s.slug}`;
+          const demoUrl  = `${API}/demo/${s.slug}?storefront=${STOREFRONT}`;
           const productUrl = `/templates/${s.slug}`;
           const checkoutUrl = `/checkout/${s.slug}`;
           const communityLabel = `${s.community.charAt(0).toUpperCase() + s.community.slice(1)} Weddings`;
@@ -167,7 +169,9 @@ export default function TemplatesCarousel({ initialTemplates }: { initialTemplat
                   <div className="tpl-grid-title-row">
                     <p className="tpl-grid-name">{s.name}</p>
                     <Link href={checkoutUrl} className="tpl-grid-price-pill" onClick={e => e.stopPropagation()}>
-                      INR {rupees(s.price)}
+                      {CURRENCY} {IS_INTL
+                        ? (s.priceUsd != null ? formatUsd(s.priceUsd) : '—')
+                        : formatInr(s.price)}
                     </Link>
                   </div>
                   <p className="tpl-grid-desc">{shortDesc}</p>

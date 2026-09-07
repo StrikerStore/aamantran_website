@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
+import { CURRENCY, IS_INTL, formatMoney, formatInr, formatUsd, priceFor, STOREFRONT } from '@/lib/storefront';
 
 const API = getPublicApiUrl();
 
@@ -24,6 +25,7 @@ interface DbTemplate {
   community: string;
   bestFor: string; languages: string;
   price: number; originalPrice: number | null;
+  priceUsd: number | null; originalPriceUsd: number | null;
   buyerCount: number; avgRating: string | number | null;
   releasedAt: string | null;
 }
@@ -86,9 +88,21 @@ export default function TemplatesClient() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
+  // Filter VALUES stay INR paise on both storefronts — they are keys into the
+  // catalogue, not prices — but the LABEL has to read in the currency the
+  // visitor is shopping in.
   const pricePoints = useMemo(() =>
     [...new Set(templates.map(t => t.price))].sort((a, b) => a - b),
   [templates]);
+  const usdByInr = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const t of templates) if (t.priceUsd != null) map.set(t.price, t.priceUsd);
+    return map;
+  }, [templates]);
+  const priceOptionLabel = (paise: number) => {
+    const minor = priceFor({ price: paise, priceUsd: usdByInr.get(paise) ?? null });
+    return minor == null ? formatMoney(paise, 'INR') : formatMoney(minor);
+  };
 
   const eventOptions = useMemo(() => {
     const events = new Set<string>();
@@ -177,7 +191,7 @@ export default function TemplatesClient() {
               <select id="price-filter-mobile" value={price} onChange={e => setPrice(e.target.value)}>
                 <option value="all">All prices</option>
                 {pricePoints.map(v => (
-                  <option key={v} value={String(v)}>₹{rupees(v)}</option>
+                  <option key={v} value={String(v)}>{priceOptionLabel(v)}</option>
                 ))}
               </select>
             </div>
@@ -218,7 +232,7 @@ export default function TemplatesClient() {
               <select id="price-filter" value={price} onChange={e => setPrice(e.target.value)}>
                 <option value="all">All prices</option>
                 {pricePoints.map(v => (
-                  <option key={v} value={String(v)}>₹{rupees(v)}</option>
+                  <option key={v} value={String(v)}>{priceOptionLabel(v)}</option>
                 ))}
               </select>
             </div>
@@ -271,7 +285,7 @@ export default function TemplatesClient() {
                     t.thumbnailUrl ||
                     null;
                   const thumbSrc = rawThumb ? resolveBackendPublicUrl(rawThumb) : null;
-                  const demoUrl  = `${API}/demo/${t.slug}`;
+                  const demoUrl  = `${API}/demo/${t.slug}?storefront=${STOREFRONT}`;
                   const productUrl = `/templates/${t.slug}`;
                   const checkoutUrl = `/checkout/${t.slug}`;
                   const communityLabel = `${t.community.charAt(0).toUpperCase() + t.community.slice(1)} Weddings`;
@@ -300,7 +314,11 @@ export default function TemplatesClient() {
                         <div className="tpl-grid-title-row">
                           <p className="tpl-grid-name">{t.name}</p>
                           <Link href={checkoutUrl} className="tpl-grid-price-pill" onClick={e => e.stopPropagation()}>
-                            INR {rupees(t.price)}
+                            {/* Currency CODE then a bare number, as this pill
+                                has always read -- not a symbol. */}
+                            {CURRENCY} {IS_INTL
+                              ? (t.priceUsd != null ? formatUsd(t.priceUsd) : '—')
+                              : formatInr(t.price)}
                           </Link>
                         </div>
                         <p className="tpl-grid-desc">{shortDesc}</p>

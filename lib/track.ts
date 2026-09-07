@@ -1,4 +1,5 @@
 import { getPublicApiUrl } from './publicEnv';
+import { STOREFRONT } from './storefront';
 
 /**
  * First-party analytics beacon (anonymous — no cookies, no PII).
@@ -48,6 +49,10 @@ export function track(type: TrackEventType, meta?: Record<string, unknown>) {
     sessionId,
     type,
     path: window.location.pathname,
+    // In the BODY, not a header: this is sent as text/plain precisely so it
+    // stays a "simple" CORS request, and a custom header would force a
+    // preflight that sendBeacon cannot make.
+    storefront: STOREFRONT,
     // Attribution fields are only persisted on the session's first event
     referrer: document.referrer || undefined,
     utm: {

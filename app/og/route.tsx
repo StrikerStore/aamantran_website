@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { getStartingPrice } from '@/lib/startingPrice';
 
 export const dynamic = 'force-static';
 
@@ -8,6 +9,8 @@ const GOLD = '#c9922a';
 
 /** Branded 1200×630 Open Graph card used as the default share image site-wide. */
 export async function GET() {
+  // force-static: resolved once at build, baked into the image.
+  const startingPrice = await getStartingPrice();
   return new ImageResponse(
     (
       <div
@@ -45,7 +48,7 @@ export async function GET() {
             Your love story, beautifully told.
           </div>
           <div style={{ display: 'flex', gap: 16, marginTop: 44 }}>
-            {['From ₹999', 'WhatsApp-ready', 'Live RSVP tracking'].map(label => (
+            {[`From ${startingPrice}`, 'WhatsApp-ready', 'Live RSVP tracking'].map(label => (
               <div
                 key={label}
                 style={{

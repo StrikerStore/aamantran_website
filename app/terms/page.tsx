@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { IS_INTL } from '@/lib/storefront';
 import { buildPageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
@@ -39,7 +40,9 @@ export default function TermsPage() {
           <p>You are responsible for maintaining the security of your account credentials and for all activity that occurs under your account. Notify us immediately of any unauthorised access at <a href="mailto:aamantran@plexzuu.com">aamantran@plexzuu.com</a>.</p>
 
           <h2>4. Payments</h2>
-          <p>All payments are processed securely via PayU or UPI. Prices are shown in Indian Rupees (₹) and include applicable taxes. By completing a purchase, you authorise the charge for your <strong>digital e-invitation</strong> and related online services. <strong>No physical product is sold or delivered.</strong> See our <Link href="/refund">Refund Policy</Link> for cancellation terms.</p>
+          <p>All payments are processed securely via PayU or UPI. {IS_INTL
+            ? 'Prices are shown in US Dollars ($). As a supply of services to a recipient outside India, these orders are zero-rated and no GST is charged.'
+            : 'Prices are shown in Indian Rupees (₹) exclusive of GST; any applicable GST is added at checkout and shown separately before you pay.'} By completing a purchase, you authorise the charge for your <strong>digital e-invitation</strong> and related online services. <strong>No physical product is sold or delivered.</strong> See our <Link href="/refund">Refund Policy</Link> for cancellation terms.</p>
 
           <h2>5. Content you provide</h2>
           <p>You retain ownership of all content you provide — names, photos, venue details, and guest information. By providing this content, you grant us a limited licence to use it solely for the purpose of creating and operating your invitation. You confirm that you have the right to use all photos and content you provide, and that you are entitled to share the guest details you upload for the purpose of managing your event. Guest data is processed and retained as described in our <Link href="/privacy">Privacy Policy</Link>.</p>

@@ -30,8 +30,21 @@ export function getMetaPixelId(): string {
   return process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim() || PROD_META_PIXEL_ID;
 }
 
+/**
+ * The fallback here is load-bearing, not decoration.
+ *
+ * It previously read `aamantran_4u`, an account that has since been disabled.
+ * aamantran.online never showed it because Railway sets the env var — which is
+ * precisely why it went unnoticed until a second deployment ran without one.
+ * A wrong default is invisible on every environment that overrides it and wrong
+ * on every environment that does not.
+ *
+ * This value also lands in the Organization JSON-LD `sameAs` (app/layout.tsx),
+ * i.e. what search engines are told is the official account, so a stale handle
+ * costs more than a dead footer icon.
+ */
 export function getInstagramHandle(): string {
-  return process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE?.trim() ?? 'aamantran_4u';
+  return process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE?.trim() ?? 'aamantran_online';
 }
 
 export function getYouTubeHandle(): string {

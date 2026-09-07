@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getStartingPrice } from '@/lib/startingPrice';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPublicApiUrl } from '@/lib/publicEnv';
@@ -98,6 +99,7 @@ export default async function BlogPostPage({
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) notFound();
+  const startingPrice = await getStartingPrice();
 
   const coverSrc = resolveBackendPublicUrl(post.coverImageUrl);
   const tags = post.tags?.split(',').map((t) => t.trim()).filter(Boolean) || [];
@@ -173,7 +175,7 @@ export default async function BlogPostPage({
           <div className="blog-cta-banner">
             <h3 className="blog-cta-title">Ready to create your perfect invitation?</h3>
             <p className="blog-cta-text">
-              Browse our beautiful digital wedding invitation templates — WhatsApp-ready, with RSVP tracking, starting at ₹999.
+              Browse our beautiful digital wedding invitation templates — WhatsApp-ready, with RSVP tracking, starting at {startingPrice}.
             </p>
             <Link href="/templates" className="blog-cta-btn">
               Browse Templates →

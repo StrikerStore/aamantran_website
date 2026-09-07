@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getStartingPrice } from '@/lib/startingPrice';
 import Link from 'next/link';
 import { buildPageMetadata } from '@/lib/seo';
 
@@ -8,7 +9,8 @@ export const metadata: Metadata = buildPageMetadata({
   path: '/about',
 });
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const startingPrice = await getStartingPrice();
   return (
     <>
       <section className="page-hero">
@@ -35,7 +37,7 @@ export default function AboutPage() {
         <div className="about-grid">
           <div className="about-text">
             <h2>How <em>Aamantran</em> began</h2>
-            <p>It started at a wedding in Jaipur. Our founders watched a couple spend ₹35,000 on printed cards — cards that guests glanced at once and left on the table. There was no RSVP, no way to know who was coming, and when the venue changed last minute, there was no way to tell anyone.</p>
+            <p>It started at a wedding in Jaipur. Our founders watched a couple spend a small fortune on printed cards — cards that guests glanced at once and left on the table. There was no RSVP, no way to know who was coming, and when the venue changed last minute, there was no way to tell anyone.</p>
             <p>That evening, the question was simple: why doesn&apos;t a better solution exist for Indian weddings? One that&apos;s beautiful enough to feel special, smart enough to handle RSVPs, and affordable enough that every couple can access it.</p>
             <p>Aamantran — which means <em>invitation</em> in Sanskrit — is our answer to that question.</p>
           </div>
@@ -61,7 +63,7 @@ export default function AboutPage() {
             { icon: '❤️', title: 'Personal always', text: "Your dashboard is built for real people, not tech experts. Every field is clearly labelled, every change is instant, and your invitation looks exactly as it should — because you're in full control." },
             { icon: '⚡', title: 'Ready in minutes', text: "Weddings are stressful enough. With Aamantran you can go from sign-up to sharing your live invitation in under 30 minutes — no waiting, no back-and-forth." },
             { icon: '🔒', title: 'Private & secure', text: "Your guest data belongs to you. We never share, sell, or use your information for anything beyond running your invitation. Simple as that." },
-            { icon: '💸', title: 'Genuinely affordable', text: "A beautiful digital invitation shouldn't cost more than a new outfit. Starting at ₹999, we've made sure every couple can access something they're proud of." },
+            { icon: '💸', title: 'Genuinely affordable', text: `A beautiful digital invitation shouldn't cost more than a new outfit. Starting at ${startingPrice}, we've made sure every couple can access something they're proud of.` },
             { icon: '🌱', title: 'Kinder to the planet', text: "Every digital invitation saves trees, reduces waste, and skips the logistics of printing and delivery. Looking beautiful and doing good — that's the goal." },
           ].map(v => (
             <div key={v.title} className="value-card">

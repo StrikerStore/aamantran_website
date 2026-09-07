@@ -1083,3 +1083,102 @@
     gap: 12px;
   }
 }
+
+/* Product page price. Which currency it reads in is decided at build time by
+   NEXT_PUBLIC_STOREFRONT — there is only ever one price in the markup. */
+.product-price-main {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 400;
+  color: var(--text-dark);
+}
+.product-price-was {
+  font-size: 1rem;
+  color: var(--text-subtle);
+  text-decoration: line-through;
+}
+
+/* ── Phone field: country code + number ───────────────────────────────────────
+   The code box is a styled <div> with a transparent native <select> laid over
+   it. A native select renders the selected option's full text when collapsed,
+   so it cannot show "+1" closed and "+1 · United States" in the list — this
+   splits the two: our markup draws the closed state, the browser still owns the
+   dropdown, the mobile OS picker, type-ahead and the accessibility tree.
+
+   Borders and radii are NOT set here; each form supplies them below, because
+   checkout uses pill inputs and onboarding uses 10px ones. */
+.phone-field {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  min-width: 0;
+}
+.phone-field .phone-number {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.phone-cc {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* Wide enough for the longest dial code (+1242) plus the caret. */
+  min-width: 5.25rem;
+  border: 1px solid var(--border-soft);
+  background: var(--white, #fff);
+  font-family: var(--font-body);
+  color: var(--text-dark);
+  cursor: pointer;
+  user-select: none;
+}
+.phone-cc-code {
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.phone-cc-caret {
+  margin-left: auto;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--text-light, #9b8579);
+  flex: 0 0 auto;
+}
+/* Invisible but fully interactive: it covers the box, so a click anywhere on
+   the box opens the real dropdown. Font-size 16px keeps iOS from zooming the
+   page when it takes focus. */
+.phone-cc-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  font-size: 16px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.phone-cc:focus-within {
+  border-color: var(--burgundy);
+  box-shadow: 0 0 0 3px rgba(110, 31, 46, 0.1);
+}
+.phone-cc.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.phone-cc.is-disabled .phone-cc-native { cursor: not-allowed; }
+
+/* Match the surrounding form. Checkout is pill-shaped, onboarding is 10px —
+   the code box has to follow whichever it sits in. */
+.checkout-contact-row .phone-cc {
+  border-radius: var(--radius-pill);
+  padding: 10px 14px;
+}
+.onboarding-form .phone-cc {
+  border-radius: 10px;
+  padding: 10px 12px;
+}

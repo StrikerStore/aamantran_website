@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { IS_INTL } from './storefront';
 
 /**
  * Shared SEO constants + per-page metadata builder.
@@ -6,8 +7,24 @@ import type { Metadata } from 'next';
  * replaces the layout's), so every page builds a complete object via this helper.
  */
 
-export const SITE_URL = 'https://www.aamantran.online';
+/**
+ * This deployment's own origin.
+ *
+ * Env-driven because the same codebase is deployed twice, and this value feeds
+ * `metadataBase`, every canonical, the sitemap and all JSON-LD. Hardcoded, the
+ * global build would canonicalise itself to aamantran.online and Google would
+ * decline to index it as a separate site.
+ *
+ * Written as a literal `process.env.NEXT_PUBLIC_SITE_URL` reference on purpose:
+ * Next inlines NEXT_PUBLIC_* by textual substitution at build time, so reading
+ * it through a variable would yield undefined in the browser bundle.
+ */
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aamantran.online'
+).replace(/\/$/, '');
 export const SITE_NAME = 'Aamantran';
+/** en_IN on the India storefront, en_US on the global one. */
+export const OG_LOCALE = IS_INTL ? 'en_US' : 'en_IN';
 export const SITE_TAGLINE = 'Beautiful Digital Wedding Invitations';
 export const DEFAULT_OG_IMAGE = '/og';
 export const CONTACT_EMAIL = 'aamantran@plexzuu.com';
@@ -46,7 +63,7 @@ export function buildPageMetadata({
     openGraph: {
       type: 'website',
       siteName: SITE_NAME,
-      locale: 'en_IN',
+      locale: OG_LOCALE,
       url: path,
       title: `${title} — ${SITE_NAME}`,
       description,

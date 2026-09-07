@@ -7,6 +7,8 @@ import { useSearchParams } from 'next/navigation';
 
 import { getCoupleDashboardUrl, getPublicApiUrl } from '@/lib/publicEnv';
 import { track, trackOnce } from '@/lib/track';
+import { CURRENCY } from '@/lib/storefront';
+import PhoneField from '@/components/PhoneField';
 
 const API = getPublicApiUrl();
 const USER_DASHBOARD_URL = getCoupleDashboardUrl();
@@ -28,12 +30,18 @@ function OnboardingContent() {
   const slug        = params.get('slug') || '';
   const templateName = params.get('template') || 'your selected template';
   const orderId     = params.get('orderId') || '';
-  const amountPaise = Number(params.get('amount') || 0);
+  // Minor units of `purchaseCurrency` -- paise for INR, cents for USD. Named
+  // Called amountPaise before, which implied rupees on a dollar order.
+  const amountMinor = Number(params.get('amount') || 0);
+  // PayU's success redirect appends the order's currency; fall back to this
+  // deployment's own, which is the same answer in every normal case.
+  const purchaseCurrency = (params.get('currency') || CURRENCY).toUpperCase();
 
   // Field state
   const [email,    setEmail]    = useState('');
   const [username, setUsername] = useState('');
   const [contact,  setContact]  = useState('');
+  const [contactCountryCode, setContactCountryCode] = useState(CURRENCY === 'USD' ? '+1' : '+91');
   const [password, setPassword] = useState('');
 
   // Status state
@@ -70,8 +78,10 @@ function OnboardingContent() {
       const fbq = (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq;
       if (!fbq) return false;
       fbq('track', 'Purchase', {
-        value: amountPaise / 100,
-        currency: 'INR',
+        value: amountMinor / 100,
+        // What the buyer was actually charged in. Reporting a dollar sale as
+        // rupees would misstate every ad metric built on it.
+        currency: purchaseCurrency,
         content_ids: [slug],
         content_name: templateName,
         content_type: 'product',
@@ -86,7 +96,7 @@ function OnboardingContent() {
       if (send() || ++attempts >= 20) clearInterval(timer);
     }, 100);
     return () => clearInterval(timer);
-  }, [paymentId, slug, orderId, amountPaise, templateName]);
+  }, [paymentId, slug, orderId, amountMinor, templateName]);
 
   // ── Email lookup ─────────────────────────────────────────────────────
   const lookupEmail = useCallback(async (raw: string) => {
@@ -174,6 +184,7 @@ function OnboardingContent() {
         username: username.trim(),
         email:    email.trim(),
         contact:  contact.trim(),
+        contactCountryCode,
       };
       if (passwordRequired) body.password = password;
 
@@ -279,11 +290,14 @@ function OnboardingContent() {
             {/* ─── Contact ──────────────────────────────────────────── */}
             <label>
               Contact
-              <input
-                value={contact}
-                onChange={e => setContact(e.target.value)}
-                placeholder="10-digit phone number"
-                autoComplete="tel"
+              <PhoneField
+                countryCode={contactCountryCode}
+                number={contact}
+                placeholder="Phone number"
+                onChange={({ countryCode, number }) => {
+                  setContactCountryCode(countryCode);
+                  setContact(number);
+                }}
               />
             </label>
 

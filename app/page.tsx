@@ -7,6 +7,8 @@ import ScrollReveal from '@/components/ScrollReveal';
 import ReviewsSection, { type ReviewItem } from '@/components/ReviewsSection';
 import InstagramSection from '@/components/InstagramSection';
 import { getPublicApiUrl } from '@/lib/publicEnv';
+import { IS_INTL } from '@/lib/storefront';
+import { getStartingPrice } from '@/lib/startingPrice';
 
 type ReviewsResponse = { reviews: ReviewItem[]; avgRating: number; totalCount: number };
 
@@ -52,6 +54,18 @@ const CHECKLIST_ITEMS = [
   'Personalised design', 'Live RSVP tracking', 'WhatsApp-ready link',
   'Multiple events, one URL', 'Photo gallery & music', 'Guest management',
 ];
+/**
+ * Desktop comparison row labels.
+ *
+ * COUPLED BY POSITION to the cells below: each of the three data columns
+ * hardcodes one sibling <div> per label, in this order. Add, remove or reorder
+ * anything here and you must make the identical change in all three columns, or
+ * every row below the edit shifts and the table starts confidently mislabelling
+ * itself ("Guest updates: ₹10,000–₹40,000").
+ *
+ * The Cost row is dropped on the international storefront — see COMPARISON_ROWS
+ * usage and the three `!IS_INTL` cell guards.
+ */
 const COMPARISON_ROWS = [
   'Cost',
   'Guest updates',
@@ -97,13 +111,20 @@ async function getFeaturedReviews(): Promise<ReviewsResponse> {
 }
 
 export default async function HomePage() {
+  const startingPrice = await getStartingPrice();
   const [featured, fetchedTemplates] = await Promise.all([getFeaturedReviews(), getHomepageTemplates()]);
   // Empty server fetch (API hiccup at revalidate time) → undefined, so the
   // carousels fall back to their own client-side fetch instead of "No templates".
   const homeTemplates = fetchedTemplates.length > 0 ? fetchedTemplates : undefined;
-  const reviewsToShow = featured.reviews.length > 0 ? featured.reviews : FALLBACK_REVIEWS;
+  // One fallback testimonial quotes a rupee saving on printed cards. It is a
+  // customer's own words, so it is not rewritten into dollars — it is simply
+  // withheld on the storefront where that figure means nothing.
+  const fallbackReviews = IS_INTL
+    ? FALLBACK_REVIEWS.filter(r => !r.reviewText?.includes('₹'))
+    : FALLBACK_REVIEWS;
+  const reviewsToShow = featured.reviews.length > 0 ? featured.reviews : fallbackReviews;
   const avgRating = featured.reviews.length > 0 ? featured.avgRating : 5;
-  const totalCount = featured.reviews.length > 0 ? featured.totalCount : FALLBACK_REVIEWS.length;
+  const totalCount = featured.reviews.length > 0 ? featured.totalCount : fallbackReviews.length;
   return (
 <>
       {/* ── HERO ── */}
@@ -230,7 +251,14 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── COMPARISON ── */}
+      {/* ── COMPARISON ──
+          Shown on both storefronts, but the Cost row is dropped
+          internationally. The rupee figures describe the Indian market for
+          printed cards and video invitations; converting them at our markup
+          would assert that printed invitations cost $320-$1,260 abroad, which
+          is an Indian number tripled rather than anything observed overseas.
+          Without that row the table makes no price claim about third parties
+          and the feature comparison still stands on its own. */}
       <section className="comparison-section" id="comparison">
         <div className="container">
           <p className="eyebrow center">Why digital?</p>
@@ -240,14 +268,18 @@ export default async function HomePage() {
             {/* Labels */}
             <div className="comp-col comp-header-col">
               <div className="comp-header-cell"></div>
-              {COMPARISON_ROWS.map(r => (
+              {COMPARISON_ROWS.filter(r => !(IS_INTL && r === 'Cost')).map(r => (
                 <div key={r} className="comp-row-label">{r}</div>
               ))}
             </div>
             {/* Printed */}
             <div className="comp-col comp-paper">
               <div className="comp-col-header paper-header"><span className="comp-icon">🖨️</span><span>Printed cards</span></div>
-              <div className="comp-cell bad">₹10,000–₹40,000</div>
+              {/* Cost row — dropped on the international storefront. Must stay
+                  in lockstep with the COMPARISON_ROWS filter above. */}
+              {!IS_INTL && (
+                <div className="comp-cell bad">₹10,000–₹40,000</div>
+              )}
               <div className="comp-cell bad">✗ None</div>
               <div className="comp-cell bad">✗ Manual calls</div>
               <div className="comp-cell bad">✗ Reprint needed</div>
@@ -258,7 +290,11 @@ export default async function HomePage() {
             {/* Video */}
             <div className="comp-col comp-video">
               <div className="comp-col-header video-header"><span className="comp-icon">🎥</span><span>Video Invitation</span></div>
-              <div className="comp-cell mid">₹4,000–₹5,000</div>
+              {/* Cost row — dropped on the international storefront. Must stay
+                  in lockstep with the COMPARISON_ROWS filter above. */}
+              {!IS_INTL && (
+                <div className="comp-cell mid">₹4,000–₹5,000</div>
+              )}
               <div className="comp-cell bad">✗ None</div>
               <div className="comp-cell bad">✗ None</div>
               <div className="comp-cell mid">~ Re-edit needed, slow</div>
@@ -273,7 +309,11 @@ export default async function HomePage() {
                 <span className="comp-icon">✨</span>
                 <span>Aamantran</span>
               </div>
-              <div className="comp-cell good">From ₹999</div>
+              {/* Cost row — dropped on the international storefront. Must stay
+                  in lockstep with the COMPARISON_ROWS filter above. */}
+              {!IS_INTL && (
+                <div className="comp-cell good">From {startingPrice}</div>
+              )}
               <div className="comp-cell good">✓ Real-time</div>
               <div className="comp-cell good">✓ Live dashboard</div>
               <div className="comp-cell good">✓ Instant</div>
@@ -292,14 +332,14 @@ export default async function HomePage() {
             </div>
             {/* Rows */}
             {[
-              { label: 'Cost',           paper: '₹40K+',   video: '₹5K',   digital: '₹999' },
+              { label: 'Cost',           paper: '₹40K+',   video: '₹5K',   digital: startingPrice },
               { label: 'Guest updates',  paper: '✗',        video: '✗',     digital: '✓' },
               { label: 'RSVP tracking',  paper: '✗',        video: '✗',     digital: '✓' },
               { label: 'Edit anytime',   paper: '✗',        video: '✗',     digital: '✓' },
               { label: 'WhatsApp ready', paper: '✗',        video: '~',     digital: '✓' },
               { label: 'Photos & music', paper: '✗',        video: '~',     digital: '✓' },
               { label: 'Guest mgmt',     paper: '✗',        video: '✗',     digital: '✓' },
-            ].map(row => (
+            ].filter(row => !(IS_INTL && row.label === 'Cost')).map(row => (
               <div key={row.label} className="cmt-row">
                 <div className="cmt-label">{row.label}</div>
                 <div className="cmt-cell bad">{row.paper}</div>
@@ -337,7 +377,7 @@ export default async function HomePage() {
       <section className="final-cta" id="final-cta">
         <div className="container">
           <h2 className="final-h2">Your invitation could be live tonight.</h2>
-          <p className="final-sub">Pick a template, add your details, and share it on WhatsApp — most couples are done in under 30 minutes. One-time payment, from ₹999.</p>
+          <p className="final-sub">Pick a template, add your details, and share it on WhatsApp — most couples are done in under 30 minutes. One-time payment, from {startingPrice}.</p>
           <Link href="/templates" className="btn-primary large">Create your invitation →</Link>
         </div>
       </section>

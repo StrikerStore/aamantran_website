@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
+import Price from '@/components/Price';
 
 const API = getPublicApiUrl();
 
@@ -22,11 +23,12 @@ interface DbTemplate {
   mobileThumbnailUrl?: string | null;
   community: string;
   price: number;
+  priceUsd: number | null;
 }
 
 // Image card with CSS-gradient fallback on error
-function HeroImgCard({ slug, src, name, price, community }: {
-  slug: string; src: string; name: string; price: number; community: string;
+function HeroImgCard({ slug, src, name, price, priceUsd, community }: {
+  slug: string; src: string; name: string; price: number; priceUsd: number | null; community: string;
 }) {
   const [failed, setFailed] = useState(false);
   const theme = COMMUNITY_THEME[community] ?? 'tpl-lanterns-dusk';
@@ -36,7 +38,7 @@ function HeroImgCard({ slug, src, name, price, community }: {
       <Link href={`/templates/${slug}`} className={`c3d-inner ${theme}`} style={{ display: 'block', textDecoration: 'none' }}>
         <div className="tpl-bd center">
           <p className="tpl-couple-lg" style={{ fontSize: '1.4rem' }}>{name}</p>
-          <p className="tpl-date-badge" style={{ marginTop: 12 }}>₹{(price / 100).toLocaleString('en-IN')}</p>
+          <p className="tpl-date-badge" style={{ marginTop: 12 }}><Price inr={price} usd={priceUsd} /></p>
         </div>
       </Link>
     );
@@ -71,6 +73,7 @@ function buildCards(templates: DbTemplate[]): Card[] {
         src={resolveBackendPublicUrl(t.mobileThumbnailUrl || t.desktopThumbnailUrl || t.thumbnailUrl) || ''}
         name={t.name}
         price={t.price}
+        priceUsd={t.priceUsd}
         community={t.community}
       />
     ) : (
@@ -78,7 +81,7 @@ function buildCards(templates: DbTemplate[]): Card[] {
         <div className="tpl-bd center">
           <p className="tpl-label" style={{ fontSize: '0.7rem', opacity: 0.7, marginBottom: 8 }}>New template</p>
           <p className="tpl-couple-lg" style={{ fontSize: '1.4rem' }}>{t.name}</p>
-          <p className="tpl-date-badge" style={{ marginTop: 12 }}>₹{(t.price / 100).toLocaleString('en-IN')}</p>
+          <p className="tpl-date-badge" style={{ marginTop: 12 }}><Price inr={t.price} usd={t.priceUsd} /></p>
         </div>
       </Link>
     ),

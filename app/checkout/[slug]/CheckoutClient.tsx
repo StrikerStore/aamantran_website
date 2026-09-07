@@ -7,6 +7,8 @@ import { useParams, useRouter } from 'next/navigation';
 
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { track } from '@/lib/track';
+import { CURRENCY, IS_INTL, formatMoney, priceFor, storefrontHeaders } from '@/lib/storefront';
+import PhoneField from '@/components/PhoneField';
 
 const API = getPublicApiUrl();
 const DUMMY_PAYMENT_MODE = String(process.env.NEXT_PUBLIC_DUMMY_PAYMENT_MODE || '').toLowerCase() === 'true';
@@ -18,6 +20,10 @@ interface TemplateData {
   community: string;
   price: number;
   originalPrice: number | null;
+  // Derived server-side from the INR price. Both ship together because this
+  // response feeds statically cached pages too.
+  priceUsd: number | null;
+  originalPriceUsd: number | null;
   gstPercent?: number;
   thumbnailUrl: string | null;
 }
@@ -30,7 +36,9 @@ interface OfferCoupon {
   condition: string;
   expiresAt: string | null;
   eligible: boolean;
-  /** Why this offer cannot be used yet, e.g. "Add INR 1,999 more to unlock this offer". */
+  /** The storefront this offer belongs to — 'INR' or 'USD'. */
+  currency: string;
+  /** Why this offer cannot be used yet, e.g. "Add ₹1,999 more to unlock this offer". */
   unlockMessage: string | null;
 }
 
@@ -42,21 +50,35 @@ interface PriceBreakup {
   gstPercent: number;
   gstAmount: number;
   finalAmount: number;
+  /** Every amount above is in the minor unit of this currency. */
+  currency: string;
 }
 
-function rupees(paise: number) {
-  return (paise / 100).toLocaleString('en-IN');
-}
-
+/**
+ * The opening figures, before the server has said anything.
+ *
+ * A first paint only — every later breakup comes from /coupon-preview or
+ * /order, which recompute it server-side for the storefront this deployment
+ * declares. If this guess and the server ever disagree, the server wins and the
+ * customer is charged what it says.
+ *
+ * International orders are zero-rated, so GST is dropped along with the switch
+ * to dollars rather than being a separate rule the page has to remember.
+ */
 function defaultBreakup(template: TemplateData): PriceBreakup {
-  const baseAmount = template.price;
+  const intl = IS_INTL && template.priceUsd != null;
+  const baseAmount = priceFor(template) ?? template.price;
   const discountAmount = 0;
   const discountPct = 0;
   const discountedAmount = Math.max(100, baseAmount - discountAmount);
-  const gstPercent = Number(template.gstPercent || 0);
+  const gstPercent = intl ? 0 : Number(template.gstPercent || 0);
   const gstAmount = Math.round((discountedAmount * gstPercent) / 100);
   const finalAmount = discountedAmount + gstAmount;
-  return { baseAmount, discountAmount, discountPct, discountedAmount, gstPercent, gstAmount, finalAmount };
+  return {
+    baseAmount, discountAmount, discountPct, discountedAmount,
+    gstPercent, gstAmount, finalAmount,
+    currency: intl ? 'USD' : 'INR',
+  };
 }
 
 /** Submit a hidden form to PayU's payment URL */
@@ -84,7 +106,9 @@ export default function CheckoutClient() {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
-  const [customerContact, setCustomerContact] = useState('');
+  // Split, because that is how the number is stored and how PayU is given it.
+  const [contactCountryCode, setContactCountryCode] = useState(IS_INTL ? '+1' : '+91');
+  const [contactNational, setContactNational] = useState('');
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [couponMsg, setCouponMsg] = useState('');
@@ -93,9 +117,25 @@ export default function CheckoutClient() {
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [offers, setOffers] = useState<OfferCoupon[]>([]);
 
+  // Which storefront this build IS. The server still recomputes every amount
+  // from the storefront header these requests carry, so the figures coming back
+  // from /coupon-preview and /order remain the truth.
+
+  /** Amounts in whatever currency the current breakup is quoted in. */
+  const money = (minor: number) => formatMoney(minor, breakup?.currency || CURRENCY);
+
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim());
-  const contactDigits = customerContact.replace(/\D/g, '');
-  const contactValid = /^[6-9]\d{9}$/.test(contactDigits);
+  const contactDigits = contactNational.replace(/\D/g, '');
+  // E.164 caps the whole number, dial code included, at 15 digits.
+  const e164Digits = contactCountryCode.replace(/\D/g, '') + contactDigits;
+  // The 10-digit [6-9] rule describes Indian mobile numbers and rejects every
+  // valid foreign one, so it is applied only to the India storefront.
+  // Internationally the bar is E.164's own limits.
+  const contactValid = contactCountryCode === '+91'
+    // Every Indian mobile is ten digits starting 6-9. Kept as a specific check
+    // because it is still the overwhelming majority of traffic.
+    ? /^[6-9]\d{9}$/.test(contactDigits)
+    : e164Digits.length >= 8 && e164Digits.length <= 15;
   const canPay = emailValid && contactValid && agreeTerms && !paying;
 
   useEffect(() => {
@@ -107,11 +147,11 @@ export default function CheckoutClient() {
         if (data) {
           const bp = defaultBreakup(data);
           setBreakup(bp);
-          track('initiate_checkout', { slug, value: bp.finalAmount / 100 });
+          track('initiate_checkout', { slug, value: bp.finalAmount / 100, currency: bp.currency });
           if (typeof window !== 'undefined' && (window as any).fbq) {
             (window as any).fbq('track', 'InitiateCheckout', {
               value: bp.finalAmount / 100,
-              currency: 'INR',
+              currency: bp.currency,
               content_ids: [slug],
               content_name: data.name,
               content_type: 'product',
@@ -120,6 +160,8 @@ export default function CheckoutClient() {
         }
       })
       .finally(() => setLoading(false));
+    // Runs once per slug. The storefront is a build-time constant now, so there
+    // is nothing else for this to depend on and InitiateCheckout fires once.
   }, [slug]);
 
   // Offers are advisory: the authoritative price always comes from
@@ -133,7 +175,7 @@ export default function CheckoutClient() {
     const timer = setTimeout(() => {
       const qs = new URLSearchParams({ templateSlug: String(slug) });
       if (email) qs.set('customerEmail', email);
-      fetch(`${API}/api/checkout/coupons?${qs.toString()}`, { signal: controller.signal })
+      fetch(`${API}/api/checkout/coupons?${qs.toString()}`, { signal: controller.signal, headers: storefrontHeaders() })
         .then(r => (r.ok ? r.json() : null))
         .then(d => setOffers(Array.isArray(d?.coupons) ? d.coupons : []))
         .catch(() => { /* offers are optional; the code input still works */ });
@@ -160,7 +202,7 @@ export default function CheckoutClient() {
     }
     fetch(`${API}/api/checkout/coupon-preview`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...storefrontHeaders() },
       body: JSON.stringify({ templateSlug: slug, couponCode: code, customerEmail }),
     })
       .then(r => r.json().then(d => ({ ok: r.ok, d })))
@@ -196,7 +238,9 @@ export default function CheckoutClient() {
   async function handlePayNow() {
     if (!template || !slug || paying) return;
     if (!emailValid || !contactValid) {
-      alert('Please enter a valid email and 10-digit mobile number.');
+      alert(IS_INTL
+        ? 'Please enter a valid email and contact number.'
+        : 'Please enter a valid email and 10-digit mobile number.');
       return;
     }
     if (!agreeTerms) {
@@ -207,12 +251,15 @@ export default function CheckoutClient() {
     try {
       const orderRes = await fetch(`${API}/api/checkout/order`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // The server cross-checks this against Origin before deciding what to
+        // charge, so it cannot be used to claim the other site's pricing.
+        headers: { 'Content-Type': 'application/json', ...storefrontHeaders() },
         body: JSON.stringify({
           templateSlug:    slug,
           couponCode:      appliedCoupon || undefined,
           customerEmail:   customerEmail.trim(),
-          customerContact: contactDigits,
+          customerContact: contactNational,
+          customerContactCountryCode: contactCountryCode,
           consent:         agreeTerms,
           marketingOptIn,
         }),
@@ -272,15 +319,24 @@ export default function CheckoutClient() {
             value={customerEmail}
             onChange={e => setCustomerEmail(e.target.value)}
           />
-          <input
-            type="tel"
+          <PhoneField
+            countryCode={contactCountryCode}
+            number={contactNational}
             placeholder="Enter contact number"
-            value={customerContact}
-            onChange={e => setCustomerContact(e.target.value)}
+            onChange={({ countryCode, number }) => {
+              setContactCountryCode(countryCode);
+              setContactNational(number);
+            }}
           />
         </div>
         {customerEmail && !emailValid && <p className="checkout-error-msg">Please enter a valid email address.</p>}
-        {customerContact && !contactValid && <p className="checkout-error-msg">Please enter a valid 10-digit Indian mobile number.</p>}
+        {contactNational && !contactValid && (
+          <p className="checkout-error-msg">
+            {contactCountryCode === '+91'
+              ? 'Please enter a valid 10-digit Indian mobile number.'
+              : 'Please enter a valid contact number for the country code selected.'}
+          </p>
+        )}
 
         <div className="checkout-product">
           <div>
@@ -290,10 +346,14 @@ export default function CheckoutClient() {
         </div>
 
         <div className="checkout-breakup">
-          <div><span>Template price</span><strong>INR {rupees(breakup?.baseAmount || 0)}</strong></div>
-          <div><span>Discount{breakup?.discountPct ? ` (${breakup.discountPct}%)` : ''}</span><strong>- INR {rupees(breakup?.discountAmount || 0)}</strong></div>
-          <div><span>GST ({breakup?.gstPercent || 0}%)</span><strong>INR {rupees(breakup?.gstAmount || 0)}</strong></div>
-          <div className="total"><span>Total payable</span><strong>INR {rupees(breakup?.finalAmount || 0)}</strong></div>
+          <div><span>Template price</span><strong>{money(breakup?.baseAmount || 0)}</strong></div>
+          <div><span>Discount{breakup?.discountPct ? ` (${breakup.discountPct}%)` : ''}</span><strong>- {money(breakup?.discountAmount || 0)}</strong></div>
+          {/* Hidden rather than shown as 0%: international orders are zero-rated
+              exports, so a GST line has no meaning on them at all. */}
+          {(breakup?.gstPercent || 0) > 0 && (
+            <div><span>GST ({breakup?.gstPercent}%)</span><strong>{money(breakup?.gstAmount || 0)}</strong></div>
+          )}
+          <div className="total"><span>Total payable</span><strong>{money(breakup?.finalAmount || 0)}</strong></div>
         </div>
 
         <div className="checkout-coupon">
@@ -331,7 +391,7 @@ export default function CheckoutClient() {
                       disabled={locked || applied}
                       onClick={() => applyOffer(o.code)}
                     >
-                      {locked ? 'Locked' : applied ? 'Applied' : `Save INR ${rupees(o.discountAmount)}`}
+                      {locked ? 'Locked' : applied ? 'Applied' : `Save ${formatMoney(o.discountAmount, o.currency)}`}
                     </button>
                   </div>
                 );
