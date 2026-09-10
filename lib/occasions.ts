@@ -50,12 +50,12 @@ export const OCCASIONS: Occasion[] = [
  * How many occasions must have at least one live template before the tile row
  * appears at all.
  *
- * Two tiles over a catalogue where almost every template carries both tags is
- * worse than none — the buttons would look broken. Three is the point where the
- * row starts doing real work. Change this one number to move the threshold; it
- * is deliberately not inlined into the component.
+ * Two, because a single occasion plus "All" is two buttons that select the same
+ * thing — genuinely pointless — while two real occasions already sort the
+ * catalogue differently even when they overlap heavily. Change this one number
+ * to move the threshold; it is deliberately not inlined into the component.
  */
-export const MIN_OCCASION_TILES = 3;
+export const MIN_OCCASION_TILES = 2;
 
 /**
  * Lowercase, strip punctuation, collapse whitespace — so "Griha-Pravesh",
