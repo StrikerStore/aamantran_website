@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
+import TemplateTag from '@/components/TemplateTag';
 import { CURRENCY, IS_INTL, formatInr, formatUsd, STOREFRONT } from '@/lib/storefront';
 
 const API = getPublicApiUrl();
@@ -33,6 +34,7 @@ export interface CarouselTemplate {
   community: string;
   price: number; originalPrice: number | null;
   priceUsd: number | null; originalPriceUsd: number | null;
+  badge?: string | null;
   buyerCount?: number;
   bestFor?: string;
 }
@@ -155,6 +157,7 @@ export default function TemplatesCarousel({ initialTemplates }: { initialTemplat
               <div className="tpl-grid-card" onClick={() => router.push(productUrl)} style={{ cursor: 'pointer' }}>
                 <div className="tpl-grid-thumb">
                   <CarouselThumb src={thumbSrc} theme={theme} name={s.name} name1={name1} name2={name2} />
+                  <TemplateTag badge={s.badge} />
                   <a
                     href={demoUrl}
                     className="tpl-grid-demo-icon"

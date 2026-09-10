@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
+import TemplateTag from '@/components/TemplateTag';
 import { CURRENCY, IS_INTL, formatMoney, formatInr, formatUsd, priceFor, STOREFRONT } from '@/lib/storefront';
 
 const API = getPublicApiUrl();
@@ -28,6 +29,7 @@ interface DbTemplate {
   priceUsd: number | null; originalPriceUsd: number | null;
   buyerCount: number; avgRating: string | number | null;
   releasedAt: string | null;
+  badge?: string | null;
 }
 
 function rupees(paise: number) {
@@ -70,10 +72,13 @@ export default function TemplatesClient() {
   const [community, setCommunity] = useState('all');
   const [price, setPrice]         = useState('all');
   const [search, setSearch]       = useState('');
-  const [sort, setSort]           = useState('popular');
+  const [sort, setSort]           = useState('new');
 
   useEffect(() => {
-    const url = `${API}/api/templates?limit=50`;
+    // sort=new matches the default below. The server caps at `limit`, so without
+    // it the page would receive the 50 most POPULAR and then re-sort those by
+    // date -- which is not the newest 50 once the catalogue outgrows the cap.
+    const url = `${API}/api/templates?limit=50&sort=new`;
     fetch(url)
       .then(r => r.json())
       .then(d => setTemplates(d.templates ?? []))
@@ -299,6 +304,7 @@ export default function TemplatesClient() {
                     >
                       <div className="tpl-grid-thumb">
                         <TemplateThumb src={thumbSrc} theme={theme} name={t.name} community={t.community} />
+                        <TemplateTag badge={t.badge} />
                         <a
                           href={demoUrl}
                           className="tpl-grid-demo-icon"

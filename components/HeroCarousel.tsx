@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
 import Price from '@/components/Price';
+import TemplateTag from '@/components/TemplateTag';
 
 const API = getPublicApiUrl();
 
@@ -24,11 +25,12 @@ interface DbTemplate {
   community: string;
   price: number;
   priceUsd: number | null;
+  badge?: string | null;
 }
 
 // Image card with CSS-gradient fallback on error
-function HeroImgCard({ slug, src, name, price, priceUsd, community }: {
-  slug: string; src: string; name: string; price: number; priceUsd: number | null; community: string;
+function HeroImgCard({ slug, src, name, price, priceUsd, community, badge }: {
+  slug: string; src: string; name: string; price: number; priceUsd: number | null; community: string; badge?: string | null;
 }) {
   const [failed, setFailed] = useState(false);
   const theme = COMMUNITY_THEME[community] ?? 'tpl-lanterns-dusk';
@@ -36,6 +38,7 @@ function HeroImgCard({ slug, src, name, price, priceUsd, community }: {
   if (failed) {
     return (
       <Link href={`/templates/${slug}`} className={`c3d-inner ${theme}`} style={{ display: 'block', textDecoration: 'none' }}>
+        <TemplateTag badge={badge} />
         <div className="tpl-bd center">
           <p className="tpl-couple-lg" style={{ fontSize: '1.4rem' }}>{name}</p>
           <p className="tpl-date-badge" style={{ marginTop: 12 }}><Price inr={price} usd={priceUsd} /></p>
@@ -46,6 +49,7 @@ function HeroImgCard({ slug, src, name, price, priceUsd, community }: {
 
   return (
     <Link href={`/templates/${slug}`} className="c3d-inner c3d-img-card" style={{ display: 'block', textDecoration: 'none' }}>
+      <TemplateTag badge={badge} />
       <img
         src={src}
         alt={name}
@@ -75,9 +79,11 @@ function buildCards(templates: DbTemplate[]): Card[] {
         price={t.price}
         priceUsd={t.priceUsd}
         community={t.community}
+        badge={t.badge}
       />
     ) : (
       <Link href={`/templates/${t.slug}`} className={`c3d-inner ${COMMUNITY_THEME[t.community] ?? 'tpl-lanterns-dusk'}`} style={{ display: 'block', textDecoration: 'none' }}>
+        <TemplateTag badge={t.badge} />
         <div className="tpl-bd center">
           <p className="tpl-label" style={{ fontSize: '0.7rem', opacity: 0.7, marginBottom: 8 }}>New template</p>
           <p className="tpl-couple-lg" style={{ fontSize: '1.4rem' }}>{t.name}</p>

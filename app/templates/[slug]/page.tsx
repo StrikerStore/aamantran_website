@@ -5,6 +5,7 @@ import ReviewsSection, { type ReviewItem } from '@/components/ReviewsSection';
 import TemplateCTA from '@/components/TemplateCTA';
 import PixelViewContent from '@/components/PixelViewContent';
 import JsonLd from '@/components/JsonLd';
+import TemplateTag from '@/components/TemplateTag';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
 import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
@@ -39,6 +40,7 @@ interface RelatedTemplate {
   community: string;
   price: number;
   priceUsd: number | null;
+  badge?: string | null;
 }
 
 function rupees(paise: number) {
@@ -425,6 +427,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ slug:
               {relatedTemplates.map(item => (
                 <Link key={item.id} href={`/templates/${item.slug}`} className="product-related-card">
                   <div className="product-related-thumb">
+                    <TemplateTag badge={item.badge} />
                     {(item.desktopThumbnailUrl || item.mobileThumbnailUrl || item.thumbnailUrl) ? (
                       <picture>
                         {(item.mobileThumbnailUrl || item.desktopThumbnailUrl || item.thumbnailUrl) && (
