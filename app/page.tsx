@@ -2,7 +2,8 @@ import { Fragment } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import HeroCarousel from '@/components/HeroCarousel';
-import TemplatesCarousel, { type CarouselTemplate } from '@/components/TemplatesCarousel';
+import { type CarouselTemplate } from '@/components/TemplatesCarousel';
+import TemplatesShowcase from '@/components/TemplatesShowcase';
 import ScrollReveal from '@/components/ScrollReveal';
 import ReviewsSection, { type ReviewItem } from '@/components/ReviewsSection';
 import InstagramSection from '@/components/InstagramSection';
@@ -168,7 +169,9 @@ export default async function HomePage() {
           <h2 className="section-h2 center">Choose your <em>style.</em></h2>
           <p className="section-body center">Every template is hand-crafted — warm, romantic, and made to feel authentically yours.</p>
         </div>
-        <TemplatesCarousel initialTemplates={homeTemplates?.slice(0, 5)} />
+        {/* Full list, not a pre-sliced 5 — the showcase filters by occasion
+            before it slices, so a tile draws from every homepage template. */}
+        <TemplatesShowcase templates={homeTemplates} />
         <div className="center" style={{ marginTop: 40 }}>
           <Link href="/templates" className="btn-primary">Browse all templates →</Link>
         </div>

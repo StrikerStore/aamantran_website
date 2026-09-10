@@ -1224,3 +1224,68 @@
 @media (max-width: 768px) {
   .tpl-tag { font-size: 0.58rem; padding: 2px 7px; }
 }
+
+/* ── OCCASION TILES ──────────────────────────────────────────────────────────
+   The row of pills above the homepage carousel, filtering it in place.
+
+   Shares the pill shape of .tpl-grid-chip so the row reads as part of the
+   existing card language rather than as a new control idiom. The row is only
+   rendered once enough occasions have live templates (MIN_OCCASION_TILES in
+   lib/occasions.ts), so there is no empty-state to style here. */
+.occ-tiles {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 1140px;
+  margin: 0 auto 36px;
+  padding: 0 24px;
+}
+
+.occ-tile {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  padding: 9px 20px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-mid);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.occ-tile:hover { border-color: var(--burgundy); color: var(--burgundy); }
+
+/* Selected state carries a border and weight change as well as colour, so it
+   survives greyscale and low-contrast displays. aria-pressed on the button
+   covers the non-visual case. */
+.occ-tile.active {
+  background: var(--burgundy);
+  border-color: var(--burgundy);
+  color: var(--white);
+  font-weight: 600;
+}
+
+.occ-tile:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  /* One scrolling line rather than three ragged wrapped rows. The negative
+     margin lets the row bleed to the screen edge so a half-visible pill signals
+     there is more to scroll to. */
+  .occ-tiles {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-bottom: 28px;
+    padding: 0 16px 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .occ-tiles::-webkit-scrollbar { display: none; }
+  .occ-tile { font-size: 0.85rem; padding: 8px 16px; }
+}

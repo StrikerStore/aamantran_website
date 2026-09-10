@@ -73,7 +73,11 @@ export default function TemplatesCarousel({ initialTemplates }: { initialTemplat
   const router = useRouter();
   const carouselRef = useRef<HTMLDivElement>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [slides, setSlides] = useState<CarouselTemplate[]>(initialTemplates ?? []);
+  // The prop is DERIVED FROM, not copied into state. Holding it in useState
+  // would freeze the first list forever — useState reads its argument once — and
+  // the homepage now changes this prop as the visitor picks an occasion tile.
+  const [fetched, setFetched] = useState<CarouselTemplate[] | null>(null);
+  const slides = initialTemplates ?? fetched ?? [];
   const [loading, setLoading] = useState(!initialTemplates);
 
   const [isMobile, setIsMobile] = useState(false);
@@ -82,11 +86,28 @@ export default function TemplatesCarousel({ initialTemplates }: { initialTemplat
     if (initialTemplates) return; // server-prefetched — no client fetch needed
     fetch(`${API}/api/templates?limit=5&sort=new`)
       .then(r => r.json())
-      .then(d => setSlides(d.templates ?? []))
-      .catch(() => setSlides([]))
+      .then(d => setFetched(d.templates ?? []))
+      .catch(() => setFetched([]))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // A changed list must not leave the carousel scrolled past its own end.
+  // Without this, switching from a 5-template occasion to a 2-template one while
+  // on slide 4 shows blank space under a dot row with no active dot.
+  //
+  // Keyed on WHICH slides, not how many: two occasions can both have five
+  // templates, and landing on slide 4 of an unrelated set is just as wrong. The
+  // joined ids are also stable across re-renders, so an unmemoised array from
+  // the parent cannot make this fight the visitor's own scrolling.
+  const slideKey = slides.map(s => s.id).join(',');
+  useEffect(() => {
+    setCurrentSlide(0);
+    if (carouselRef.current) {
+      carouselRef.current.style.scrollBehavior = 'auto'; // snap back, don't glide
+      carouselRef.current.scrollLeft = 0;
+    }
+  }, [slideKey]);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
