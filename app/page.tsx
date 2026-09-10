@@ -133,7 +133,10 @@ export default async function HomePage() {
         <div className="hero-inner">
           <div className="hero-badge" id="hero-badge">
             <span className="star">★★★★★</span>
-            <span>Loved by couples across India</span>
+            {/* No geography: this same page serves aamantranglobal.com, where a
+                claim about couples in India reads as social proof that excludes
+                the visitor. */}
+            <span>Loved by couples everywhere</span>
           </div>
           <h1 className="hero-h1">
             Your love story,<br />
