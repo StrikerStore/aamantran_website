@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
 import TemplateTag from '@/components/TemplateTag';
+import { COLLECTIONS } from '@/lib/collections';
 import { CURRENCY, IS_INTL, formatMoney, formatInr, formatUsd, priceFor, STOREFRONT } from '@/lib/storefront';
 
 const API = getPublicApiUrl();
@@ -143,6 +144,16 @@ export default function TemplatesClient() {
           <p className="eyebrow center">Designs</p>
           <h1>Find your <em>perfect template.</em></h1>
           <p>Every design is hand-crafted for Indian celebrations — pick one, pay once, get everything.</p>
+          {/* Real links, not filter buttons. The dropdowns below are client state
+              and produce no URL, so these are the only way a crawler reaches the
+              collection pages from here - and the only way their ranking signals
+              connect to this page. */}
+          <div className="collection-links">
+            <span>Browse by tradition:</span>
+            {COLLECTIONS.map(c => (
+              <Link key={c.slug} href={`/collections/${c.slug}`}>{c.heading}</Link>
+            ))}
+          </div>
         </div>
       </div>
 

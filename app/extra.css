@@ -1307,3 +1307,84 @@
   .occ-tiles::-webkit-scrollbar { display: none; }
   .occ-tile { font-size: 0.85rem; padding: 8px 16px; }
 }
+
+/* ── COLLECTION LANDING PAGES ────────────────────────────────────────────────
+   /collections/<slug>. The editorial blocks below the grid are what separate
+   these from a filtered product list, so they are given real reading width and
+   spacing rather than being tucked under the fold as an afterthought. */
+.collection-notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+  margin: 56px auto 0;
+  max-width: 980px;
+}
+
+.collection-note h2 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+.collection-note p {
+  font-size: 0.94rem;
+  line-height: 1.7;
+  color: var(--text-mid);
+}
+
+.collection-siblings {
+  margin: 56px auto 0;
+  max-width: 980px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.collection-siblings h2 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.collection-siblings ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+}
+
+.collection-siblings a {
+  font-size: 0.92rem;
+  color: var(--burgundy);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.collection-siblings a:hover { border-bottom-color: var(--burgundy); }
+
+/* The same links, shown on /templates so the collections are reachable by crawl
+   from the page most likely to be indexed. */
+.collection-links {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 28px 24px 0;
+  text-align: center;
+}
+
+.collection-links span { font-size: 0.86rem; color: var(--text-light); margin-right: 6px; }
+
+.collection-links a {
+  display: inline-block;
+  font-size: 0.88rem;
+  color: var(--burgundy);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  margin: 4px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.collection-links a:hover { background: var(--burgundy); color: var(--white); }

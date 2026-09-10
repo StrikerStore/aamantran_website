@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getPublicApiUrl } from '@/lib/publicEnv';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL, alternateLanguages } from '@/lib/seo';
+import { COLLECTIONS } from '@/lib/collections';
 
 interface TemplateListItem {
   slug: string;
@@ -51,6 +52,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/terms`, changeFrequency: 'yearly', priority: 0.2 },
   ];
 
+  const collectionRoutes: MetadataRoute.Sitemap = COLLECTIONS.map(c => ({
+    url: `${SITE_URL}/collections/${c.slug}`,
+    changeFrequency: 'weekly' as const,
+    priority: 0.85,
+  }));
+
   const templates = await getTemplateSlugs();
   const templateRoutes: MetadataRoute.Sitemap = templates
     .filter(t => t.slug)
@@ -71,5 +78,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-  return [...staticRoutes, ...templateRoutes, ...blogRoutes];
+  // hreflang in the sitemap as well as in the page head. Both are valid signals
+  // and Google treats the sitemap form as the stronger of the two, because it
+  // cannot be missed by a crawler that never renders the page.
+  return [...staticRoutes, ...collectionRoutes, ...templateRoutes, ...blogRoutes].map(entry => ({
+    ...entry,
+    alternates: { languages: alternateLanguages(new URL(entry.url).pathname) },
+  }));
 }
