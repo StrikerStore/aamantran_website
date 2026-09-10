@@ -22,6 +22,47 @@ import { IS_INTL } from './storefront';
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aamantran.online'
 ).replace(/\/$/, '');
+/**
+ * The two storefront origins, needed as a PAIR on every build.
+ *
+ * SITE_URL is whichever one this deployment is; these two are both of them,
+ * because hreflang has to name every variant including the one you are on.
+ * Reciprocal or nothing: if the India build points at the global URL but the
+ * global build does not point back, Google discards the annotation entirely.
+ *
+ * Env-overridable so a staging pair can point at itself instead of production.
+ */
+export const INDIA_SITE_URL = (
+  process.env.NEXT_PUBLIC_INDIA_SITE_URL || 'https://www.aamantran.online'
+).replace(/\/$/, '');
+export const GLOBAL_SITE_URL = (
+  process.env.NEXT_PUBLIC_GLOBAL_SITE_URL || 'https://www.aamantranglobal.com'
+).replace(/\/$/, '');
+
+/**
+ * hreflang map for a path, for `alternates.languages`.
+ *
+ * The same content is served to both storefronts in the same language, differing
+ * only in currency and region. That is exactly what hreflang is for: without it
+ * two 98.6%-identical domains compete as duplicates and Google picks one. With
+ * it they are regional variants of one site and the signals consolidate.
+ *
+ * x-default points at India: it is the older domain, the larger market, and the
+ * sensible landing for a visitor Google cannot place.
+ *
+ * This SUPPLEMENTS the canonical, never replaces it - each page still
+ * self-canonicalises to its own origin, or the global build would hand all its
+ * authority to India and drop out of the index.
+ */
+export function alternateLanguages(path: string): Record<string, string> {
+  const p = path.startsWith('/') ? path : `/${path}`;
+  return {
+    'en-IN':     `${INDIA_SITE_URL}${p}`,
+    'en-US':     `${GLOBAL_SITE_URL}${p}`,
+    'x-default': `${INDIA_SITE_URL}${p}`,
+  };
+}
+
 export const SITE_NAME = 'Aamantran';
 /** en_IN on the India storefront, en_US on the global one. */
 export const OG_LOCALE = IS_INTL ? 'en_US' : 'en_IN';
@@ -59,7 +100,7 @@ export function buildPageMetadata({
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: { canonical: path, languages: alternateLanguages(path) },
     openGraph: {
       type: 'website',
       siteName: SITE_NAME,

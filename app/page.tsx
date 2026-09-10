@@ -10,6 +10,7 @@ import InstagramSection from '@/components/InstagramSection';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { IS_INTL } from '@/lib/storefront';
 import { getStartingPrice } from '@/lib/startingPrice';
+import { alternateLanguages } from '@/lib/seo';
 
 type ReviewsResponse = { reviews: ReviewItem[]; avgRating: number; totalCount: number };
 
@@ -48,7 +49,10 @@ export const metadata: Metadata = {
   title: { absolute: 'Aamantran — Beautiful Digital Wedding Invitations for India' },
   description:
     'Stunning digital invitations your guests will open, save, and remember — with seamless RSVP, WhatsApp sharing, and every ceremony covered in one elegant link.',
-  alternates: { canonical: '/' },
+  // Same hreflang pair every other page gets via buildPageMetadata. This page
+  // builds its metadata by hand, so it has to ask for them explicitly - and it
+  // is the last page that should be missing them.
+  alternates: { canonical: '/', languages: alternateLanguages('/') },
 };
 
 const CHECKLIST_ITEMS = [
