@@ -70,10 +70,6 @@
   --radius-full:    999px;
   --control-height: 46px; /* comfortable 44–48px touch target */
 
-  /* ── Elevation ──────────────────────────────────────────────────────── */
-  --elevation-1: 0 1px 2px rgba(41, 35, 31, 0.06), 0 4px 16px rgba(41, 35, 31, 0.06);
-  --elevation-2: 0 8px 32px rgba(41, 35, 31, 0.10);
-
   /* ── Motion ─────────────────────────────────────────────────────────── */
   --dur-press:     180ms; /* button colour and press feedback */
   --dur-tab:       200ms; /* tab switch fade */
@@ -83,6 +79,45 @@
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --lift-hover:    -3px;
   --rise-section:  18px;
+
+  /* ── Surfaces ───────────────────────────────────────────────────────
+   * A band's material, so a shop shelf never looks like an article page.
+   * Ink is for one band per page at most; it carries its own text colours
+   * because nothing else in this file is legible on it.
+   */
+  --surface-raised: #FFFFFF; /* the thing for sale sits on this */
+  --surface-sunken: #F6F1E8; /* a shelf: slightly below the canvas */
+  --surface-ink:    #241A1C; /* one dark band, for contrast and weight */
+  --color-on-ink:       #F7F1EA; /* 14.1:1 on ink */
+  --color-on-ink-muted: #C9BDB2; /* 8.0:1 on ink */
+
+  /* ── Elevation: four tiers, so the product is visibly the main object ─ */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px rgba(41, 35, 31, 0.06), 0 4px 16px rgba(41, 35, 31, 0.06);
+  --elevation-2: 0 8px 32px rgba(41, 35, 31, 0.10);
+  --elevation-3: 0 2px 6px rgba(41, 35, 31, 0.08), 0 18px 48px rgba(41, 35, 31, 0.16);
+
+  /* ── Gold: a line, never a word ─────────────────────────────────────
+   * --color-accent is 2.89:1, so it may not carry meaning on its own. As a
+   * rule or an edge it carries none — it is decoration, and everything it
+   * decorates still reads without it.
+   */
+  --hairline-gold: linear-gradient(90deg, rgba(176, 141, 87, 0) 0%, rgba(176, 141, 87, 0.5) 20%, rgba(176, 141, 87, 0.8) 50%, rgba(176, 141, 87, 0.5) 80%, rgba(176, 141, 87, 0) 100%);
+  --edge-gold:     linear-gradient(90deg, rgba(176, 141, 87, 0), rgba(176, 141, 87, 0.85), rgba(176, 141, 87, 0));
+
+  /* ── Paper and light ────────────────────────────────────────────────
+   * One inline SVG grain (about 250 bytes, no request) and three soft
+   * washes. Kept faint on purpose: the point is that a flat colour stops
+   * looking flat, not that anyone notices a texture.
+   */
+  --texture-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  --texture-opacity: 0.04;
+  --wash-warm:  radial-gradient(120% 90% at 12% 0%, rgba(241, 223, 218, 0.85) 0%, rgba(241, 223, 218, 0) 60%);
+  --wash-gold:  radial-gradient(80% 70% at 88% 6%, rgba(176, 141, 87, 0.18) 0%, rgba(176, 141, 87, 0) 62%);
+  --wash-sage:  radial-gradient(100% 80% at 90% 100%, rgba(229, 235, 226, 0.9) 0%, rgba(229, 235, 226, 0) 62%);
+
+  /* ── Product imagery ────────────────────────────────────────────────── */
+  --zoom-hover: 1.03; /* the image breathes on hover; the card does not jump */
 
   /* ── Focus ──────────────────────────────────────────────────────────── */
   --focus-ring:   2px solid var(--color-primary);

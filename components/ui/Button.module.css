@@ -18,7 +18,8 @@
     background-color var(--dur-press) var(--ease-standard),
     border-color var(--dur-press) var(--ease-standard),
     color var(--dur-press) var(--ease-standard),
-    transform var(--dur-press) var(--ease-standard);
+    transform var(--dur-press) var(--ease-standard),
+    box-shadow var(--dur-press) var(--ease-standard);
 }
 
 .button:active:not(:disabled) {
@@ -33,9 +34,14 @@
 .primary {
   background: var(--color-primary);
   color: var(--color-on-primary);
+  box-shadow: var(--elevation-1);
 }
 .primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
+  box-shadow: var(--elevation-2);
+}
+.primary:active:not(:disabled) {
+  box-shadow: var(--elevation-1);
 }
 
 .secondary {
@@ -45,6 +51,7 @@
 }
 .secondary:hover:not(:disabled) {
   background: var(--color-blush);
+  box-shadow: var(--elevation-1);
 }
 
 .ghost {

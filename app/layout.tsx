@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/surfaces.css';
 import './styles/widgets.css';
 import { fontVariables } from './fonts';
 import SiteHeader from '@/components/shell/SiteHeader';

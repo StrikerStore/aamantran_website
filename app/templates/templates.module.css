@@ -7,9 +7,23 @@
 }
 
 .hero {
+  position: relative;
+  isolation: isolate;
   padding-block: var(--space-7) calc(var(--space-7) + var(--space-5));
-  background: var(--color-blush);
+  background-color: var(--color-canvas);
+  background-image: var(--wash-warm), var(--wash-gold);
   text-align: center;
+}
+
+/* Closes the band. Decorative: the section below it is a separate element with
+   its own background, so nothing depends on this line being seen. */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: var(--hairline-gold);
+  pointer-events: none;
 }
 
 .eyebrow {

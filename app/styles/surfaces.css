@@ -1,0 +1,138 @@
+/*
+ * Surfaces: what a band of the page is made of.
+ *
+ * The site had exactly three flat background colours and two shadows, so a shop
+ * shelf and an article read identically. These utilities give a page a material
+ * — paper grain, a wash of warmth, a hairline of gold, a shelf that sits below
+ * the canvas, and one dark band for weight — without adding an image request or
+ * a dependency.
+ *
+ * Every rule here is decoration. Nothing conveys meaning by colour or texture
+ * alone, and each utility is safe to remove from an element without changing
+ * what it says. All motion stops under prefers-reduced-motion (app/styles/base.css
+ * disables animation and transition globally for that preference).
+ */
+
+/* ── Materials ──────────────────────────────────────────────────────────── */
+
+.ds-sunken {
+  background: var(--surface-sunken);
+}
+
+.ds-ink {
+  background: var(--surface-ink);
+  color: var(--color-on-ink);
+}
+
+.ds-ink :where(h1, h2, h3, h4) {
+  color: var(--color-on-ink);
+}
+
+.ds-ink :where(p, li, dd, dt) {
+  color: var(--color-on-ink-muted);
+}
+
+/*
+ * Paper grain. Applied through a pseudo-element so the texture never tints the
+ * element's own background colour and never sits above its content.
+ */
+.ds-paper {
+  position: relative;
+  isolation: isolate;
+}
+
+.ds-paper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--texture-paper);
+  opacity: var(--texture-opacity);
+  pointer-events: none;
+}
+
+/*
+ * A wash of warm light, for the top of a page. Two gradients: blush from the
+ * left, a hint of gold from the right.
+ */
+.ds-wash {
+  position: relative;
+  isolation: isolate;
+}
+
+.ds-wash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--wash-warm), var(--wash-gold);
+  pointer-events: none;
+}
+
+.ds-wash-sage::before {
+  background-image: var(--wash-sage);
+}
+
+/* ── Lines ──────────────────────────────────────────────────────────────── */
+
+/* A gold hairline that fades out at both ends. Decorative: it is never the only
+   thing separating two pieces of content. */
+.ds-rule {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--hairline-gold);
+}
+
+/* The same line as an element's top edge — for a card worth singling out. */
+.ds-edge-top {
+  position: relative;
+}
+
+.ds-edge-top::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--edge-gold);
+  pointer-events: none;
+}
+
+/* ── Section label ──────────────────────────────────────────────────────── */
+
+/*
+ * Small-caps label above a heading, with a short gold rule. The rule is drawn
+ * with a pseudo-element so screen readers hear only the words.
+ */
+.ds-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.ds-eyebrow::after {
+  content: '';
+  flex: 0 0 auto;
+  width: 34px;
+  height: 1px;
+  background: var(--edge-gold);
+}
+
+.ds-eyebrow-center {
+  justify-content: center;
+}
+
+.ds-eyebrow-center::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 34px;
+  height: 1px;
+  background: var(--edge-gold);
+}

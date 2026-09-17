@@ -6,8 +6,22 @@
 }
 
 .hero {
+  position: relative;
+  isolation: isolate;
   padding-block: var(--space-7) var(--space-8);
-  background: var(--color-blush);
+  background-color: var(--color-canvas);
+  background-image: var(--wash-warm), var(--wash-gold);
+}
+
+/* Closes the band. Decorative: the section below it is a separate element with
+   its own background, so nothing depends on this line being seen. */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: var(--hairline-gold);
+  pointer-events: none;
 }
 
 .heroInner {

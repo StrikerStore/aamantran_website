@@ -1,9 +1,10 @@
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  background: var(--color-surface);
+  background: var(--surface-raised);
   border-radius: var(--radius-card);
   box-shadow: var(--elevation-1);
   transition:
@@ -11,10 +12,35 @@
     box-shadow var(--dur-hover) var(--ease-standard);
 }
 
+/* A gold hairline along the top edge, drawn only while the card is raised.
+   Decoration: nothing about the card depends on seeing it. */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--edge-gold);
+  opacity: 0;
+  transition: opacity var(--dur-hover) var(--ease-standard);
+  pointer-events: none;
+}
+
 .card:hover,
 .card:focus-within {
   transform: translateY(var(--lift-hover));
-  box-shadow: var(--elevation-2);
+  box-shadow: var(--elevation-3);
+}
+
+.card:hover::after,
+.card:focus-within::after {
+  opacity: 1;
+}
+
+/* The artwork breathes inside its frame rather than the whole card jumping.
+   TemplateArt's .frame clips it. */
+.card:hover .media :global(img),
+.card:focus-within .media :global(img) {
+  transform: scale(var(--zoom-hover));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -22,11 +48,20 @@
   .card:focus-within {
     transform: none;
   }
+
+  .card:hover .media :global(img),
+  .card:focus-within .media :global(img) {
+    transform: none;
+  }
 }
 
 /* Positioning context for the corner tag (.tpl-tag). */
 .media {
   position: relative;
+}
+
+.media :global(img) {
+  transition: transform var(--dur-crossfade) var(--ease-standard);
 }
 
 .mediaLink {

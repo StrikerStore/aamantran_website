@@ -1,0 +1,29 @@
+/*
+ * The hidden state is added by the component, never by this file alone, so a
+ * page without JavaScript shows its content rather than hiding it forever.
+ */
+.reveal {
+  transition:
+    opacity var(--dur-section) var(--ease-standard),
+    transform var(--dur-section) var(--ease-standard);
+}
+
+.pending {
+  opacity: 0;
+  transform: translateY(var(--rise-section));
+}
+
+.shown {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .pending,
+  .shown {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
