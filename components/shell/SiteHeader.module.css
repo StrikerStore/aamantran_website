@@ -1,0 +1,141 @@
+.header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 100;
+  height: var(--header-height);
+  border-bottom: 1px solid var(--color-divider);
+  background: rgba(251, 247, 240, 0.92);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  height: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.brand {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.brandName {
+  font-family: var(--font-ui);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.nav {
+  display: none;
+  margin-inline-start: var(--space-4);
+}
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color var(--dur-press) var(--ease-standard);
+}
+
+.navLink:hover {
+  color: var(--color-text);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-inline-start: auto;
+}
+
+/* Two classes, so it outranks the button's own display rule whatever the load order. */
+.actions .login {
+  display: none;
+}
+
+.skipLink {
+  position: absolute;
+  top: -64px;
+  left: var(--space-4);
+  z-index: 101;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.skipLink:focus {
+  top: var(--space-2);
+}
+
+/* The narrowest phones (320px): the wordmark gives way so Browse and the menu
+   button still fit. The logo link keeps its "Aamantran home" accessible name. */
+@media (max-width: 359px) {
+  .inner {
+    gap: var(--space-3);
+  }
+  .brandName {
+    display: none;
+  }
+}
+
+/* Phones: short visible label, full label kept for screen readers. */
+@media (max-width: 639px) {
+  .browseLong {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 640px) {
+  .browseShort {
+    display: none;
+  }
+  .actions .login {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav {
+    display: block;
+  }
+}

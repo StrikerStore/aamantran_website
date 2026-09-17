@@ -1,0 +1,270 @@
+/*
+ * Shared layout for the written pages: how it works, features, planning tools,
+ * pricing, stories and the help centre. One stylesheet so they read as one
+ * family rather than six near-identical copies.
+ */
+
+/* The site header is fixed, so every page pads its own top. */
+.page {
+  padding-top: var(--header-height);
+  padding-bottom: var(--section-gap);
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+.hero {
+  padding-block: var(--space-7);
+  background: var(--color-blush);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.title {
+  max-width: 22ch;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--type-section);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+}
+
+.intro {
+  max-width: 68ch;
+  margin: var(--space-4) 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-body);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.section {
+  margin-top: var(--section-gap);
+  scroll-margin-top: var(--space-4);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+}
+
+.sectionIntro,
+.prose {
+  max-width: 68ch;
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.prose {
+  color: var(--color-text);
+}
+
+.subTitle {
+  margin: var(--space-6) 0 0;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+.cards {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 720px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .cardsThree {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--elevation-1);
+}
+
+.cardTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.cardText {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+/* An honest limit, set apart from the description above it. */
+.cardLimit {
+  margin: 0;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-divider);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+/* ── Steps ─────────────────────────────────────────────────────────────── */
+.steps {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
+  align-items: start;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--elevation-1);
+}
+
+.stepNumber {
+  display: inline-flex;
+  grid-row: span 2;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+
+.stepTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.stepText {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+/* ── Plain lists ───────────────────────────────────────────────────────── */
+.list {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 72ch;
+  margin: var(--space-5) 0 0;
+  padding-left: var(--space-5);
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+}
+
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-ui);
+}
+
+.linkRow a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Notes and callouts ────────────────────────────────────────────────── */
+.note {
+  max-width: 72ch;
+  margin: var(--space-5) 0 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-sage);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+.more {
+  margin: var(--space-5) 0 0;
+  font-family: var(--font-ui);
+}
+
+.more a:not([class]) {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Closing call to action ────────────────────────────────────────────── */
+.cta {
+  margin-top: var(--section-gap);
+  padding-block: var(--space-8);
+  background: var(--color-sage);
+  text-align: center;
+}
+
+.ctaTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--type-section);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+}
+
+.ctaText {
+  max-width: 60ch;
+  margin: var(--space-4) auto var(--space-5);
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+}

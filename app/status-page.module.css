@@ -1,0 +1,51 @@
+/* Shared by the 404 page and the error boundary. */
+.page {
+  padding-top: calc(var(--header-height) + var(--space-8));
+  padding-bottom: var(--space-9);
+  background: var(--color-canvas);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-3);
+  color: var(--color-primary);
+  font-size: var(--type-small);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--type-section);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+}
+
+.lead {
+  max-width: 56ch;
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-body);
+  line-height: var(--leading-body);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.aside {
+  margin: var(--space-6) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-small);
+}
+
+.aside a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}

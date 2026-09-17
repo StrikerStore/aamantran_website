@@ -1,449 +1,675 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-
-import { getPublicApiUrl } from '@/lib/publicEnv';
-import { track } from '@/lib/track';
-import { CURRENCY, IS_INTL, formatMoney, priceFor, storefrontHeaders } from '@/lib/storefront';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import PhoneField from '@/components/PhoneField';
+import { CommerceShell } from '@/components/commerce/CommerceShell';
+import { Button } from '@/components/ui/Button';
+import { Notice } from '@/components/ui/Notice';
+import { RemoteImage } from '@/components/ui/RemoteImage';
+import { apiRequest } from '@/lib/api/client';
+import { createOrder, getOffers, isDummyOrder, previewCoupon } from '@/lib/api/checkout';
+import type { OfferCoupon, PriceBreakup } from '@/lib/api/types';
+import {
+  contactError,
+  emailError,
+  firstErrorField,
+  initiateCheckoutKey,
+  onboardingHref,
+  parseCheckoutAddress,
+  paymentFailedReturnKey,
+  paymentFailureMessage,
+  validateCheckout,
+  type CheckoutErrors,
+  type CheckoutField,
+} from '@/lib/checkout';
+import { clearCheckoutDraft, readCheckoutDraft, saveCheckoutDraft, type CheckoutDraft } from '@/lib/checkoutDraft';
+import { ACCESS, INCLUDED, SELF_BUILD } from '@/lib/content/entitlements';
+import { TRY_DEMO } from '@/lib/content/tryDemo';
+import { computePriceBreakdown } from '@/lib/priceMath';
+import { CURRENCY, IS_INTL, formatMoney, priceFor } from '@/lib/storefront';
+import { getFbq } from '@/lib/metaPixel';
+import { track, trackOnce } from '@/lib/track';
+import ui from '@/components/commerce/commerceForm.module.css';
+import styles from './checkout.module.css';
 
-const API = getPublicApiUrl();
 const DUMMY_PAYMENT_MODE = String(process.env.NEXT_PUBLIC_DUMMY_PAYMENT_MODE || '').toLowerCase() === 'true';
 
-interface TemplateData {
-  id: string;
+/** The included items that hold for every design, in the order a buyer cares about. */
+const INCLUDED_HERE = ['link', 'partial', 'guests', 'planning', 'support']
+  .map((id) => INCLUDED.find((item) => item.id === id))
+  .filter((item): item is (typeof INCLUDED)[number] => Boolean(item));
+
+export interface CheckoutTemplate {
   slug: string;
   name: string;
-  community: string;
   price: number;
-  originalPrice: number | null;
-  // Derived server-side from the INR price. Both ship together because this
-  // response feeds statically cached pages too.
   priceUsd: number | null;
+  originalPrice: number | null;
   originalPriceUsd: number | null;
-  gstPercent?: number;
-  thumbnailUrl: string | null;
-}
-
-interface OfferCoupon {
-  code: string;
-  discountPercent: number;
-  discountAmount: number;
-  label: string;
-  condition: string;
-  expiresAt: string | null;
-  eligible: boolean;
-  /** The storefront this offer belongs to — 'INR' or 'USD'. */
-  currency: string;
-  /** Why this offer cannot be used yet, e.g. "Add ₹1,999 more to unlock this offer". */
-  unlockMessage: string | null;
-}
-
-interface PriceBreakup {
-  baseAmount: number;
-  discountAmount: number;
-  discountPct: number;
-  discountedAmount: number;
   gstPercent: number;
-  gstAmount: number;
-  finalAmount: number;
-  /** Every amount above is in the minor unit of this currency. */
-  currency: string;
+  image: string | null;
 }
 
-/**
- * The opening figures, before the server has said anything.
- *
- * A first paint only — every later breakup comes from /coupon-preview or
- * /order, which recompute it server-side for the storefront this deployment
- * declares. If this guess and the server ever disagree, the server wins and the
- * customer is charged what it says.
- *
- * International orders are zero-rated, so GST is dropped along with the switch
- * to dollars rather than being a separate rule the page has to remember.
- */
-function defaultBreakup(template: TemplateData): PriceBreakup {
+type Status = 'idle' | 'creatingOrder' | 'redirecting' | 'failed';
+
+type CouponState =
+  | { kind: 'none' }
+  | { kind: 'checking'; code: string }
+  | { kind: 'applied'; code: string; pct: number }
+  | { kind: 'refused'; code: string; message: string }
+  | { kind: 'error'; code: string; message: string };
+
+/** The figures before the server has answered. International orders are zero-rated. */
+function firstPaintBreakup(template: CheckoutTemplate): PriceBreakup {
   const intl = IS_INTL && template.priceUsd != null;
-  const baseAmount = priceFor(template) ?? template.price;
-  const discountAmount = 0;
-  const discountPct = 0;
-  const discountedAmount = Math.max(100, baseAmount - discountAmount);
-  const gstPercent = intl ? 0 : Number(template.gstPercent || 0);
-  const gstAmount = Math.round((discountedAmount * gstPercent) / 100);
-  const finalAmount = discountedAmount + gstAmount;
+  const b = computePriceBreakdown({ base: priceFor(template) ?? template.price, gstPercent: template.gstPercent, intl });
   return {
-    baseAmount, discountAmount, discountPct, discountedAmount,
-    gstPercent, gstAmount, finalAmount,
+    baseAmount: b.base,
+    discountAmount: 0,
+    discountPct: 0,
+    gstPercent: b.gstPercent,
+    gstAmount: b.gst,
+    finalAmount: b.total,
     currency: intl ? 'USD' : 'INR',
   };
 }
 
-/** Submit a hidden form to PayU's payment URL */
+/** Hand the browser to PayU with the signed fields the server produced. */
 function submitPayUForm(payuUrl: string, params: Record<string, string>) {
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = payuUrl;
-  Object.entries(params).forEach(([name, value]) => {
+  for (const [name, value] of Object.entries(params)) {
     const input = document.createElement('input');
     input.type = 'hidden';
     input.name = name;
     input.value = String(value ?? '');
     form.appendChild(input);
-  });
+  }
   document.body.appendChild(form);
   form.submit();
 }
 
-export default function CheckoutClient() {
-  const params = useParams<{ slug: string }>();
-  const router = useRouter();
-  const slug = params?.slug;
+// The address and the saved draft cannot change while the page is open, so
+// there is nothing to subscribe to. Both snapshots are strings, which keeps them
+// stable between renders; the server's snapshot is empty.
+const noSubscription = () => () => {};
 
-  const [template, setTemplate] = useState<TemplateData | null>(null);
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  // Split, because that is how the number is stored and how PayU is given it.
-  const [contactCountryCode, setContactCountryCode] = useState(IS_INTL ? '+1' : '+91');
-  const [contactNational, setContactNational] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [paying, setPaying] = useState(false);
-  const [couponMsg, setCouponMsg] = useState('');
-  const [breakup, setBreakup] = useState<PriceBreakup | null>(null);
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const [marketingOptIn, setMarketingOptIn] = useState(false);
-  const [offers, setOffers] = useState<OfferCoupon[]>([]);
-
-  // Which storefront this build IS. The server still recomputes every amount
-  // from the storefront header these requests carry, so the figures coming back
-  // from /coupon-preview and /order remain the truth.
-
-  /** Amounts in whatever currency the current breakup is quoted in. */
-  const money = (minor: number) => formatMoney(minor, breakup?.currency || CURRENCY);
-
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim());
-  const contactDigits = contactNational.replace(/\D/g, '');
-  // E.164 caps the whole number, dial code included, at 15 digits.
-  const e164Digits = contactCountryCode.replace(/\D/g, '') + contactDigits;
-  // The 10-digit [6-9] rule describes Indian mobile numbers and rejects every
-  // valid foreign one, so it is applied only to the India storefront.
-  // Internationally the bar is E.164's own limits.
-  const contactValid = contactCountryCode === '+91'
-    // Every Indian mobile is ten digits starting 6-9. Kept as a specific check
-    // because it is still the overwhelming majority of traffic.
-    ? /^[6-9]\d{9}$/.test(contactDigits)
-    : e164Digits.length >= 8 && e164Digits.length <= 15;
-  const canPay = emailValid && contactValid && agreeTerms && !paying;
-
-  useEffect(() => {
-    if (!slug) return;
-    fetch(`${API}/api/templates/${slug}`)
-      .then(r => (r.ok ? r.json() : null))
-      .then(data => {
-        setTemplate(data);
-        if (data) {
-          const bp = defaultBreakup(data);
-          setBreakup(bp);
-          track('initiate_checkout', { slug, value: bp.finalAmount / 100, currency: bp.currency });
-          if (typeof window !== 'undefined' && (window as any).fbq) {
-            (window as any).fbq('track', 'InitiateCheckout', {
-              value: bp.finalAmount / 100,
-              currency: bp.currency,
-              content_ids: [slug],
-              content_name: data.name,
-              content_type: 'product',
-            });
-          }
-        }
-      })
-      .finally(() => setLoading(false));
-    // Runs once per slug. The storefront is a build-time constant now, so there
-    // is nothing else for this to depend on and InitiateCheckout fires once.
-  }, [slug]);
-
-  // Offers are advisory: the authoritative price always comes from
-  // /coupon-preview when a code is applied, so a failure here is silent.
-  useEffect(() => {
-    if (!slug) return;
-    const email = emailValid ? customerEmail.trim() : '';
-    const controller = new AbortController();
-
-    // Debounced because this re-runs while the customer is still typing.
-    const timer = setTimeout(() => {
-      const qs = new URLSearchParams({ templateSlug: String(slug) });
-      if (email) qs.set('customerEmail', email);
-      fetch(`${API}/api/checkout/coupons?${qs.toString()}`, { signal: controller.signal, headers: storefrontHeaders() })
-        .then(r => (r.ok ? r.json() : null))
-        .then(d => setOffers(Array.isArray(d?.coupons) ? d.coupons : []))
-        .catch(() => { /* offers are optional; the code input still works */ });
-    }, email ? 400 : 0);
-
-    return () => { clearTimeout(timer); controller.abort(); };
-  }, [slug, emailValid, customerEmail]);
-
-  function applyOffer(code: string) {
-    setCouponCode(code);
-    applyCoupon(code);
-  }
-
-  function applyCoupon(overrideCode?: string) {
-    // Only trust a real string: passing this as a bare event handler would
-    // otherwise hand us a MouseEvent.
-    const raw = typeof overrideCode === 'string' ? overrideCode : couponCode;
-    const code = raw.trim().toUpperCase();
-    if (!code) {
-      setAppliedCoupon('');
-      setCouponMsg('');
-      if (template) setBreakup(defaultBreakup(template));
-      return;
-    }
-    fetch(`${API}/api/checkout/coupon-preview`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...storefrontHeaders() },
-      body: JSON.stringify({ templateSlug: slug, couponCode: code, customerEmail }),
-    })
-      .then(r => r.json().then(d => ({ ok: r.ok, d })))
-      .then(({ ok, d }) => {
-        if (!ok) throw new Error(d?.message || 'Failed to apply coupon');
-        if (d.valid) {
-          setAppliedCoupon(code);
-          setCouponMsg(`Coupon applied: ${d.priceBreakup.discountPct}% off`);
-          setBreakup({
-            ...d.priceBreakup,
-            discountedAmount: Math.max(100, Number(d.priceBreakup.baseAmount) - Number(d.priceBreakup.discountAmount)),
-          });
-        } else {
-          setAppliedCoupon('');
-          setCouponMsg(d.reason || 'Invalid or inactive coupon code');
-          if (d.priceBreakup) {
-            setBreakup({
-              ...d.priceBreakup,
-              discountedAmount: Math.max(100, Number(d.priceBreakup.baseAmount) - Number(d.priceBreakup.discountAmount)),
-            });
-          } else if (template) {
-            setBreakup(defaultBreakup(template));
-          }
-        }
-      })
-      .catch((err) => {
-        setAppliedCoupon('');
-        setCouponMsg(err.message || 'Could not verify coupon');
-        if (template) setBreakup(defaultBreakup(template));
-      });
-  }
-
-  async function handlePayNow() {
-    if (!template || !slug || paying) return;
-    if (!emailValid || !contactValid) {
-      alert(IS_INTL
-        ? 'Please enter a valid email and contact number.'
-        : 'Please enter a valid email and 10-digit mobile number.');
-      return;
-    }
-    if (!agreeTerms) {
-      alert('Please accept the Terms of Service and Privacy Policy to continue.');
-      return;
-    }
-    setPaying(true);
-    try {
-      const orderRes = await fetch(`${API}/api/checkout/order`, {
-        method: 'POST',
-        // The server cross-checks this against Origin before deciding what to
-        // charge, so it cannot be used to claim the other site's pricing.
-        headers: { 'Content-Type': 'application/json', ...storefrontHeaders() },
-        body: JSON.stringify({
-          templateSlug:    slug,
-          couponCode:      appliedCoupon || undefined,
-          customerEmail:   customerEmail.trim(),
-          customerContact: contactNational,
-          customerContactCountryCode: contactCountryCode,
-          consent:         agreeTerms,
-          marketingOptIn,
-        }),
-      });
-      const orderData = await orderRes.json();
-      if (!orderRes.ok) throw new Error(orderData?.message || 'Unable to start checkout');
-
-      // NOTE: the Meta `Purchase` event is deliberately NOT fired here — at this
-      // point the order only exists as `pending` and the visitor has not paid yet.
-      // It fires on /onboarding, which PayU only reaches after a verified payment.
-
-      if (DUMMY_PAYMENT_MODE) {
-        const mockRes = await fetch(`${API}/api/checkout/mock-success`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentId: orderData.paymentId }),
-        });
-        if (!mockRes.ok) {
-          const mockData = await mockRes.json().catch(() => ({}));
-          throw new Error(mockData?.message || 'Mock payment failed');
-        }
-        router.push(`/onboarding?paymentId=${encodeURIComponent(orderData.paymentId)}&slug=${encodeURIComponent(slug)}&template=${encodeURIComponent(template.name)}&amount=${breakup?.finalAmount ?? 0}`);
-        return;
-      }
-
-      // Submit form to PayU — browser navigates away; PayU will redirect back to surl/furl
-      submitPayUForm(orderData.payuUrl, orderData.payuParams);
-    } catch (err: any) {
-      alert(err?.message || 'Checkout failed');
-      setPaying(false);
-    }
-    // Note: setPaying(false) is intentionally NOT called on success path
-    // because the page navigates away to PayU
-  }
-
-  if (loading) return <div className="checkout-wrap">Loading checkout…</div>;
-  if (!template) return <div className="checkout-wrap">Template not found.</div>;
+/**
+ * Reads what only the browser knows — the query string and the draft saved
+ * before a previous payment attempt — then mounts the form with it.
+ *
+ * The form is keyed on that snapshot: the server renders it empty, and the
+ * first client render remounts it already filled in, so no effect has to copy
+ * storage into state and nothing flickers from empty to filled.
+ */
+export function CheckoutClient({ template }: { template: CheckoutTemplate }) {
+  const search = useSyncExternalStore(noSubscription, () => window.location.search, () => '');
+  const draftJson = useSyncExternalStore(
+    noSubscription,
+    () => JSON.stringify(readCheckoutDraft({ templateSlug: template.slug })),
+    () => 'null',
+  );
+  const address = useMemo(() => parseCheckoutAddress(search), [search]);
+  const draft = useMemo(() => JSON.parse(draftJson) as CheckoutDraft | null, [draftJson]);
 
   return (
-    <div className="checkout-wrap">
-      <div className="checkout-card">
-        <Link href="/" className="checkout-brand">
-          <Image src="/logo.png" alt="" width={40} height={40} className="checkout-brand-logo" />
-          <span className="checkout-brand-name">Aamantran</span>
-        </Link>
-        <h1>Checkout</h1>
-        <p className="checkout-sub">
-          {DUMMY_PAYMENT_MODE
-            ? 'Test mode — completing purchase does not charge a card or open PayU.'
-            : 'Secure payment for your invitation template'}
+    <CheckoutForm
+      key={`${search}|${draftJson}`}
+      template={template}
+      paymentFailed={address.paymentFailed}
+      failureReason={address.failureReason}
+      trialToken={address.trialToken}
+      draft={draft}
+    />
+  );
+}
+
+function CheckoutForm({
+  template,
+  paymentFailed,
+  failureReason,
+  trialToken,
+  draft,
+}: {
+  template: CheckoutTemplate;
+  paymentFailed: boolean;
+  failureReason: string | null;
+  trialToken: string;
+  draft: CheckoutDraft | null;
+}) {
+  const router = useRouter();
+  const { slug } = template;
+  const id = useId();
+  const fieldId = (field: CheckoutField) => `${id}-${field}`;
+
+  const [email, setEmail] = useState(draft?.email ?? '');
+  const [contactCountryCode, setContactCountryCode] = useState(draft?.contactCountryCode || (IS_INTL ? '+1' : '+91'));
+  const [contactNational, setContactNational] = useState(draft?.contactNational ?? '');
+  // Consent is never restored: it is given again on every attempt.
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [touched, setTouched] = useState<Partial<Record<CheckoutField, boolean>>>({});
+  const [attempted, setAttempted] = useState(false);
+
+  const [couponInput, setCouponInput] = useState(draft?.couponCode ?? '');
+  const [coupon, setCoupon] = useState<CouponState>(draft?.couponCode ? { kind: 'checking', code: draft.couponCode } : { kind: 'none' });
+  const [breakup, setBreakup] = useState<PriceBreakup>(() => firstPaintBreakup(template));
+  const [priceConfirmed, setPriceConfirmed] = useState(false);
+  const [offers, setOffers] = useState<OfferCoupon[]>([]);
+
+  const [status, setStatus] = useState<Status>('idle');
+  const [submitError, setSubmitError] = useState('');
+
+  const previewSeq = useRef(0);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const submitErrorRef = useRef<HTMLDivElement>(null);
+
+  const errors: CheckoutErrors = validateCheckout({ email, contactCountryCode, contactNational, agreeTerms });
+  const shown = (field: CheckoutField) => (attempted || touched[field] ? errors[field] : undefined);
+  const emailValid = !emailError(email);
+  const busy = status === 'creatingOrder' || status === 'redirecting';
+  const appliedCode = coupon.kind === 'applied' ? coupon.code : '';
+  const money = (minor: number) => formatMoney(minor, breakup.currency || CURRENCY);
+
+  /** Asks the server for the exact figures, with a code or without. Later answers win. */
+  const runPreview = useCallback(
+    async (code: string, forEmail: string) => {
+      const seq = ++previewSeq.current;
+      const result = await previewCoupon({ templateSlug: slug, couponCode: code, customerEmail: forEmail || undefined });
+      if (seq !== previewSeq.current) return;
+      if (!result.ok) {
+        // The first-paint figures stay; the order is priced by the server regardless.
+        if (code) setCoupon({ kind: 'error', code, message: result.message });
+        return;
+      }
+      setBreakup(result.data.priceBreakup);
+      setPriceConfirmed(true);
+      if (!code) setCoupon({ kind: 'none' });
+      else if (result.data.valid) setCoupon({ kind: 'applied', code, pct: result.data.priceBreakup.discountPct });
+      else setCoupon({ kind: 'refused', code, message: result.data.reason || 'That code cannot be used on this order.' });
+    },
+    [slug],
+  );
+
+  // Once per design per session: our funnel event and Meta's InitiateCheckout.
+  useEffect(() => {
+    const opening = firstPaintBreakup(template);
+    trackOnce(`initiate_checkout:${slug}`, 'initiate_checkout', { slug, value: opening.finalAmount / 100, currency: opening.currency });
+    try {
+      const key = initiateCheckoutKey(slug);
+      const fbq = getFbq();
+      if (fbq && !window.sessionStorage.getItem(key)) {
+        window.sessionStorage.setItem(key, '1');
+        fbq('track', 'InitiateCheckout', {
+          value: opening.finalAmount / 100,
+          currency: opening.currency,
+          content_ids: [slug],
+          content_name: template.name,
+          content_type: 'product',
+        });
+      }
+    } catch {
+      // Storage blocked: skip the pixel rather than risk sending it on every visit.
+    }
+    if (paymentFailed) {
+      trackOnce(paymentFailedReturnKey(failureReason), 'payment_failed_return', { slug, recovered: true, ...(failureReason ? { reason: failureReason } : {}) });
+    }
+  }, [slug, template, paymentFailed, failureReason]);
+
+  // The exact price straight away, with the code from a returning draft if there is one.
+  useEffect(() => {
+    void runPreview(draft?.couponCode ?? '', draft?.email && !emailError(draft.email) ? draft.email.trim() : '');
+    // Mount only: later previews come from the buyer's own actions below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Offers can depend on the email, and so can an applied code: both are rechecked once it is valid.
+  const offersEmail = emailValid ? email.trim() : '';
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      getOffers(slug, offersEmail || undefined, controller.signal).then(setOffers).catch(() => {});
+      if (appliedCode && offersEmail) void runPreview(appliedCode, offersEmail);
+    }, offersEmail ? 400 : 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+    // appliedCode is read, not watched: a new code is previewed where it is applied.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, offersEmail, runPreview]);
+
+  // Back from the payment page via the browser's back button: the page can be
+  // restored exactly as it was left, mid-redirect. Make it usable again.
+  useEffect(() => {
+    function handlePageShow(event: PageTransitionEvent) {
+      if (event.persisted) setStatus('idle');
+    }
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
+  function applyCode(raw: string) {
+    const code = raw.trim().toUpperCase();
+    setCouponInput(code);
+    if (!code) {
+      setCoupon({ kind: 'none' });
+      void runPreview('', emailValid ? email.trim() : '');
+      return;
+    }
+    setCoupon({ kind: 'checking', code });
+    void runPreview(code, emailValid ? email.trim() : '');
+  }
+
+  function removeCode() {
+    setCouponInput('');
+    applyCode('');
+  }
+
+  function focusSoon(getElement: () => HTMLElement | null) {
+    window.requestAnimationFrame(() => getElement()?.focus());
+  }
+
+  async function pay() {
+    if (busy) return;
+    setAttempted(true);
+    setSubmitError('');
+    const first = firstErrorField(errors);
+    if (first) {
+      setStatus('idle');
+      focusSoon(() => summaryRef.current);
+      return;
+    }
+    if (paymentFailed) track('checkout_retry', { slug, ...(failureReason ? { reason: failureReason } : {}) });
+
+    setStatus('creatingOrder');
+    const order = await createOrder({
+      templateSlug: slug,
+      couponCode: appliedCode || undefined,
+      customerEmail: email.trim(),
+      customerContact: contactNational,
+      customerContactCountryCode: contactCountryCode,
+      consent: true,
+      marketingOptIn,
+      ...(trialToken ? { trialToken } : {}),
+    });
+
+    if (!order.ok) {
+      setStatus('failed');
+      setSubmitError(order.message);
+      track('checkout_error', { slug, stage: 'order', status: order.status });
+      focusSoon(() => submitErrorRef.current);
+      return;
+    }
+
+    // Kept for a failed or cancelled payment: the buyer comes back to this form filled in.
+    saveCheckoutDraft({
+      templateSlug: slug,
+      email: email.trim(),
+      contactCountryCode,
+      contactNational,
+      couponCode: appliedCode,
+    });
+
+    if (isDummyOrder(order.data)) {
+      const mock = await apiRequest<unknown>('POST', '/api/checkout/mock-success', { body: { paymentId: order.data.paymentId } });
+      if (!mock.ok) {
+        setStatus('failed');
+        setSubmitError(mock.message);
+        track('checkout_error', { slug, stage: 'mock', status: mock.status });
+        focusSoon(() => submitErrorRef.current);
+        return;
+      }
+      clearCheckoutDraft();
+      setStatus('redirecting');
+      router.push(onboardingHref({
+        paymentId: order.data.paymentId,
+        slug,
+        templateName: template.name,
+        orderId: order.data.orderId,
+        amount: order.data.amount,
+        currency: order.data.priceBreakup?.currency || breakup.currency,
+      }));
+      return;
+    }
+
+    setStatus('redirecting');
+    submitPayUForm(order.data.payuUrl, order.data.payuParams);
+  }
+
+  const errorList = attempted ? (Object.entries(errors) as [CheckoutField, string][]) : [];
+  const payLabel = status === 'creatingOrder'
+    ? 'Preparing your order…'
+    : status === 'redirecting'
+      ? DUMMY_PAYMENT_MODE ? 'Completing test purchase…' : 'Taking you to PayU…'
+      : DUMMY_PAYMENT_MODE
+        ? `Complete test purchase · ${money(breakup.finalAmount)}`
+        : `Pay ${money(breakup.finalAmount)}`;
+  const describedBy = (field: CheckoutField, hint?: string) =>
+    [hint, shown(field) ? `${fieldId(field)}-error` : ''].filter(Boolean).join(' ') || undefined;
+
+  return (
+    <CommerceShell label={<><span aria-hidden="true">🔒</span> Secure checkout</>}>
+        <p className={styles.back}>
+          <Link href={`/templates/${slug}`}>← Back to {template.name}</Link>
         </p>
+        <h1 className={styles.title}>Checkout</h1>
 
-        <div className="checkout-contact-row">
-          <input
-            type="email"
-            placeholder="Enter email"
-            value={customerEmail}
-            onChange={e => setCustomerEmail(e.target.value)}
-          />
-          <PhoneField
-            countryCode={contactCountryCode}
-            number={contactNational}
-            placeholder="Enter contact number"
-            onChange={({ countryCode, number }) => {
-              setContactCountryCode(countryCode);
-              setContactNational(number);
-            }}
-          />
-        </div>
-        {customerEmail && !emailValid && <p className="checkout-error-msg">Please enter a valid email address.</p>}
-        {contactNational && !contactValid && (
-          <p className="checkout-error-msg">
-            {contactCountryCode === '+91'
-              ? 'Please enter a valid 10-digit Indian mobile number.'
-              : 'Please enter a valid contact number for the country code selected.'}
-          </p>
+        {DUMMY_PAYMENT_MODE && (
+          <Notice tone="info" title="Test mode">
+            Completing this purchase does not charge a card or open PayU.
+          </Notice>
         )}
 
-        <div className="checkout-product">
-          <div>
-            <p className="checkout-label">Product</p>
-            <p className="checkout-name">{template.name}</p>
-          </div>
-        </div>
+        {paymentFailed && (
+          <Notice tone="warning" title="Your payment didn’t go through" live="polite" className={styles.notice}>
+            {paymentFailureMessage(failureReason)} This order was not placed.{' '}
+            {draft ? 'Your details are filled in below' : 'Enter your details below'} — tick the terms again and pay when you’re ready.
+            If your bank shows a payment for this attempt, contact us with the time you tried.
+          </Notice>
+        )}
 
-        <div className="checkout-breakup">
-          <div><span>Template price</span><strong>{money(breakup?.baseAmount || 0)}</strong></div>
-          <div><span>Discount{breakup?.discountPct ? ` (${breakup.discountPct}%)` : ''}</span><strong>- {money(breakup?.discountAmount || 0)}</strong></div>
-          {/* Hidden rather than shown as 0%: international orders are zero-rated
-              exports, so a GST line has no meaning on them at all. */}
-          {(breakup?.gstPercent || 0) > 0 && (
-            <div><span>GST ({breakup?.gstPercent}%)</span><strong>{money(breakup?.gstAmount || 0)}</strong></div>
-          )}
-          <div className="total"><span>Total payable</span><strong>{money(breakup?.finalAmount || 0)}</strong></div>
-        </div>
-
-        <div className="checkout-coupon">
-          <input
-            type="text"
-            placeholder="Coupon code"
-            value={couponCode}
-            onChange={e => setCouponCode(e.target.value)}
-          />
-          <button type="button" onClick={() => applyCoupon()}>Apply</button>
-        </div>
-        {couponMsg && <p className="checkout-coupon-msg">{couponMsg}</p>}
-
-        {offers.length > 0 && (
-          <div className="checkout-offers">
-            <p className="checkout-offers-title">Offers</p>
-            <div className="checkout-offers-list">
-              {offers.map(o => {
-                const locked = !o.eligible;
-                const applied = !locked && appliedCoupon === o.code;
-                return (
-                  <div
-                    key={o.code}
-                    className={`checkout-offer${applied ? ' is-applied' : ''}${locked ? ' is-locked' : ''}`}
-                  >
-                    <div className="checkout-offer-main">
-                      <span className="checkout-offer-code">{o.code}</span>
-                      <span className="checkout-offer-label">{o.label}</span>
-                    </div>
-                    {o.condition && <p className="checkout-offer-cond">{o.condition}</p>}
-                    {locked && o.unlockMessage && <p className="checkout-offer-unlock">{o.unlockMessage}</p>}
-                    <button
-                      type="button"
-                      className="checkout-offer-btn"
-                      disabled={locked || applied}
-                      onClick={() => applyOffer(o.code)}
-                    >
-                      {locked ? 'Locked' : applied ? 'Applied' : `Save ${formatMoney(o.discountAmount, o.currency)}`}
-                    </button>
-                  </div>
-                );
-              })}
+        <div className={styles.layout}>
+          {/* ── Your invitation and the price ─────────────────────────────── */}
+          <aside className={styles.summary} aria-labelledby={`${id}-summary`}>
+            <h2 id={`${id}-summary`} className="visually-hidden">Order summary</h2>
+            <div className={styles.product}>
+              <RemoteImage
+                src={template.image}
+                alt=""
+                sizes="120px"
+                aspectRatio="16 / 10"
+                className={styles.thumb}
+                fallback={<span className={styles.thumbFallback} aria-hidden="true">✦</span>}
+              />
+              <div>
+                <p className={styles.productLabel}>Your invitation</p>
+                <p className={styles.productName}>{template.name}</p>
+              </div>
             </div>
-          </div>
-        )}
 
-        <div style={{ marginTop: 16, display: 'grid', gap: 8, fontSize: '0.82rem', color: 'var(--text-subtle, #8a7a6f)', textAlign: 'left' }}>
-          <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={agreeTerms}
-              onChange={e => setAgreeTerms(e.target.checked)}
-              style={{ marginTop: 2, flexShrink: 0 }}
-            />
-            <span>
-              I am 18 or older and agree to the{' '}
-              <Link href="/terms" target="_blank" style={{ textDecoration: 'underline', color: 'inherit' }}>Terms of Service</Link>
-              {' '}and{' '}
-              <Link href="/privacy" target="_blank" style={{ textDecoration: 'underline', color: 'inherit' }}>Privacy Policy</Link>.
-            </span>
-          </label>
-          <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={marketingOptIn}
-              onChange={e => setMarketingOptIn(e.target.checked)}
-              style={{ marginTop: 2, flexShrink: 0 }}
-            />
-            <span>If I step away before finishing, email me a one-time link so I can pick up where I left off. (optional)</span>
-          </label>
+            {trialToken && (
+              <p className={styles.trialNote} role="note">
+                <span aria-hidden="true">✦ </span>
+                {TRY_DEMO.checkoutNote}
+              </p>
+            )}
+
+            <div className={styles.included}>
+              <p className={styles.sectionLabel}>Included</p>
+              <ul>
+                {INCLUDED_HERE.map((item) => (
+                  <li key={item.id}>{item.title}</li>
+                ))}
+                <li>{ACCESS.short}</li>
+              </ul>
+              <p className={ui.small}>
+                Digital only — nothing is printed or posted.{' '}
+                <Link href="/features" target="_blank">
+                  Everything included<span className="visually-hidden"> (opens in a new tab)</span>
+                </Link>
+              </p>
+            </div>
+
+            <dl className={styles.price} aria-live="polite" aria-busy={!priceConfirmed || coupon.kind === 'checking'}>
+              <div>
+                <dt>Design price</dt>
+                <dd>{money(breakup.baseAmount)}</dd>
+              </div>
+              {breakup.discountAmount > 0 && (
+                <div className={styles.discount}>
+                  <dt>
+                    Discount{appliedCode ? ` (${appliedCode}` : ''}
+                    {appliedCode && breakup.discountPct ? `, ${breakup.discountPct}%)` : appliedCode ? ')' : ''}
+                  </dt>
+                  <dd>− {money(breakup.discountAmount)}</dd>
+                </div>
+              )}
+              {/* International orders are zero-rated exports: no GST line at all. */}
+              {breakup.gstPercent > 0 && (
+                <div>
+                  <dt>GST ({breakup.gstPercent}%)</dt>
+                  <dd>{money(breakup.gstAmount)}</dd>
+                </div>
+              )}
+              <div className={styles.total}>
+                <dt>Total to pay</dt>
+                <dd>{money(breakup.finalAmount)}</dd>
+              </div>
+            </dl>
+            <p className={ui.small}>One payment. No subscription, no renewal.</p>
+          </aside>
+
+          {/* ── Details, offers, consent, pay ────────────────────────────── */}
+          <form
+            className={styles.form}
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault();
+              void pay();
+            }}
+          >
+            {errorList.length > 0 && (
+              <div ref={summaryRef} tabIndex={-1} role="alert" className={ui.errorSummary} aria-labelledby={`${id}-errors`}>
+                <p id={`${id}-errors`} className={ui.errorSummaryTitle}>
+                  {errorList.length === 1 ? 'One thing to fix before paying:' : `${errorList.length} things to fix before paying:`}
+                </p>
+                <ul>
+                  {errorList.map(([field, message]) => (
+                    <li key={field}>
+                      <a
+                        href={`#${fieldId(field)}`}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          document.getElementById(fieldId(field))?.focus();
+                        }}
+                      >
+                        {message}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <section className={ui.section} aria-labelledby={`${id}-details`}>
+              <h2 id={`${id}-details`} className={ui.sectionTitle}>Your details</h2>
+
+              <div className={ui.field}>
+                <label htmlFor={fieldId('email')}>Email</label>
+                <input
+                  id={fieldId('email')}
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  className={ui.input}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                  aria-invalid={shown('email') ? true : undefined}
+                  aria-describedby={describedBy('email', `${fieldId('email')}-hint`)}
+                  disabled={busy}
+                />
+                <p id={`${fieldId('email')}-hint`} className={ui.hint}>
+                  Your receipt and the link to set up your account go here.
+                </p>
+                {shown('email') && (
+                  <p id={`${fieldId('email')}-error`} className={ui.error}>
+                    <span aria-hidden="true">⚠ </span>
+                    {shown('email')}
+                  </p>
+                )}
+              </div>
+
+              <div className={ui.field} onBlur={() => setTouched((t) => ({ ...t, contact: true }))}>
+                <label htmlFor={fieldId('contact')}>Mobile number</label>
+                <PhoneField
+                  id={fieldId('contact')}
+                  countryCode={contactCountryCode}
+                  number={contactNational}
+                  placeholder={IS_INTL ? 'Phone number' : '10-digit mobile number'}
+                  disabled={busy}
+                  invalid={Boolean(shown('contact'))}
+                  describedBy={describedBy('contact', `${fieldId('contact')}-hint`)}
+                  onChange={({ countryCode, number }) => {
+                    setContactCountryCode(countryCode);
+                    setContactNational(number);
+                  }}
+                />
+                <p id={`${fieldId('contact')}-hint`} className={ui.hint}>
+                  For your account. It can’t be changed later without contacting support.
+                </p>
+                {shown('contact') && (
+                  <p id={`${fieldId('contact')}-error`} className={ui.error}>
+                    <span aria-hidden="true">⚠ </span>
+                    {contactError(contactCountryCode, contactNational)}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <section className={ui.section} aria-labelledby={`${id}-offers`}>
+              <h2 id={`${id}-offers`} className={ui.sectionTitle}>Offers and codes</h2>
+
+              {offers.length > 0 && (
+                <ul className={styles.offers}>
+                  {offers.map((offer) => {
+                    const locked = !offer.eligible;
+                    const applied = appliedCode === offer.code;
+                    return (
+                      <li key={offer.code} className={applied ? styles.offerApplied : locked ? styles.offerLocked : styles.offer}>
+                        <div className={styles.offerText}>
+                          <p className={styles.offerLabel}>
+                            <span className={styles.offerCode}>{offer.code}</span> {offer.label}
+                          </p>
+                          {offer.condition && <p className={ui.small}>{offer.condition}</p>}
+                          {locked && offer.unlockMessage && <p className={ui.small}>{offer.unlockMessage}</p>}
+                        </div>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={locked || applied || busy || coupon.kind === 'checking'}
+                          onClick={() => applyCode(offer.code)}
+                        >
+                          {applied ? 'Applied' : locked ? 'Not yet' : `Save ${formatMoney(offer.discountAmount, offer.currency)}`}
+                        </Button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              <div className={ui.field}>
+                <label htmlFor={`${id}-coupon`}>Have a code?</label>
+                <div className={styles.couponRow}>
+                  <input
+                    id={`${id}-coupon`}
+                    className={ui.input}
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        applyCode(couponInput);
+                      }
+                    }}
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    spellCheck={false}
+                    aria-describedby={`${id}-coupon-status`}
+                    disabled={busy}
+                  />
+                  {coupon.kind === 'applied' ? (
+                    <Button variant="secondary" onClick={removeCode} disabled={busy}>Remove</Button>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      onClick={() => applyCode(couponInput)}
+                      loading={coupon.kind === 'checking'}
+                      disabled={busy || !couponInput.trim()}
+                    >
+                      Apply
+                    </Button>
+                  )}
+                </div>
+                <p id={`${id}-coupon-status`} role="status" className={coupon.kind === 'refused' || coupon.kind === 'error' ? ui.error : ui.success}>
+                  {coupon.kind === 'applied' && `${coupon.code} applied${coupon.pct ? `: ${coupon.pct}% off` : ''}. New total ${money(breakup.finalAmount)}.`}
+                  {coupon.kind === 'refused' && `${coupon.code}: ${coupon.message}`}
+                  {coupon.kind === 'error' && `We couldn’t check ${coupon.code}. ${coupon.message}`}
+                </p>
+              </div>
+            </section>
+
+            <section className={ui.section} aria-labelledby={`${id}-consent`}>
+              <h2 id={`${id}-consent`} className="visually-hidden">Agreement</h2>
+              <div className={ui.check}>
+                <input
+                  id={fieldId('terms')}
+                  type="checkbox"
+                  checked={agreeTerms}
+                  onChange={(e) => {
+                    setAgreeTerms(e.target.checked);
+                    setTouched((t) => ({ ...t, terms: true }));
+                  }}
+                  aria-invalid={shown('terms') ? true : undefined}
+                  aria-describedby={shown('terms') ? `${fieldId('terms')}-error` : undefined}
+                  disabled={busy}
+                />
+                <label htmlFor={fieldId('terms')}>
+                  I am 18 or older and agree to the{' '}
+                  <Link href="/terms" target="_blank">Terms of Service<span className="visually-hidden"> (opens in a new tab)</span></Link>{' '}
+                  and{' '}
+                  <Link href="/privacy" target="_blank">Privacy Policy<span className="visually-hidden"> (opens in a new tab)</span></Link>.
+                </label>
+              </div>
+              {shown('terms') && (
+                <p id={`${fieldId('terms')}-error`} className={ui.error}>
+                  <span aria-hidden="true">⚠ </span>
+                  {shown('terms')}
+                </p>
+              )}
+
+              <div className={ui.check}>
+                <input
+                  id={`${id}-marketing`}
+                  type="checkbox"
+                  checked={marketingOptIn}
+                  onChange={(e) => setMarketingOptIn(e.target.checked)}
+                  disabled={busy}
+                />
+                <label htmlFor={`${id}-marketing`}>
+                  Optional: if I leave before paying, email me one link to pick up where I left off.
+                </label>
+              </div>
+            </section>
+
+            <Notice tone="info" className={styles.notice}>
+              <strong>{SELF_BUILD.checkoutNote}</strong> {SELF_BUILD.short}
+            </Notice>
+
+            {submitError && (
+              <div ref={submitErrorRef} tabIndex={-1} role="alert" className={ui.submitError}>
+                <p className={ui.errorSummaryTitle}>We couldn’t start the payment</p>
+                <p>{submitError}</p>
+                <p className={ui.small}>Nothing was charged. Check your details and try again.</p>
+              </div>
+            )}
+
+            <button type="submit" className={ui.pay} disabled={busy} aria-busy={busy || undefined}>
+              {busy && <span className={ui.spinner} aria-hidden="true" />}
+              {payLabel}
+            </button>
+
+            <p className={styles.reassure}>
+              {IS_INTL ? 'Payments are processed securely by PayU.' : 'Pay with UPI, cards or net banking, processed securely by PayU.'}
+            </p>
+          </form>
         </div>
-
-        <button className="checkout-pay-btn" type="button" onClick={handlePayNow} disabled={!canPay}>
-          {paying
-            ? DUMMY_PAYMENT_MODE
-              ? 'Completing test purchase…'
-              : 'Redirecting to PayU…'
-            : DUMMY_PAYMENT_MODE
-              ? 'Complete purchase (test — no payment)'
-              : 'Pay Now'}
-        </button>
-
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 14px', marginTop: 14, fontSize: '0.76rem', color: 'var(--text-subtle, #8a7a6f)' }}>
-          <span>🔒 Secure payment via PayU</span>
-          <span>·</span>
-          <Link href="/refund" style={{ color: 'inherit', textDecoration: 'underline' }}>Refund policy</Link>
-          <span>·</span>
-          <span>Trusted by 500+ couples</span>
-        </div>
-      </div>
-    </div>
+    </CommerceShell>
   );
 }

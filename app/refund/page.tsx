@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
+import { Container } from '@/components/ui/Container';
 import { buildPageMetadata } from '@/lib/seo';
+import page from '../content-page.module.css';
+import prose from '../prose.module.css';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Refund Policy',
@@ -9,18 +12,22 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default function RefundPage() {
   return (
-    <>
-      <section className="page-hero">
-        <span className="page-eyebrow">Legal</span>
-        <h1 className="page-title">Refund <em>Policy</em></h1>
-        <p className="page-subtitle">We want you to be completely happy. Here&apos;s our straightforward, no-nonsense approach to refunds and cancellations.</p>
-      </section>
+    <div className={page.page}>
+      <header className={page.hero}>
+        <Container>
+          <p className={page.eyebrow}>Legal</p>
+          <h1 className={page.title}>Refund Policy</h1>
+          <p className={page.intro}>
+            What you can expect if something goes wrong, and when a refund is available.
+          </p>
+        </Container>
+      </header>
 
-      <main className="page-body">
-        <div className="prose">
-          <span className="last-updated">Last updated: 5 April 2026</span>
+      <Container>
+        <div className={prose.prose}>
+          <span className={prose.updated}>Last updated: 5 April 2026</span>
 
-          <div className="highlight-box">
+          <div className={prose.highlight}>
             <p><strong>Summary:</strong> Aamantran sells <strong>digital e-invitations only</strong> — no printed cards or physical goods are shipped. We offer full refunds before work begins. Once your invitation is live and you&apos;ve received your link, refunds are not available — but we&apos;ll always make it right if something is our fault.</p>
           </div>
 
@@ -37,7 +44,7 @@ export default function RefundPage() {
           <ul>
             <li>Your invitation has been delivered and is live (the link has been sent to you).</li>
             <li>You have changed your mind about the design after the invitation is live.</li>
-            <li>The details you provided were incorrect and we created the invitation based on those details.</li>
+            <li>The details are wrong because of what was entered in the builder. You fill the invitation in yourself, and you can correct most details at any time — names are the exception, and support can change a confirmed name for you.</li>
             <li>You no longer need the invitation (e.g., event cancelled or postponed) — we can update dates and details for free.</li>
             <li>More than 48 hours have passed since the invitation was delivered.</li>
           </ul>
@@ -59,7 +66,7 @@ export default function RefundPage() {
           <h2>6. Questions</h2>
           <p>If you&apos;re unsure about anything, please reach out before purchasing. We&apos;re happy to answer questions and help you choose the right option. Contact us at <a href="mailto:aamantran@plexzuu.com">aamantran@plexzuu.com</a>.</p>
         </div>
-      </main>
-    </>
+      </Container>
+    </div>
   );
 }

@@ -1,464 +1,375 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import ReviewsSection, { type ReviewItem } from '@/components/ReviewsSection';
-import TemplateCTA from '@/components/TemplateCTA';
-import PixelViewContent from '@/components/PixelViewContent';
 import JsonLd from '@/components/JsonLd';
-import TemplateTag from '@/components/TemplateTag';
-import { getPublicApiUrl } from '@/lib/publicEnv';
+import PixelViewContent from '@/components/PixelViewContent';
+import { TemplateCard } from '@/components/gallery/TemplateCard';
+import { Capabilities } from '@/components/product/Capabilities';
+import { ProductGallery } from '@/components/product/ProductGallery';
+import { PurchasePanel } from '@/components/product/PurchasePanel';
+import { ReviewList } from '@/components/product/ReviewList';
+import { StickyPurchaseBar } from '@/components/product/StickyPurchaseBar';
+import { TryDemoButton } from '@/components/try-demo/TryDemoButton';
+import { TryDemoSheet } from '@/components/try-demo/TryDemoSheet';
+import { Accordion } from '@/components/ui/Accordion';
+import { Badge } from '@/components/ui/Badge';
+import { LinkButton } from '@/components/ui/Button';
+import { Container } from '@/components/ui/Container';
+import { getRelatedTemplates, getTemplate, getTemplateReviews } from '@/lib/api/templates';
+import type { Review, TemplateDetail } from '@/lib/api/types';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
+import { BUILDER_STEPS } from '@/lib/content/builderSteps';
+import { CHANGEABLE, INCLUDED, NAME_FREEZE } from '@/lib/content/entitlements';
+import { PURCHASE_FAQ_IDS, faqsByIds } from '@/lib/content/faqs';
+import { TRY_DEMO } from '@/lib/content/tryDemo';
+import { languageLabel, pluralize, truncateWords } from '@/lib/format';
+import { computePriceBreakdown } from '@/lib/priceMath';
+import { CURRENCY, IS_INTL, priceFor } from '@/lib/storefront';
 import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
-import { CURRENCY, IS_INTL, formatMoney, formatInr, formatUsd, priceFor, originalPriceFor, STOREFRONT } from '@/lib/storefront';
+import { cardOccasionLabels, templateDemoUrl } from '@/lib/templateCard';
+import styles from './product.module.css';
 
-const API = getPublicApiUrl();
+/**
+ * A design's own page: what it looks like, what it costs, what you fill in, and
+ * what you get.
+ *
+ * Two things the page it replaces did are deliberately gone: it showed three
+ * invented reviews ("Sample feedback") when a design had none, and it quoted a
+ * price without the GST checkout adds. Both are now honest — no reviews means
+ * the page says so, and the price shows the total that will be charged.
+ */
 
-interface Template {
-  id: string; slug: string; name: string;
-  thumbnailUrl: string | null;
-  desktopThumbnailUrl?: string | null;
-  mobileThumbnailUrl?: string | null;
-  community: string;
-  bestFor: string; languages: string;
-  price: number; originalPrice: number | null;
-  // Derived server-side from the INR price; both currencies ship together
-  // because this page is statically cached and cannot pick one per visitor.
-  priceUsd: number | null; originalPriceUsd: number | null;
-  aboutText: string; buyerCount: number;
-  avgRating: string | number | null; reviewCount: number;
-}
+type Props = { params: Promise<{ slug: string }> };
 
-type ReviewsResponse = { reviews: ReviewItem[]; avgRating: number; totalCount: number };
+/** Reviews quoted inside Product structured data. */
+const JSON_LD_REVIEW_LIMIT = 5;
 
-interface RelatedTemplate {
-  id: string;
-  slug: string;
-  name: string;
-  thumbnailUrl: string | null;
-  desktopThumbnailUrl?: string | null;
-  mobileThumbnailUrl?: string | null;
-  community: string;
-  price: number;
-  priceUsd: number | null;
-  badge?: string | null;
-}
-
-function rupees(paise: number) {
-  return (paise / 100).toLocaleString('en-IN');
-}
-
-function displayLanguageLabel(lang: string) {
-  const key = lang.trim().toLowerCase();
-  const map: Record<string, string> = {
-    en: 'English',
-    english: 'English',
-    hi: 'हिन्दी',
-    hindi: 'हिन्दी',
-    gu: 'ગુજરાતી',
-    gujarati: 'ગુજરાતી',
-    mr: 'मराठी',
-    marathi: 'मराठी',
-    pa: 'ਪੰਜਾਬੀ',
-    punjabi: 'ਪੰਜਾਬੀ',
-    bn: 'বাংলা',
-    bengali: 'বাংলা',
-    ta: 'தமிழ்',
-    tamil: 'தமிழ்',
-    te: 'తెలుగు',
-    telugu: 'తెలుగు',
-    kn: 'ಕನ್ನಡ',
-    kannada: 'ಕನ್ನಡ',
-    ml: 'മലയാളം',
-    malayalam: 'മലയാളം',
-    ur: 'اردو',
-    urdu: 'اردو',
-  };
-  return map[key] ?? lang;
-}
-
-async function getTemplate(slug: string): Promise<Template | null> {
-  try {
-    const res = await fetch(`${API}/api/templates/${slug}`, { next: { revalidate: 60 } });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
-function normalizeReviewsResponse(data: unknown): ReviewsResponse {
-  if (Array.isArray(data)) {
-    const ratings = data.map((r: ReviewItem) => Number(r.rating) || 0);
-    const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
-    return { reviews: data, avgRating: Number(avg.toFixed(2)), totalCount: data.length };
-  }
-  const d = data as { reviews?: ReviewItem[]; avgRating?: number; totalCount?: number } | null;
-  return {
-    reviews: Array.isArray(d?.reviews) ? d!.reviews : [],
-    avgRating: Number(d?.avgRating ?? 0),
-    totalCount: Number(d?.totalCount ?? 0),
-  };
-}
-
-async function getTemplateReviews(slug: string): Promise<ReviewsResponse> {
-  try {
-    // no-store so newly submitted reviews appear on the next page load without waiting for cache expiry
-    const res = await fetch(`${API}/api/templates/${slug}/reviews?limit=50`, { cache: 'no-store' });
-    if (!res.ok) return { reviews: [], avgRating: 0, totalCount: 0 };
-    return normalizeReviewsResponse(await res.json());
-  } catch {
-    return { reviews: [], avgRating: 0, totalCount: 0 };
-  }
-}
-
-async function getFeaturedReviews(): Promise<ReviewsResponse> {
-  try {
-    const res = await fetch(`${API}/api/reviews/featured?limit=50`, { next: { revalidate: 60 } });
-    if (!res.ok) return { reviews: [], avgRating: 0, totalCount: 0 };
-    return normalizeReviewsResponse(await res.json());
-  } catch {
-    return { reviews: [], avgRating: 0, totalCount: 0 };
-  }
-}
-
-async function getRelatedTemplates(community: string, excludeSlug: string): Promise<RelatedTemplate[]> {
-  try {
-    const qs = new URLSearchParams({
-      community,
-      exclude: excludeSlug,
-      limit: '6',
-      sort: 'popular',
-    });
-    const res = await fetch(`${API}/api/templates?${qs.toString()}`, { next: { revalidate: 60 } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.templates ?? []) as RelatedTemplate[];
-  } catch {
-    return [];
-  }
-}
-
-const PLACEHOLDER_REVIEWS: ReviewItem[] = [
-  {
-    id: 'ph-1',
-    rating: 5,
-    reviewText: 'Beautiful template and super easy to customize. Our guests loved the invitation experience.',
-    coupleNames: 'Riya & Kunal',
-    location: 'Jaipur',
-  },
-  {
-    id: 'ph-2',
-    rating: 5,
-    reviewText: 'The RSVP tracking made planning so much easier. Design looked premium on mobile.',
-    coupleNames: 'Ananya & Dev',
-    location: 'Mumbai',
-  },
-  {
-    id: 'ph-3',
-    rating: 4,
-    reviewText: 'Quick setup and lovely look. Sharing on WhatsApp worked perfectly for our family groups.',
-    coupleNames: 'Meera & Arjun',
-    location: 'Bengaluru',
-  },
-];
-
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const t = await getTemplate(slug);
-  if (!t) return { title: 'Template Not Found' };
-  const description = t.aboutText
-    ? t.aboutText.slice(0, 160)
-    : `${t.name} — a hand-crafted digital wedding invitation template with WhatsApp sharing and RSVP tracking, from Aamantran.`;
-  const thumbnail = resolveBackendPublicUrl(t.desktopThumbnailUrl || t.thumbnailUrl || t.mobileThumbnailUrl);
+  const template = await getTemplate(slug);
+  if (!template) return { title: 'Design not found' };
+
+  const description = template.shortDescription
+    ?? (template.aboutText
+      ? truncateWords(template.aboutText, 28)
+      : `${template.name} — a digital invitation design you fill in yourself, with RSVP, guest list and WhatsApp sharing.`);
+  const image = resolveBackendPublicUrl(template.desktopThumbnailUrl ?? template.thumbnailUrl ?? template.mobileThumbnailUrl);
+
   return buildPageMetadata({
-    title: `${t.name} — Digital Wedding Invitation Template`,
+    title: `${template.name} — Digital Invitation Design`,
     description,
-    path: `/templates/${t.slug}`,
-    ...(thumbnail ? { ogImage: thumbnail } : {}),
+    path: `/templates/${template.slug}`,
+    ...(image ? { ogImage: image } : {}),
   });
 }
 
-export default async function TemplatePage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const t = await getTemplate(slug);
-  if (!t) notFound();
-  const [productReviewsResp, featuredReviewsResp, relatedTemplates] = await Promise.all([
-    getTemplateReviews(slug),
-    getFeaturedReviews(),
-    getRelatedTemplates(t.community, slug),
-  ]);
+function productSchema(template: TemplateDetail, reviews: Review[], total: number) {
+  const base = priceFor(template);
+  const pageUrl = `${SITE_URL}/templates/${template.slug}`;
+  const image = resolveBackendPublicUrl(template.desktopThumbnailUrl ?? template.thumbnailUrl);
+  // The price a buyer is charged, GST included, not the pre-tax figure: the
+  // amount in search results has to match the amount at checkout.
+  const payable = base == null ? null : computePriceBreakdown({ base, gstPercent: template.gstPercent, intl: IS_INTL }).total;
+  const customerReviews = reviews.filter((review) => review.source === 'customer' && review.reviewText);
 
-  // Computed from the pair actually being shown, never mixing a dollar price
-  // with a rupee original.
-  //
-  // The percentage does NOT match across storefronts, and an earlier version of
-  // this comment wrongly said it did: price and MRP each round up to their own
-  // $10 tier, which breaks the ratio. Royal reads 50% off in India and 47% off
-  // here. Both are real derived prices; the difference is accepted.
-  const shownPrice    = priceFor(t);
-  const shownOriginal = originalPriceFor(t);
-  const discountPct = shownPrice != null && shownOriginal
-    ? Math.round((1 - shownPrice / shownOriginal) * 100)
-    : null;
-
-  const rating    = Number(t.avgRating ?? 0);
-  const stars     = Math.min(5, Math.round(rating));
-  const bestFor   = t.bestFor ? t.bestFor.split(',').map(s => s.trim()).filter(Boolean) : [];
-  const languages = t.languages ? t.languages.split(',').map(s => s.trim()).filter(Boolean) : ['English'];
-  const desktopThumbSrc = t.desktopThumbnailUrl
-    ? resolveBackendPublicUrl(t.desktopThumbnailUrl)
-    : (t.thumbnailUrl ? resolveBackendPublicUrl(t.thumbnailUrl) : null);
-  const mobileThumbSrc = t.mobileThumbnailUrl
-    ? resolveBackendPublicUrl(t.mobileThumbnailUrl)
-    : desktopThumbSrc;
-  const demoUrl   = `${API}/demo/${t.slug}?storefront=${STOREFRONT}`;
-  const useProduct = productReviewsResp.reviews.length > 0;
-  const useFeatured = !useProduct && featuredReviewsResp.reviews.length > 0;
-  const reviewsToShow = useProduct
-    ? productReviewsResp.reviews
-    : useFeatured
-      ? featuredReviewsResp.reviews
-      : PLACEHOLDER_REVIEWS;
-  const reviewsAvg = useProduct
-    ? productReviewsResp.avgRating
-    : useFeatured
-      ? featuredReviewsResp.avgRating
-      : 5;
-  const reviewsTotal = useProduct
-    ? productReviewsResp.totalCount
-    : useFeatured
-      ? featuredReviewsResp.totalCount
-      : PLACEHOLDER_REVIEWS.length;
-  const reviewSourceLabel = useProduct
-    ? 'What couples say about this template'
-    : useFeatured
-      ? 'What couples say on Aamantran'
-      : 'Sample feedback';
-
-  const pageUrl = `${SITE_URL}/templates/${t.slug}`;
-  const productJsonLd = {
+  return {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: t.name,
-    description: t.aboutText || `${t.name} — digital wedding invitation template by ${SITE_NAME}.`,
-    ...(desktopThumbSrc ? { image: [desktopThumbSrc] } : {}),
+    name: template.name,
+    description: template.shortDescription ?? template.aboutText ?? `${template.name} — digital invitation design by ${SITE_NAME}.`,
+    ...(image ? { image: [image] } : {}),
     brand: { '@type': 'Brand', name: SITE_NAME },
-    offers: {
-      '@type': 'Offer',
-      url: pageUrl,
-      priceCurrency: CURRENCY,
-      price: ((shownPrice ?? t.price) / 100).toFixed(2),
-      availability: 'https://schema.org/InStock',
-    },
-    ...(rating > 0 && t.reviewCount > 0
+    ...(payable != null
       ? {
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: rating.toFixed(1),
-            reviewCount: t.reviewCount,
+          offers: {
+            '@type': 'Offer',
+            url: pageUrl,
+            priceCurrency: CURRENCY,
+            price: (payable / 100).toFixed(2),
+            availability: 'https://schema.org/InStock',
           },
         }
       : {}),
+    // Genuine customer reviews only; team-written ones are shown on the page but
+    // never counted, so they cannot inflate a rating in search results.
+    ...(total > 0 && template.avgRating
+      ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: template.avgRating.toFixed(1), reviewCount: total } }
+      : {}),
+    ...(customerReviews.length > 0
+      ? {
+          review: customerReviews.slice(0, JSON_LD_REVIEW_LIMIT).map((review) => ({
+            '@type': 'Review',
+            reviewRating: { '@type': 'Rating', ratingValue: review.rating, bestRating: 5 },
+            ...(review.coupleNames ? { author: { '@type': 'Person', name: review.coupleNames } } : {}),
+            reviewBody: review.reviewText,
+            ...(review.createdAt ? { datePublished: review.createdAt.slice(0, 10) } : {}),
+          })),
+        }
+      : {}),
   };
-  const breadcrumbJsonLd = {
+}
+
+export default async function ProductPage({ params }: Props) {
+  const { slug } = await params;
+  const template = await getTemplate(slug, { capabilities: true });
+  if (!template) notFound();
+
+  const [reviewsResponse, related] = await Promise.all([
+    getTemplateReviews(slug),
+    getRelatedTemplates(template.community, slug, 3),
+  ]);
+  const reviews = reviewsResponse?.reviews ?? [];
+  const genuineTotal = reviewsResponse?.totalCount ?? template.reviewCount;
+  const curatedTotal = reviewsResponse?.curatedCount ?? template.curatedReviewCount;
+
+  const occasions = cardOccasionLabels(template.bestFor, 4);
+  const summary = template.shortDescription ?? (template.aboutText ? truncateWords(template.aboutText, 32) : null);
+  const faqs = faqsByIds(PURCHASE_FAQ_IDS);
+  const attributes = [
+    { label: 'Style', value: template.style },
+    { label: 'Colours', value: template.colourPalette },
+    { label: 'Animation', value: template.animations },
+    { label: 'Languages', value: template.languages.map(languageLabel).join(', ') || null },
+    { label: 'Best for', value: template.bestFor.join(', ') || null },
+  ].filter((attribute): attribute is { label: string; value: string } => Boolean(attribute.value));
+
+  const pageUrl = `${SITE_URL}/templates/${template.slug}`;
+  const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
-      { '@type': 'ListItem', position: 2, name: 'Templates', item: `${SITE_URL}/templates` },
-      { '@type': 'ListItem', position: 3, name: t.name, item: pageUrl },
+      { '@type': 'ListItem', position: 2, name: 'Invitations', item: `${SITE_URL}/templates` },
+      { '@type': 'ListItem', position: 3, name: template.name, item: pageUrl },
     ],
   };
 
   return (
-    <div style={{ paddingTop: 80 }}>
-      <JsonLd data={productJsonLd} />
-      <JsonLd data={breadcrumbJsonLd} />
-      <div className="product-wrap">
-        {/* Breadcrumb */}
-        <div className="breadcrumb">
-          <Link href="/templates">Templates</Link>
-          <span className="breadcrumb-sep">›</span>
-          <span>{t.name}</span>
-        </div>
+    <>
+      <JsonLd data={productSchema(template, reviews, genuineTotal)} />
+      <JsonLd data={breadcrumbSchema} />
+      <PixelViewContent slug={slug} price={template.price} priceUsd={template.priceUsd} name={template.name} />
 
-        <div className="product-cols">
-          {/* LEFT — visual */}
-          <div className="product-visual">
-            <div className="product-main-thumb" style={{ position: 'relative', borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: 'var(--shadow-lift)' }}>
-              {(desktopThumbSrc || mobileThumbSrc) ? (
-                <picture>
-                  {mobileThumbSrc && <source media="(max-width: 768px)" srcSet={mobileThumbSrc} />}
-                  {desktopThumbSrc && <source media="(min-width: 769px)" srcSet={desktopThumbSrc} />}
-                  <img
-                    src={desktopThumbSrc || mobileThumbSrc || ''}
-                    alt={t.name}
-                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                </picture>
-              ) : (
-                <div className="product-main-thumb-inner" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--cream-dark)', fontFamily: 'var(--font-display)', fontSize: '1.4rem', opacity: 0.4 }}>
-                  No preview
-                </div>
-              )}
-              {/* Live Demo overlay */}
-              <a
-                href={demoUrl}
-                className="product-demo-overlay"
-                style={{
-                  position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  textDecoration: 'none',
-                }}
-              >
-                <span style={{
-                  color: '#fff', fontSize: '0.9rem', fontWeight: 500,
-                  border: '1px solid rgba(255,255,255,0.7)', padding: '8px 20px',
-                  borderRadius: '100px', backdropFilter: 'blur(4px)',
-                  opacity: 0, transition: 'opacity 0.25s ease',
-                }}
-                  className="product-demo-label"
-                >
-                  View Live Demo →
-                </span>
-              </a>
-            </div>
-          </div>
+      <div className={styles.page}>
+        <Container>
+          <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
+            <ol>
+              <li>
+                <Link href="/">Home</Link>
+              </li>
+              <li>
+                <Link href="/templates">Invitations</Link>
+              </li>
+              <li aria-current="page">{template.name}</li>
+            </ol>
+          </nav>
 
-          {/* RIGHT — info */}
-          <div className="product-info">
-            <div className="product-community-badge">{t.community.charAt(0).toUpperCase() + t.community.slice(1)} Wedding</div>
-            <h1 className="product-name">{t.name}</h1>
-
-            {stars > 0 && (
-              <div className="product-rating-row">
-                <span className="product-stars">{'★'.repeat(stars)}</span>
-                <span className="product-rating-num">{rating.toFixed(1)}</span>
-                <span className="product-rating-count">
-                  <a href="#reviews">({t.reviewCount} reviews)</a>
-                </span>
-              </div>
-            )}
-
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-mid)', marginBottom: 20 }}>
-              {t.buyerCount} couples have used this template
-            </p>
-
-            {/* Price */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 24 }}>
-              <span className="product-price-main">
-                {formatMoney(shownPrice ?? t.price)}
-              </span>
-              {shownOriginal && (
-                <>
-                  <span className="product-price-was">
-                    {formatMoney(shownOriginal)}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', background: '#e8f5e9', color: '#2e7d32', padding: '3px 8px', borderRadius: 4, fontWeight: 600 }}>
-                    {discountPct}% off
-                  </span>
-                </>
-              )}
+          <div className={styles.top}>
+            <div className={styles.visual}>
+              <ProductGallery
+                name={template.name}
+                slug={template.slug}
+                demoUrl={templateDemoUrl(template.slug)}
+                desktopSrc={template.desktopThumbnailUrl ?? template.thumbnailUrl}
+                phoneSrc={template.mobileThumbnailUrl}
+              />
             </div>
 
-            {/* CTA buttons */}
-            <PixelViewContent slug={slug} price={t.price} priceUsd={t.priceUsd} name={t.name} />
-            <TemplateCTA slug={slug} demoUrl={demoUrl} price={t.price} priceUsd={t.priceUsd} name={t.name} />
-            <p className="einv-disclaimer product-einv-disclaimer">
-              This is a <strong>digital e-invitation</strong> — you get an online invitation to share with guests.{' '}
-              <strong>No physical product</strong> (printed cards or similar) is included or shipped.
-            </p>
-
-            {/* About */}
-            <div style={{ marginBottom: 24 }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', marginBottom: 8, color: 'var(--text-dark)' }}>About this template</h3>
-              <p style={{ fontSize: '0.93rem', color: 'var(--text-mid)', lineHeight: 1.75 }}>{t.aboutText}</p>
-            </div>
-
-            {/* Best for */}
-            {bestFor.length > 0 && (
-              <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-subtle)', marginBottom: 8 }}>Best for</p>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {bestFor.map(b => (
-                    <span key={b} style={{ fontSize: '0.8rem', padding: '4px 12px', borderRadius: 100, background: 'rgba(110,31,46,0.08)', color: 'var(--burgundy)', border: '1px solid rgba(110,31,46,0.15)' }}>
-                      {b}
-                    </span>
+            <div className={styles.buy}>
+              <h1 className={styles.name}>{template.name}</h1>
+              {occasions.length > 0 && (
+                <ul className={styles.occasions} aria-label="Occasions">
+                  {occasions.map((occasion) => (
+                    <li key={occasion}>
+                      <Badge>{occasion}</Badge>
+                    </li>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* Languages */}
-            <div>
-              <p style={{ fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-subtle)', marginBottom: 8 }}>Languages</p>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {languages.map(l => (
-                  <span key={l} style={{ fontSize: '0.8rem', padding: '4px 12px', borderRadius: 100, background: 'var(--cream-dark)', border: '1px solid var(--border-soft)', color: 'var(--text-mid)' }}>
-                    {displayLanguageLabel(l)}
+                </ul>
+              )}
+              {summary && <p className={styles.summary}>{summary}</p>}
+              {genuineTotal > 0 && template.avgRating && (
+                <p className={styles.rating}>
+                  <span aria-hidden="true" className={styles.stars}>
+                    {'★'.repeat(Math.round(template.avgRating))}
                   </span>
-                ))}
+                  <span>
+                    {template.avgRating.toFixed(1)} from <a href="#reviews">{pluralize(genuineTotal, 'customer review')}</a>
+                  </span>
+                </p>
+              )}
+
+              <PurchasePanel
+                slug={template.slug}
+                name={template.name}
+                price={template.price}
+                priceUsd={template.priceUsd}
+                originalPrice={template.originalPrice}
+                originalPriceUsd={template.originalPriceUsd}
+                gstPercent={template.gstPercent}
+                tryWithNames={template.tryWithNames}
+              />
+            </div>
+          </div>
+
+          {template.tryWithNames && (
+            <section aria-labelledby="try-heading" className={styles.tryBand}>
+              <div className={styles.tryText}>
+                <h2 id="try-heading" className={styles.tryTitle}>
+                  {TRY_DEMO.bandTitle}
+                </h2>
+                <p className={styles.tryIntro}>{TRY_DEMO.bandText}</p>
+              </div>
+              <TryDemoButton source="product-band" variant="primary">
+                {TRY_DEMO.cta}
+              </TryDemoButton>
+            </section>
+          )}
+
+          {template.aboutText && (
+            <section aria-labelledby="about-heading" className={styles.section}>
+              <h2 id="about-heading" className={styles.sectionTitle}>
+                About this design
+              </h2>
+              <p className={styles.prose}>{template.aboutText}</p>
+              {attributes.length > 0 && (
+                <dl className={styles.attributes}>
+                  {attributes.map((attribute) => (
+                    <div key={attribute.label}>
+                      <dt>{attribute.label}</dt>
+                      <dd>{attribute.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </section>
+          )}
+
+          {template.capabilities && (
+            <section aria-labelledby="fill-heading" className={styles.section}>
+              <h2 id="fill-heading" className={styles.sectionTitle}>
+                What you fill in on this design
+              </h2>
+              <Capabilities capabilities={template.capabilities} />
+            </section>
+          )}
+
+          <section aria-labelledby="included-heading" className={styles.section}>
+            <h2 id="included-heading" className={styles.sectionTitle}>
+              What the price includes
+            </h2>
+            <ul className={styles.included}>
+              {INCLUDED.map((item) => (
+                <li key={item.id}>
+                  <span className={styles.includedTitle}>{item.title}</span>
+                  <span className={styles.includedDetail}>
+                    {item.detail}
+                    {item.templateDependent && ' Where this design supports it.'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section aria-labelledby="setup-heading" className={styles.section}>
+            <h2 id="setup-heading" className={styles.sectionTitle}>
+              How you set it up
+            </h2>
+            <ol className={styles.steps}>
+              {BUILDER_STEPS.map((step) => (
+                <li key={step.id}>
+                  <span className={styles.stepLabel}>{step.label}</span>
+                  <span className={styles.stepText}>{step.youEnter}</span>
+                </li>
+              ))}
+            </ol>
+            <p className={styles.note}>{NAME_FREEZE.long}</p>
+          </section>
+
+          <section aria-labelledby="change-heading" className={styles.section}>
+            <h2 id="change-heading" className={styles.sectionTitle}>
+              What you can change later, and what you cannot
+            </h2>
+            <div className={styles.changeGrid}>
+              <div className={styles.changeCard}>
+                <h3 className={styles.changeTitle}>Change any time</h3>
+                <ul>
+                  {CHANGEABLE.canChange.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className={styles.changeCard}>
+                <h3 className={styles.changeTitle}>Fixed</h3>
+                <ul>
+                  {CHANGEABLE.fixed.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
               </div>
             </div>
-          </div>
-        </div>
+          </section>
 
-        <section id="reviews" className="product-section">
-          <div className="product-section-head">
-            <h2>Reviews</h2>
-            <p>{reviewSourceLabel}</p>
-          </div>
-          <ReviewsSection
-            reviews={reviewsToShow}
-            avgRating={reviewsAvg}
-            totalCount={reviewsTotal}
-            showTemplateLink={!useProduct}
-          />
-        </section>
+          <section id="reviews" aria-labelledby="reviews-heading" className={styles.section}>
+            <h2 id="reviews-heading" className={styles.sectionTitle}>
+              Reviews of this design
+            </h2>
+            <ReviewList reviews={reviews} avgRating={reviewsResponse?.avgRating ?? 0} totalCount={genuineTotal} curatedCount={curatedTotal} />
+          </section>
 
-        <section className="product-section">
-          <div className="product-section-head">
-            <h2>You may also like</h2>
-            <p>More templates from the {t.community} collection</p>
-          </div>
-          {relatedTemplates.length === 0 ? (
-            <p className="product-empty">More recommendations are coming soon.</p>
-          ) : (
-            <div className="product-related-grid">
-              {relatedTemplates.map(item => (
-                <Link key={item.id} href={`/templates/${item.slug}`} className="product-related-card">
-                  <div className="product-related-thumb">
-                    <TemplateTag badge={item.badge} />
-                    {(item.desktopThumbnailUrl || item.mobileThumbnailUrl || item.thumbnailUrl) ? (
-                      <picture>
-                        {(item.mobileThumbnailUrl || item.desktopThumbnailUrl || item.thumbnailUrl) && (
-                          <source media="(max-width: 768px)" srcSet={resolveBackendPublicUrl(item.mobileThumbnailUrl || item.desktopThumbnailUrl || item.thumbnailUrl) || ''} />
-                        )}
-                        {(item.desktopThumbnailUrl || item.thumbnailUrl || item.mobileThumbnailUrl) && (
-                          <source media="(min-width: 769px)" srcSet={resolveBackendPublicUrl(item.desktopThumbnailUrl || item.thumbnailUrl || item.mobileThumbnailUrl) || ''} />
-                        )}
-                        <img
-                          src={resolveBackendPublicUrl(item.desktopThumbnailUrl || item.thumbnailUrl || item.mobileThumbnailUrl) || ''}
-                          alt={item.name}
-                        />
-                      </picture>
-                    ) : (
-                      <div className="product-related-fallback">{item.name}</div>
+          <section aria-labelledby="faq-heading" className={styles.section}>
+            <h2 id="faq-heading" className={styles.sectionTitle}>
+              Before you buy
+            </h2>
+            <Accordion
+              headingLevel={3}
+              items={faqs.map((faq) => ({
+                id: faq.id,
+                title: faq.q,
+                content: (
+                  <p>
+                    {faq.a}
+                    {faq.link && (
+                      <>
+                        {' '}
+                        <Link href={faq.link.href}>{faq.link.label}</Link>
+                      </>
                     )}
-                  </div>
-                  <div className="product-related-info">
-                    <p className="product-related-name">{item.name}</p>
-                    <span className="product-related-price">
-                      {CURRENCY} {IS_INTL
-                        ? (item.priceUsd != null ? formatUsd(item.priceUsd) : '—')
-                        : formatInr(item.price)}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </p>
+                ),
+              }))}
+            />
+          </section>
+
+          {related.length > 0 && (
+            <section aria-labelledby="related-heading" className={styles.section}>
+              <h2 id="related-heading" className={styles.sectionTitle}>
+                Other designs like this one
+              </h2>
+              <ul className={styles.related}>
+                {related.map((item) => (
+                  <li key={item.id || item.slug}>
+                    <TemplateCard template={item} source="product-related" />
+                  </li>
+                ))}
+              </ul>
+              <p className={styles.more}>
+                <LinkButton href="/templates" variant="secondary">
+                  See every design
+                </LinkButton>
+              </p>
+            </section>
           )}
-        </section>
+        </Container>
       </div>
-    </div>
+
+      <StickyPurchaseBar
+        slug={template.slug}
+        name={template.name}
+        price={template.price}
+        priceUsd={template.priceUsd}
+        tryWithNames={template.tryWithNames}
+      />
+      {template.tryWithNames && <TryDemoSheet slug={template.slug} name={template.name} />}
+    </>
   );
 }

@@ -1,0 +1,171 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--elevation-1);
+  transition:
+    transform var(--dur-hover) var(--ease-standard),
+    box-shadow var(--dur-hover) var(--ease-standard);
+}
+
+.card:hover,
+.card:focus-within {
+  transform: translateY(var(--lift-hover));
+  box-shadow: var(--elevation-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover,
+  .card:focus-within {
+    transform: none;
+  }
+}
+
+/* Positioning context for the corner tag (.tpl-tag). */
+.media {
+  position: relative;
+}
+
+.mediaLink {
+  display: block;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+
+.name {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
+
+.occasions,
+.highlights {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.occasions {
+  gap: var(--space-2);
+}
+
+.description {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.highlights {
+  gap: var(--space-1) var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  color: var(--color-text);
+}
+
+.highlights li::before {
+  content: '✓' / '';
+  margin-right: var(--space-1);
+  color: var(--color-success-text);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.price {
+  margin: 0;
+  font-family: var(--font-ui);
+  color: var(--color-text);
+}
+
+.amount {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.was,
+.tax {
+  font-size: var(--type-small);
+  color: var(--color-text-muted);
+}
+
+.was {
+  margin-right: var(--space-2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.actions > * {
+  flex: 1 1 auto;
+}
+
+/* Secondary-button look for the demo link (an external <a>, not a LinkButton). */
+.demo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color var(--dur-press) var(--ease-standard);
+}
+
+.demo:hover {
+  background: var(--color-blush);
+}
+
+/* "Try it with your names": a quieter third action, under the two buttons. */
+.try {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.try::before {
+  content: '✦' / '';
+  margin-right: var(--space-2);
+  text-decoration: none;
+}
+
+.try:hover {
+  color: var(--color-primary-hover);
+}

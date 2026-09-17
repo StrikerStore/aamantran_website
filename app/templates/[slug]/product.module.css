@@ -1,0 +1,324 @@
+/* The site header is fixed, so every page pads its own top. */
+.page {
+  padding-top: calc(var(--header-height) + var(--space-5));
+  /* Room for the sticky purchase bar on phones. */
+  padding-bottom: calc(var(--section-gap) + 72px);
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+@media (min-width: 1024px) {
+  .page {
+    padding-bottom: var(--section-gap);
+  }
+}
+
+.breadcrumb {
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  color: var(--color-text-muted);
+}
+
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumb li + li::before {
+  content: '/';
+  margin-right: var(--space-2);
+}
+
+.breadcrumb a {
+  color: var(--color-primary);
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.top {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@media (min-width: 1024px) {
+  .top {
+    grid-template-columns: 55fr 45fr;
+    gap: var(--space-7);
+    align-items: start;
+  }
+}
+
+.visual {
+  min-width: 0;
+}
+
+.buy {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--type-section);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+}
+
+.occasions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.summary {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  color: var(--color-text-muted);
+}
+
+.stars {
+  color: var(--color-accent);
+  letter-spacing: 0.08em;
+}
+
+.rating a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.section {
+  margin-top: var(--section-gap);
+  scroll-margin-top: var(--space-4);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+}
+
+.prose {
+  max-width: 72ch;
+  margin: var(--space-4) 0 0;
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+.attributes {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+}
+
+@media (min-width: 720px) {
+  .attributes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.attributes dt {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.attributes dd {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+}
+
+.included,
+.steps {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+}
+
+.included {
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 720px) {
+  .included {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.included li {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--elevation-1);
+}
+
+.includedTitle,
+.stepLabel {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.includedDetail,
+.stepText {
+  font-size: var(--type-small);
+  color: var(--color-text-muted);
+}
+
+.steps {
+  padding-left: var(--space-5);
+}
+
+.steps li {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.note {
+  max-width: 72ch;
+  margin: var(--space-5) 0 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-sage);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+.changeGrid {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+
+@media (min-width: 720px) {
+  .changeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.changeCard {
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--elevation-1);
+}
+
+.changeTitle {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.changeCard ul {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: var(--space-5);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.related {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .related {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .related {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.more {
+  margin: var(--space-5) 0 0;
+}
+
+/* "See it with your names" — only on designs that can show a couple's names. */
+.tryBand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-top: var(--section-gap);
+  padding: var(--space-6);
+  border-radius: var(--radius-card);
+  background: var(--color-blush);
+}
+
+.tryText {
+  max-width: 60ch;
+}
+
+.tryTitle {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 1.15rem + 0.8vw, 1.8rem);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+}
+
+.tryIntro {
+  margin: 0;
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+@media (min-width: 768px) {
+  .tryBand {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

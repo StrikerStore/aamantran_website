@@ -1,0 +1,98 @@
+/*
+ * Aamantran design tokens — the visual system from the Website Plan.
+ *
+ * Every name is namespaced so nothing collides with the legacy variables in
+ * globals.css (--cream, --burgundy, --text-*, --radius*, --shadow-*,
+ * --font-display, --font-body). Declaring a token changes nothing on screen:
+ * rebuilt pages opt in to these, and the legacy stylesheet keeps rendering
+ * everything else until it is retired.
+ *
+ * Contrast notes are for opaque solid colours on the canvas.
+ */
+:root {
+  /* ── Colour ─────────────────────────────────────────────────────────── */
+  --color-canvas:        #FBF7F0; /* page background */
+  --color-surface:       #FFFFFF; /* cards, forms, dashboard samples */
+  --color-text:          #29231F; /* headings and body — 14.52:1 */
+  --color-text-muted:    #6B625B; /* supporting copy — 5.58:1 */
+  --color-primary:       #712F41; /* main actions, selected states — white on it 9.61:1 */
+  --color-primary-hover: #572333; /* hover and pressed */
+  --color-on-primary:    #FFFFFF;
+  --color-accent:        #B08D57; /* decoration ONLY — 2.89:1, never text or a sole boundary */
+  --color-blush:         #F1DFDA; /* emotional / personalisation sections */
+  --color-sage:          #E5EBE2; /* planning / practical sections */
+  --color-divider:       #E4D9CB; /* non-essential separators only */
+
+  /* ── Status: text on its own tint, and the form control boundary ──── */
+  --color-info-text:      #1F4E6B;
+  --color-info-bg:        #E4EEF5;
+  --color-success-text:   #1F5E33;
+  --color-success-bg:     #E3F1E6;
+  --color-warning-text:   #7A4B00;
+  --color-warning-bg:     #FBEBD2;
+  --color-error-text:     #8A1C1C;
+  --color-error-bg:       #FBE4E4;
+  --color-control-border: #857A70; /* input and tab boundaries: 3:1+ on surface and canvas */
+
+  /* ── Type families (variables come from app/fonts.ts) ───────────────── */
+  --font-heading: var(--font-cormorant), Georgia, 'Times New Roman', serif;
+  --font-ui:      var(--font-dm-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* ── Type scale: mobile → desktop ───────────────────────────────────── */
+  --type-hero:     clamp(2.375rem, 1.6rem + 3.4vw, 4.5rem);   /* 38 → 72px */
+  --type-section:  clamp(1.75rem, 1.35rem + 1.8vw, 2.75rem);  /* 28 → 44px */
+  --type-body:     clamp(1rem, 0.95rem + 0.25vw, 1.125rem);   /* 16 → 18px */
+  --type-control:  1rem;                                      /* 16px; also stops iOS zoom on focus */
+  --type-small:    0.875rem;                                  /* 14px */
+  --leading-tight: 1.15;
+  --leading-body:  1.6;
+
+  /* ── Spacing scale ──────────────────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --section-gap: clamp(48px, 3rem + 4vw, 112px); /* 48–64 mobile → 80–112 desktop */
+
+  /* ── Layout ─────────────────────────────────────────────────────────── */
+  --container-max: 1260px;
+  --gutter: 20px;
+  --header-height: 76px; /* fixed site header; existing pages pad their tops for this height */
+
+  /* ── Shape ──────────────────────────────────────────────────────────── */
+  --radius-card:    18px;
+  --radius-control: 11px;
+  --radius-full:    999px;
+  --control-height: 46px; /* comfortable 44–48px touch target */
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --elevation-1: 0 1px 2px rgba(41, 35, 31, 0.06), 0 4px 16px rgba(41, 35, 31, 0.06);
+  --elevation-2: 0 8px 32px rgba(41, 35, 31, 0.10);
+
+  /* ── Motion ─────────────────────────────────────────────────────────── */
+  --dur-press:     180ms; /* button colour and press feedback */
+  --dur-tab:       200ms; /* tab switch fade */
+  --dur-hover:     200ms; /* card lift */
+  --dur-crossfade: 260ms; /* preview swap */
+  --dur-section:   480ms; /* one-time section entrance */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --lift-hover:    -3px;
+  --rise-section:  18px;
+
+  /* ── Focus ──────────────────────────────────────────────────────────── */
+  --focus-ring:   2px solid var(--color-primary);
+  --focus-offset: 2px;
+}
+
+@media (max-width: 360px) {
+  :root { --gutter: 16px; }
+}
+
+@media (min-width: 768px) {
+  :root { --gutter: 32px; }
+}

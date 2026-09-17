@@ -1,0 +1,140 @@
+.footer {
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-sage);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+}
+
+.top {
+  display: grid;
+  gap: var(--space-7);
+  padding-block: var(--space-8);
+}
+
+@media (min-width: 1024px) {
+  .top {
+    grid-template-columns: minmax(220px, 1.1fr) 3fr minmax(200px, 1fr);
+  }
+}
+
+.brandLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-size: 1.15rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tagline {
+  max-width: 32ch;
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-muted);
+  line-height: var(--leading-body);
+}
+
+.company {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--type-small);
+}
+
+.socials {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.social {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  color: var(--color-text);
+}
+
+.social:hover {
+  background: var(--color-surface);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .columns {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.columnTitle {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.linkList {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Also styles the cookie-preferences link, which renders its own <a>. */
+.linkList a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--color-text-muted);
+  font-size: var(--type-small);
+  text-decoration: none;
+}
+
+.linkList a:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+.support {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  font-size: var(--type-small);
+}
+
+.support a {
+  color: var(--color-text);
+}
+
+.hours {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+  padding-block: var(--space-5);
+  border-top: 1px solid var(--color-control-border);
+  color: var(--color-text-muted);
+  font-size: var(--type-small);
+}
+
+.bottom p {
+  margin: 0;
+}
+
+.bottom a {
+  color: var(--color-text);
+}

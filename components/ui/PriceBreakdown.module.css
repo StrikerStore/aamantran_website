@@ -1,0 +1,33 @@
+.inline {
+  font-family: var(--font-ui);
+  color: var(--color-text);
+}
+
+.base {
+  font-weight: 600;
+}
+
+.detail,
+.was {
+  color: var(--color-text-muted);
+  font-size: 0.9em;
+}
+
+.stacked {
+  display: inline-grid;
+  row-gap: var(--space-1);
+  font-family: var(--font-ui);
+}
+
+.stackedTotal {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
+
+.stackedDetail {
+  font-size: var(--type-small);
+  color: var(--color-text-muted);
+}

@@ -1,396 +1,353 @@
-import { Fragment } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import HeroCarousel from '@/components/HeroCarousel';
-import { type CarouselTemplate } from '@/components/TemplatesCarousel';
-import TemplatesShowcase from '@/components/TemplatesShowcase';
-import ScrollReveal from '@/components/ScrollReveal';
-import ReviewsSection, { type ReviewItem } from '@/components/ReviewsSection';
-import InstagramSection from '@/components/InstagramSection';
-import { getPublicApiUrl } from '@/lib/publicEnv';
-import { IS_INTL } from '@/lib/storefront';
-import { getStartingPrice } from '@/lib/startingPrice';
+import { Suspense } from 'react';
+import JsonLd from '@/components/JsonLd';
+import { GuestExperienceDemo } from '@/components/demos/GuestExperienceDemo';
+import { PlanningDemo } from '@/components/demos/PlanningDemo';
+import { TemplateCard } from '@/components/gallery/TemplateCard';
+import { PaymentFailedRedirect } from '@/components/home/PaymentFailedRedirect';
+import { ReviewList } from '@/components/product/ReviewList';
+import { Accordion } from '@/components/ui/Accordion';
+import { Badge } from '@/components/ui/Badge';
+import { LinkButton } from '@/components/ui/Button';
+import { Container } from '@/components/ui/Container';
+import { RemoteImage } from '@/components/ui/RemoteImage';
+import { getRecentPosts } from '@/lib/api/blog';
+import { getCatalogueStats, getFeaturedReviews, getTemplates } from '@/lib/api/templates';
+import { COLLECTIONS } from '@/lib/collections';
+import { PURCHASE_STEPS } from '@/lib/content/builderSteps';
+import { ACCESS, INCLUDED, PLANNING_TOOLS, SELF_BUILD } from '@/lib/content/entitlements';
+import { PURCHASE_FAQ_IDS, faqsByIds } from '@/lib/content/faqs';
+import { sampleWeddingDate } from '@/lib/content/sampleInvite';
+import { pluralize } from '@/lib/format';
+import { publishedOccasionPages } from '@/lib/occasionPages';
 import { alternateLanguages } from '@/lib/seo';
+import { getStartingPrice } from '@/lib/startingPrice';
+import { formatMoney, IS_INTL } from '@/lib/storefront';
+import { templateArtAlt } from '@/lib/templateCard';
+import { TRY_DEMO } from '@/lib/content/tryDemo';
+import styles from './home.module.css';
 
-type ReviewsResponse = { reviews: ReviewItem[]; avgRating: number; totalCount: number };
+/**
+ * The homepage.
+ *
+ * Everything on it is either read from the catalogue or written in
+ * lib/content, so the page cannot claim more than the product does. The page it
+ * replaces carried three invented testimonials, a per-guest link feature that
+ * does not exist, "20+ designs" against a catalogue of twelve, "edit anytime"
+ * against names that lock, and a price table asserting what printed cards and
+ * video invitations cost elsewhere.
+ *
+ * The guest and planning demos (the plan's H04 and H05) arrive with their
+ * components in the next task; the anchors other pages link to — #how,
+ * #features and #reviews — are already here.
+ */
 
-const FALLBACK_REVIEWS: ReviewItem[] = [
-  {
-    id: 'fb-1',
-    rating: 5,
-    reviewText: '"Our guests kept saying how beautiful the invitation was. The envelope animation left everyone speechless. Sharing on WhatsApp was so easy."',
-    coupleNames: 'Priya & Rahul',
-    location: 'Jaipur',
-    couplePhotoUrl: null,
-    template: null,
-  },
-  {
-    id: 'fb-2',
-    rating: 5,
-    reviewText: '"I saved at least ₹25,000 on printed cards and the RSVP tracking was a lifesaver. I knew exactly who was coming to which function."',
-    coupleNames: 'Kabir & Aisha',
-    location: 'Mumbai',
-    couplePhotoUrl: null,
-    template: null,
-  },
-  {
-    id: 'fb-3',
-    rating: 5,
-    reviewText: '"We had our invitation live and shared with guests within an hour of signing up. Picked our template, filled in details, and done!"',
-    coupleNames: 'Sneha & Rohan',
-    location: 'Hyderabad',
-    couplePhotoUrl: null,
-    template: null,
-  },
-];
+const FEATURED_DESIGNS = 6;
+const STORIES = 9;
+const CATALOGUE_LIMIT = 100;
+
+/** The catalogue and reviews move slowly; two minutes keeps the page cheap to serve. */
+export const revalidate = 120;
 
 export const metadata: Metadata = {
-  // `absolute` opts out of the layout's "%s — Aamantran" template (the brand is already in the title).
-  title: { absolute: 'Aamantran — Beautiful Digital Wedding Invitations for India' },
+  // `absolute` opts out of the layout's "%s — Aamantran" template.
+  title: { absolute: 'Aamantran — Digital Invitations You Fill In Yourself' },
   description:
-    'Stunning digital invitations your guests will open, save, and remember — with seamless RSVP, WhatsApp sharing, and every ceremony covered in one elegant link.',
-  // Same hreflang pair every other page gets via buildPageMetadata. This page
-  // builds its metadata by hand, so it has to ask for them explicitly - and it
-  // is the last page that should be missing them.
+    'Choose an invitation design, pay once, and fill in your own names, ceremonies, photos and music. Guests open a link, no app, and RSVP to each ceremony.',
   alternates: { canonical: '/', languages: alternateLanguages('/') },
 };
 
-const CHECKLIST_ITEMS = [
-  'Personalised design', 'Live RSVP tracking', 'WhatsApp-ready link',
-  'Multiple events, one URL', 'Photo gallery & music', 'Guest management',
-];
-/**
- * Desktop comparison row labels.
- *
- * COUPLED BY POSITION to the cells below: each of the three data columns
- * hardcodes one sibling <div> per label, in this order. Add, remove or reorder
- * anything here and you must make the identical change in all three columns, or
- * every row below the edit shifts and the table starts confidently mislabelling
- * itself ("Guest updates: ₹10,000–₹40,000").
- *
- * The Cost row is dropped on the international storefront — see COMPARISON_ROWS
- * usage and the three `!IS_INTL` cell guards.
- */
-const COMPARISON_ROWS = [
-  'Cost',
-  'Guest updates',
-  'RSVP tracking',
-  'Send last-minute changes',
-  'WhatsApp ready',
-  'Photo & music gallery',
-  'Google Maps embed',
-];
-// Prefetched server-side so the hero renders instantly with no "Loading templates…" flash.
-async function getHomepageTemplates(): Promise<CarouselTemplate[]> {
-  try {
-    const API = getPublicApiUrl();
-    const res = await fetch(`${API}/api/templates?limit=10&sort=new`, { next: { revalidate: 120 } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.templates ?? []) as CarouselTemplate[];
-  } catch {
-    return [];
-  }
-}
-
-async function getFeaturedReviews(): Promise<ReviewsResponse> {
-  try {
-    const API = getPublicApiUrl();
-    const res = await fetch(`${API}/api/reviews/featured?limit=50`, { next: { revalidate: 120 } });
-    if (!res.ok) return { reviews: [], avgRating: 0, totalCount: 0 };
-    const data = await res.json();
-    // Tolerate older backend that returned a bare array.
-    if (Array.isArray(data)) {
-      const ratings = data.map((r: ReviewItem) => Number(r.rating) || 0);
-      const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
-      return { reviews: data, avgRating: Number(avg.toFixed(2)), totalCount: data.length };
-    }
-    return {
-      reviews: Array.isArray(data?.reviews) ? data.reviews : [],
-      avgRating: Number(data?.avgRating ?? 0),
-      totalCount: Number(data?.totalCount ?? 0),
-    };
-  } catch {
-    return { reviews: [], avgRating: 0, totalCount: 0 };
-  }
-}
-
 export default async function HomePage() {
-  const startingPrice = await getStartingPrice();
-  const [featured, fetchedTemplates] = await Promise.all([getFeaturedReviews(), getHomepageTemplates()]);
-  // Empty server fetch (API hiccup at revalidate time) → undefined, so the
-  // carousels fall back to their own client-side fetch instead of "No templates".
-  const homeTemplates = fetchedTemplates.length > 0 ? fetchedTemplates : undefined;
-  // One fallback testimonial quotes a rupee saving on printed cards. It is a
-  // customer's own words, so it is not rewritten into dollars — it is simply
-  // withheld on the storefront where that figure means nothing.
-  const fallbackReviews = IS_INTL
-    ? FALLBACK_REVIEWS.filter(r => !r.reviewText?.includes('₹'))
-    : FALLBACK_REVIEWS;
-  const reviewsToShow = featured.reviews.length > 0 ? featured.reviews : fallbackReviews;
-  const avgRating = featured.reviews.length > 0 ? featured.avgRating : 5;
-  const totalCount = featured.reviews.length > 0 ? featured.totalCount : fallbackReviews.length;
+  const [stats, featured, catalogue, reviews, posts, startingPrice] = await Promise.all([
+    getCatalogueStats(),
+    getTemplates({ limit: FEATURED_DESIGNS, sort: 'popular' }),
+    getTemplates({ limit: CATALOGUE_LIMIT, sort: 'new' }),
+    getFeaturedReviews(STORIES),
+    getRecentPosts(3),
+    getStartingPrice(),
+  ]);
+
+  const designs = featured?.templates ?? [];
+  // Only offered when a design on this page can take it: the hero links to these cards.
+  const hasTryable = designs.some((design) => design.tryWithNames);
+  const designCount = stats?.total ?? catalogue?.total ?? 0;
+  const occasionPages = publishedOccasionPages(catalogue?.templates ?? []);
+  const faqs = faqsByIds(PURCHASE_FAQ_IDS);
+  const heroArt = catalogue?.templates[0] ?? designs[0] ?? null;
+  // Fixed here rather than in the browser, so the sample dates in the guest
+  // demo are the same in the HTML and after hydration.
+  const sampleWeddingIso = sampleWeddingDate().toISOString();
+
+  // The India figure is the payable total from /api/templates/stats, so the
+  // headline price matches what checkout charges. That endpoint is part of a
+  // backend that may not be deployed yet, and it is INR-only, so both other
+  // cases fall back to the cheapest base price for this storefront.
+  const fromPrice = !IS_INTL && stats?.lowest
+    ? `From ${formatMoney(stats.lowest.total)}, GST included`
+    : `From ${startingPrice}${IS_INTL ? '' : ' + GST'}`;
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: { '@type': 'Answer', text: faq.a },
+    })),
+  };
+
   return (
-<>
-      {/* ── HERO ── */}
-      <section className="hero" id="hero">
-        <div className="hero-inner">
-          <div className="hero-badge" id="hero-badge">
-            <span className="star">★★★★★</span>
-            {/* No geography: this same page serves aamantranglobal.com, where a
-                claim about couples in India reads as social proof that excludes
-                the visitor. */}
-            <span>Loved by couples everywhere</span>
-          </div>
-          <h1 className="hero-h1">
-            Your love story,<br />
-            <em>beautifully told.</em>
-          </h1>
-          <p className="hero-sub">
-            Stunning digital invitations your guests will open, save, and remember — with seamless RSVP, WhatsApp sharing, and every ceremony covered in one elegant link.
-          </p>
-        </div>
-        <HeroCarousel initialTemplates={homeTemplates} />
-      </section>
+    <>
+      <JsonLd data={faqSchema} />
+      {/* Reads the URL, so it renders inside its own boundary. */}
+      <Suspense fallback={null}>
+        <PaymentFailedRedirect />
+      </Suspense>
 
-      {/* ── CHECKLIST STRIP ── */}
-      <section className="checklist-strip" id="checklist">
-        <div className="strip-track">
-          {[0, 1].map(set => (
-            <div className="strip-set" key={set} aria-hidden={set === 1}>
-              {CHECKLIST_ITEMS.map(item => (
-                <Fragment key={item}>
-                  <div className="check-item"><span className="chk">✓</span> {item}</div>
-                  <div className="strip-dot" />
-                </Fragment>
+      <div className={styles.page}>
+        {/* ── H01 Hero ─────────────────────────────────────────────────── */}
+        <header className={styles.hero}>
+          <Container className={styles.heroInner}>
+            <div className={styles.heroText}>
+              <h1 className={styles.title}>Beautiful invitations, with the tools to bring your celebration together</h1>
+              <p className={styles.lede}>
+                Choose a design and pay once. You fill in your own names, ceremonies, photos and music, then share one
+                link. Guests open it in any browser and reply to each ceremony separately.
+              </p>
+              <p className={styles.price}>{fromPrice}</p>
+              <div className={styles.heroActions}>
+                <LinkButton href="/templates">Browse invitations</LinkButton>
+                {hasTryable ? (
+                  <LinkButton href="#designs" variant="secondary">
+                    {TRY_DEMO.cta}
+                  </LinkButton>
+                ) : (
+                  <LinkButton href="#how" variant="secondary">
+                    See how it works
+                  </LinkButton>
+                )}
+              </div>
+              <ul className={styles.reassurance}>
+                <li>{SELF_BUILD.short}</li>
+                <li>{ACCESS.short}.</li>
+                <li>One payment, no subscription.</li>
+              </ul>
+            </div>
+            <div className={styles.heroArt}>
+              {heroArt && (
+                <RemoteImage
+                  src={heroArt.mobileThumbnailUrl ?? heroArt.desktopThumbnailUrl ?? heroArt.thumbnailUrl}
+                  alt={templateArtAlt(heroArt.name)}
+                  sizes="(max-width: 1023px) 70vw, 420px"
+                  aspectRatio={heroArt.mobileThumbnailUrl ? '9 / 16' : '16 / 10'}
+                  className={styles.heroImage}
+                  preload
+                />
+              )}
+            </div>
+          </Container>
+        </header>
+
+        <Container>
+          {/* ── H02 Browse by occasion or tradition ────────────────────── */}
+          <section aria-labelledby="browse-heading" className={styles.section}>
+            <h2 id="browse-heading" className={styles.sectionTitle}>
+              Browse by occasion or tradition
+            </h2>
+            <ul className={styles.tiles}>
+              {occasionPages.map(({ page }) => (
+                <li key={page.slug}>
+                  <Link href={`/${page.slug}`}>{page.heading}</Link>
+                </li>
               ))}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── TEMPLATES SHOWCASE ── */}
-      <section className="templates-section" id="templates">
-        <div className="container">
-          <p className="eyebrow center">Designs</p>
-          <h2 className="section-h2 center">Choose your <em>style.</em></h2>
-          <p className="section-body center">Every template is hand-crafted — warm, romantic, and made to feel authentically yours.</p>
-        </div>
-        {/* Full list, not a pre-sliced 5 — the showcase filters by occasion
-            before it slices, so a tile draws from every homepage template. */}
-        <TemplatesShowcase templates={homeTemplates} />
-        <div className="center" style={{ marginTop: 40 }}>
-          <Link href="/templates" className="btn-primary">Browse all templates →</Link>
-        </div>
-      </section>
-
-      {/* ── FEATURES GRID ── */}
-      <section className="features-section" id="features">
-        <div className="container">
-          <p className="eyebrow center">What&apos;s included</p>
-          <h2 className="section-h2 center">Everything your wedding&nbsp;<em>deserves.</em></h2>
-
-          <div className="features-grid">
-            {/* Large card */}
-            <ScrollReveal className="feat-card large-card" delay={0}>
-              <div className="feat-visual envelope-mini">
-                <div className="mini-env">
-                  <div className="mini-flap"></div>
-                  <div className="mini-body">
-                    <p>Priya &amp; Arjun</p>
-                    <span>13 Dec 2026</span>
-                  </div>
-                  <div className="mini-seal">💍</div>
-                </div>
-              </div>
-              <div className="feat-text">
-                <h3>Digital envelope with wax seal</h3>
-                <p>Your guests tap to unwrap a beautifully animated envelope — a moment of magic before your invitation is revealed.</p>
-              </div>
-            </ScrollReveal>
-
-            {[
-              { icon: '📊', title: 'Live RSVP dashboard', text: "See who's coming, who declined, meals preferred, and headcount per event — all in real time." },
-              { icon: '📅', title: 'Every function, one link', text: 'Haldi, Sangeet, Wedding, Reception — your guests RSVP to each event independently. No more confusion.' },
-              { icon: '💬', title: 'WhatsApp-native sharing', text: 'Share a personalised link per guest that auto-fills their name. Beautiful card preview appears in chat.' },
-              { icon: '🎵', title: 'Background music', text: 'Add a song that plays as your guests scroll through your invitation. Set the mood before they arrive.' },
-              { icon: '📸', title: 'Photo gallery', text: 'Showcase your pre-wedding shoot or candid family moments — right inside your invitation.' },
-              { icon: '📍', title: 'Google Maps embed', text: 'Each venue is pinned with directions baked in. One tap and your guests are navigating there.' },
-              { icon: '⏳', title: 'Live countdown timer', text: "A beautiful countdown to your wedding day, updating every second on your guests' screens." },
-            ].map(({ icon, title, text }, i) => (
-              <ScrollReveal key={title} className="feat-card" delay={i * 80}>
-                <div className="feat-icon-wrap">{icon}</div>
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ── */}
-      <section className="howitworks-section" id="how">
-        <div className="container">
-          <p className="eyebrow center">The process</p>
-          <h2 className="section-h2 center">Ready in <em>3 simple steps.</em></h2>
-
-          <div className="steps-row">
-            {[
-              { num: '01', icon: '✅', title: 'Choose your template', text: 'Browse 20+ hand-crafted designs. Pick the one that feels like you and pay once — securely via UPI or card.' },
-              null, // connector
-              { num: '02', icon: '✏️', title: 'Register & fill in your details', text: 'After payment, create your couple dashboard account. Enter names, dates, venues, photos, and music. Your invitation updates live as you type.' },
-              null,
-              { num: '03', icon: '📲', title: 'Share with your guests', text: 'Your personalised link is ready instantly. Share via WhatsApp, copy the URL, and watch RSVPs roll in from your dashboard.' },
-            ].map((item, i) =>
-              item === null
-                ? <div key={`conn-${i}`} className="step-connector"><span>→</span></div>
-                : (
-                  <ScrollReveal key={item.num} className="step" delay={i * 120}>
-                    <div className="step-num">{item.num}</div>
-                    <div className="step-icon">{item.icon}</div>
-                    <h3>{item.title}</h3>
-                    <p>{item.text}</p>
-                  </ScrollReveal>
-                )
-            )}
-          </div>
-
-          <div className="center" style={{ marginTop: 56 }}>
-            <Link href="/templates" className="btn-primary">Browse templates →</Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── COMPARISON ──
-          Shown on both storefronts, but the Cost row is dropped
-          internationally. The rupee figures describe the Indian market for
-          printed cards and video invitations; converting them at our markup
-          would assert that printed invitations cost $320-$1,260 abroad, which
-          is an Indian number tripled rather than anything observed overseas.
-          Without that row the table makes no price claim about third parties
-          and the feature comparison still stands on its own. */}
-      <section className="comparison-section" id="comparison">
-        <div className="container">
-          <p className="eyebrow center">Why digital?</p>
-          <h2 className="section-h2 center">Which invitation&nbsp;<em>really works?</em></h2>
-
-          <div className="comparison-table">
-            {/* Labels */}
-            <div className="comp-col comp-header-col">
-              <div className="comp-header-cell"></div>
-              {COMPARISON_ROWS.filter(r => !(IS_INTL && r === 'Cost')).map(r => (
-                <div key={r} className="comp-row-label">{r}</div>
+              {COLLECTIONS.map((collection) => (
+                <li key={collection.slug}>
+                  <Link href={`/collections/${collection.slug}`}>{collection.heading}</Link>
+                </li>
               ))}
-            </div>
-            {/* Printed */}
-            <div className="comp-col comp-paper">
-              <div className="comp-col-header paper-header"><span className="comp-icon">🖨️</span><span>Printed cards</span></div>
-              {/* Cost row — dropped on the international storefront. Must stay
-                  in lockstep with the COMPARISON_ROWS filter above. */}
-              {!IS_INTL && (
-                <div className="comp-cell bad">₹10,000–₹40,000</div>
-              )}
-              <div className="comp-cell bad">✗ None</div>
-              <div className="comp-cell bad">✗ Manual calls</div>
-              <div className="comp-cell bad">✗ Reprint needed</div>
-              <div className="comp-cell bad">✗ No</div>
-              <div className="comp-cell bad">✗ No</div>
-              <div className="comp-cell bad">✗ No</div>
-            </div>
-            {/* Video */}
-            <div className="comp-col comp-video">
-              <div className="comp-col-header video-header"><span className="comp-icon">🎥</span><span>Video Invitation</span></div>
-              {/* Cost row — dropped on the international storefront. Must stay
-                  in lockstep with the COMPARISON_ROWS filter above. */}
-              {!IS_INTL && (
-                <div className="comp-cell mid">₹4,000–₹5,000</div>
-              )}
-              <div className="comp-cell bad">✗ None</div>
-              <div className="comp-cell bad">✗ None</div>
-              <div className="comp-cell mid">~ Re-edit needed, slow</div>
-              <div className="comp-cell mid">~ Shareable</div>
-              <div className="comp-cell mid">~ In video only</div>
-              <div className="comp-cell bad">✗ No</div>
-            </div>
-            {/* Aamantran */}
-            <div className="comp-col comp-digital">
-              <div className="comp-col-header digital-header">
-                <span className="comp-best-badge">⭐ Recommended</span>
-                <span className="comp-icon">✨</span>
-                <span>Aamantran</span>
-              </div>
-              {/* Cost row — dropped on the international storefront. Must stay
-                  in lockstep with the COMPARISON_ROWS filter above. */}
-              {!IS_INTL && (
-                <div className="comp-cell good">From {startingPrice}</div>
-              )}
-              <div className="comp-cell good">✓ Real-time</div>
-              <div className="comp-cell good">✓ Live dashboard</div>
-              <div className="comp-cell good">✓ Instant</div>
-              <div className="comp-cell good">✓ Yes</div>
-              <div className="comp-cell good">✓ Yes</div>
-              <div className="comp-cell good">✓ Yes</div>
-            </div>
-          </div>
-          <div className="comp-mobile-table" aria-label="Invitation comparison">
-            {/* Column headers */}
-            <div className="cmt-header">
-              <div className="cmt-spacer" />
-              <div className="cmt-col-head paper-header">🖨️<span>Printed</span></div>
-              <div className="cmt-col-head video-header">🎥<span>Video</span></div>
-              <div className="cmt-col-head digital-header">✨<span>Aamantran</span></div>
-            </div>
-            {/* Rows */}
-            {[
-              { label: 'Cost',           paper: '₹40K+',   video: '₹5K',   digital: startingPrice },
-              { label: 'Guest updates',  paper: '✗',        video: '✗',     digital: '✓' },
-              { label: 'RSVP tracking',  paper: '✗',        video: '✗',     digital: '✓' },
-              { label: 'Edit anytime',   paper: '✗',        video: '✗',     digital: '✓' },
-              { label: 'WhatsApp ready', paper: '✗',        video: '~',     digital: '✓' },
-              { label: 'Photos & music', paper: '✗',        video: '~',     digital: '✓' },
-              { label: 'Guest mgmt',     paper: '✗',        video: '✗',     digital: '✓' },
-            ].filter(row => !(IS_INTL && row.label === 'Cost')).map(row => (
-              <div key={row.label} className="cmt-row">
-                <div className="cmt-label">{row.label}</div>
-                <div className="cmt-cell bad">{row.paper}</div>
-                <div className="cmt-cell mid">{row.video}</div>
-                <div className="cmt-cell good">{row.digital}</div>
-              </div>
-            ))}
-          </div>
+              <li>
+                <Link href="/templates">Every design{designCount > 0 ? ` (${designCount})` : ''}</Link>
+              </li>
+            </ul>
+          </section>
 
-          <div className="comp-cta center">
-            <Link href="/templates" className="btn-primary">Browse templates →</Link>
-          </div>
-        </div>
-      </section>
+          {/* ── H03 Designs ───────────────────────────────────────────── */}
+          {designs.length > 0 && (
+            <section id="designs" aria-labelledby="designs-heading" className={styles.section}>
+              <h2 id="designs-heading" className={styles.sectionTitle}>
+                Designs couples are choosing
+              </h2>
+              <p className={styles.sectionIntro}>
+                Every design has a live demo you can open before you buy.
+                {hasTryable && ` Designs marked “${TRY_DEMO.cta}” can show your own names and dates first, free.`}
+              </p>
+              <ul className={styles.grid}>
+                {designs.map((design, i) => (
+                  <li key={design.id || design.slug}>
+                    <TemplateCard template={design} eager={i < 2} source="home" />
+                  </li>
+                ))}
+              </ul>
+              <p className={styles.more}>
+                <LinkButton href="/templates" variant="secondary">
+                  See every design
+                </LinkButton>
+              </p>
+            </section>
+          )}
 
-      {/* ── REVIEWS ── */}
-      <section className="reviews-section" id="reviews">
-        <div className="container">
-          <p className="eyebrow center">What couples say</p>
-          <h2 className="section-h2 center">Stories of <em>happy celebrations.</em></h2>
+          {/* ── H04 What your guests see ──────────────────────────────── */}
+          <section id="guest-demo" aria-labelledby="guest-demo-heading" className={styles.section}>
+            <h2 id="guest-demo-heading" className={styles.sectionTitle}>
+              What your guests see
+            </h2>
+            <p className={styles.sectionIntro}>
+              A working sample of the invitation itself: the ceremonies, directions, the RSVP and the wishes wall. Try
+              it — nothing here is sent anywhere.
+            </p>
+            <GuestExperienceDemo weddingDateIso={sampleWeddingIso} />
+          </section>
 
-          <ReviewsSection
-            reviews={reviewsToShow}
-            avgRating={avgRating}
-            totalCount={totalCount}
-            showTemplateLink
-          />
-        </div>
-      </section>
+          {/* ── H05 The planning tools ────────────────────────────────── */}
+          <section id="planning-demo" aria-labelledby="planning-demo-heading" className={styles.section}>
+            <h2 id="planning-demo-heading" className={styles.sectionTitle}>
+              The planning tools, working
+            </h2>
+            <p className={styles.sectionIntro}>
+              These come with every invitation. The budget and tasks below are live — add an expense, mark one paid,
+              move a task on — and nothing is saved.
+            </p>
+            <PlanningDemo />
+          </section>
 
-      {/* ── INSTAGRAM ── */}
-      <InstagramSection />
+          {/* ── H06 How it works ──────────────────────────────────────── */}
+          <section id="how" aria-labelledby="how-heading" className={styles.section}>
+            <h2 id="how-heading" className={styles.sectionTitle}>
+              How it works
+            </h2>
+            <ol className={styles.steps}>
+              {PURCHASE_STEPS.map((step, i) => (
+                <li key={step.id} className={styles.step}>
+                  <span className={styles.stepNumber} aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <h3 className={styles.stepTitle}>{step.title}</h3>
+                  <p className={styles.stepText}>
+                    {step.text}
+                    {step.id === 'choose' && hasTryable && ' Or try one with your own names first, free and with no account.'}
+                  </p>
+                </li>
+              ))}
+            </ol>
+            <p className={styles.note}>{SELF_BUILD.long}</p>
+          </section>
 
-      {/* ── FINAL CTA ── */}
-      <section className="final-cta" id="final-cta">
-        <div className="container">
-          <h2 className="final-h2">Your invitation could be live tonight.</h2>
-          <p className="final-sub">Pick a template, add your details, and share it on WhatsApp — most couples are done in under 30 minutes. One-time payment, from {startingPrice}.</p>
-          <Link href="/templates" className="btn-primary large">Create your invitation →</Link>
-        </div>
-      </section>
+          {/* ── H08 What's included ───────────────────────────────────── */}
+          <section id="features" aria-labelledby="included-heading" className={styles.section}>
+            <h2 id="included-heading" className={styles.sectionTitle}>
+              What’s included
+            </h2>
+            <p className={styles.sectionIntro}>
+              Everything below comes with any design, for one payment. {ACCESS.long}
+            </p>
+            <ul className={styles.included}>
+              {INCLUDED.map((item) => (
+                <li key={item.id}>
+                  <span className={styles.includedTitle}>{item.title}</span>
+                  <span className={styles.includedDetail}>
+                    {item.detail}
+                    {item.templateDependent && ' Where the design supports it.'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <h3 className={styles.subTitle}>The eight planning tools</h3>
+            <ul className={styles.tools}>
+              {PLANNING_TOOLS.map((tool) => (
+                <li key={tool.key}>
+                  <Badge>{tool.name}</Badge>
+                  <span className={styles.toolText}>{tool.does}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* ── H07 Stories ───────────────────────────────────────────── */}
+          <section id="reviews" aria-labelledby="stories-heading" className={styles.section}>
+            <h2 id="stories-heading" className={styles.sectionTitle}>
+              What couples say
+            </h2>
+            <ReviewList
+              reviews={reviews?.reviews ?? []}
+              avgRating={reviews?.avgRating ?? 0}
+              totalCount={reviews?.totalCount ?? 0}
+              curatedCount={reviews?.curatedCount ?? 0}
+              showTemplate
+              emptyMessage="No reviews yet. When couples who bought an invitation leave one, it appears here."
+            />
+          </section>
+
+          {/* ── H09 Questions ─────────────────────────────────────────── */}
+          <section aria-labelledby="faq-heading" className={styles.section}>
+            <h2 id="faq-heading" className={styles.sectionTitle}>
+              Questions before buying
+            </h2>
+            <Accordion
+              headingLevel={3}
+              items={faqs.map((faq) => ({
+                id: faq.id,
+                title: faq.q,
+                content: (
+                  <p>
+                    {faq.a}
+                    {faq.link && (
+                      <>
+                        {' '}
+                        <Link href={faq.link.href}>{faq.link.label}</Link>
+                      </>
+                    )}
+                  </p>
+                ),
+              }))}
+            />
+            <p className={styles.more}>
+              <Link href="/faq">Read every question</Link>
+            </p>
+          </section>
+
+          {/* ── H10 Guides ────────────────────────────────────────────── */}
+          {posts && posts.length > 0 && (
+            <section aria-labelledby="guides-heading" className={styles.section}>
+              <h2 id="guides-heading" className={styles.sectionTitle}>
+                Guides
+              </h2>
+              <ul className={styles.guides}>
+                {posts.map((post) => (
+                  <li key={post.slug}>
+                    <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                    {post.excerpt && <span className={styles.guideText}>{post.excerpt}</span>}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </Container>
+
+        {/* ── Final call to action ─────────────────────────────────────── */}
+        <section aria-labelledby="cta-heading" className={styles.cta}>
+          <Container>
+            <h2 id="cta-heading" className={styles.ctaTitle}>
+              Find the design, then make it yours
+            </h2>
+            <p className={styles.ctaText}>
+              {designCount > 0 ? `${pluralize(designCount, 'design')} to choose from. ` : ''}
+              {fromPrice}. You build the invitation yourself, and it stays live until six months after your last ceremony.
+            </p>
+            <LinkButton href="/templates">Browse invitations</LinkButton>
+          </Container>
+        </section>
+      </div>
     </>
   );
 }

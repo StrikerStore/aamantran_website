@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
+import { Container } from '@/components/ui/Container';
 import { buildPageMetadata } from '@/lib/seo';
+import page from '../content-page.module.css';
+import prose from '../prose.module.css';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Privacy Policy',
@@ -9,19 +12,23 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default function PrivacyPage() {
   return (
-    <>
-      <section className="page-hero">
-        <span className="page-eyebrow">Legal</span>
-        <h1 className="page-title">Privacy <em>Policy</em></h1>
-        <p className="page-subtitle">We respect your privacy and are committed to protecting your personal information. Here&apos;s exactly what we collect and why.</p>
-      </section>
+    <div className={page.page}>
+      <header className={page.hero}>
+        <Container>
+          <p className={page.eyebrow}>Legal</p>
+          <h1 className={page.title}>Privacy Policy</h1>
+          <p className={page.intro}>
+            What we collect, why we collect it, and what happens to your guests&rsquo; data.
+          </p>
+        </Container>
+      </header>
 
-      <main className="page-body">
-        <div className="prose">
-          <span className="last-updated">Last updated: 8 July 2026</span>
+      <Container>
+        <div className={prose.prose}>
+          <span className={prose.updated}>Last updated: 16 September 2026</span>
 
-          <div className="highlight-box">
-            <p><strong>The short version:</strong> We collect only what we need to run your digital e-invitation. We never sell your data. Your guest list belongs to you, always. <strong>We do not ship physical products</strong> — our service is online only. This policy is written to comply with the Digital Personal Data Protection Act, 2023 (DPDP Act) and the DPDP Rules, 2025.</p>
+          <div className={prose.highlight}>
+            <p><strong>The short version:</strong> We collect only what we need to run your digital e-invitation. We never sell your data. Your guest list belongs to you, always. If you try a free preview of a design with your names, we ask for no email or phone number, and what you type is deleted automatically within about a day. <strong>We do not ship physical products</strong> — our service is online only. This policy is written to comply with the Digital Personal Data Protection Act, 2023 (DPDP Act) and the DPDP Rules, 2025.</p>
           </div>
 
           <h2>1. Who we are</h2>
@@ -39,6 +46,20 @@ export default function PrivacyPage() {
             <li><strong>Communications:</strong> Messages you send us via WhatsApp, email, our contact form, or support tickets raised from your dashboard.</li>
           </ul>
 
+          <h3>Information you give us for a free preview</h3>
+          <p>You can see a design filled in with your own details before buying, without an account and without paying. For this we ask for:</p>
+          <ul>
+            <li>the two names to show on the invitation;</li>
+            <li>the wedding date;</li>
+            <li>the venue name and, if you choose to give it, the city;</li>
+            <li>the ceremonies you want to see, with their dates and, if you choose, their times;</li>
+            <li>the design you are previewing.</li>
+          </ul>
+          <p>We do <strong>not</strong> ask for your email address, phone number or any other way to contact you, and a preview is not linked to any account. Please use only names you are entitled to share — normally your own and your partner&apos;s.</p>
+          <p>We use these details <strong>only</strong> to show you the preview. The preview link works for <strong>15 minutes</strong>. Anyone you send the link to can see the names and dates on it during that time, so share it only with people you are happy to show them to. The page is marked so search engines do not index it.</p>
+          <p>If you buy the design from that preview, we use the same details to fill in your new invitation so you do not have to type them again; you can change them in the builder before you confirm them.</p>
+          <p>To stop one connection creating an unreasonable number of previews, we also keep a <strong>one-way, salted hash of your IP address</strong> — a scrambled value that cannot practically be turned back into the address. We never store the address itself. The hash is deleted along with the preview.</p>
+
           <h3>Information collected automatically</h3>
           <ul>
             <li><strong>Website analytics:</strong> On our marketing website we use first-party, cookie-less analytics: an anonymous session identifier, pages visited, referrer website, device type, browser, and approximate location (country/state level). No IP address is stored and this data is not linked to your identity.</li>
@@ -51,6 +72,7 @@ export default function PrivacyPage() {
           <p>We use the information we collect only for the following specified purposes:</p>
           <ul>
             <li>Design, build, host, and deliver your digital invitation.</li>
+            <li>Show you a free, temporary preview of a design with the names and dates you enter, and — only if you then buy it — fill your new invitation in with them.</li>
             <li>Send you your invitation link and important transactional updates related to your order (order confirmation, onboarding, RSVP milestones, event reminders).</li>
             <li>Provide you with your RSVP dashboard and guest management tools.</li>
             <li>Process payments and maintain records required under Indian tax law.</li>
@@ -63,6 +85,7 @@ export default function PrivacyPage() {
           <h2>4. Consent and how to withdraw it</h2>
           <p>We process your personal data on the basis of the consent you give when you purchase an invitation and create an account, and — for certain uses such as processing your payment and honouring your purchase — as a legitimate use permitted under the DPDP Act.</p>
           <p>You may <strong>withdraw your consent at any time</strong>, with the same ease with which you gave it, by emailing <a href="mailto:aamantran@plexzuu.com">aamantran@plexzuu.com</a> from your registered email address. On withdrawal we will stop the related processing and delete the related personal data, except where we are required by law to retain it (for example, payment records under tax law). Withdrawing consent may mean we can no longer provide the service — for example, your invitation may need to be taken offline.</p>
+          <p><strong>Free previews:</strong> you give consent by submitting the preview form, which tells you what is collected and for how long before you submit. You do not need to do anything to withdraw it — the details delete themselves within about a day. If you want them gone sooner, email <a href="mailto:aamantran@plexzuu.com">aamantran@plexzuu.com</a> with the preview link and we will delete them.</p>
 
           <h2>5. Guest data — your household use, our processing</h2>
           <p>Guest information (names, contact details, RSVP responses, wishes) uploaded or collected through your invitation is your data, shared by you for your personal and family event. We act as a processor of this data on your behalf and on your instructions. Specifically:</p>
@@ -77,6 +100,7 @@ export default function PrivacyPage() {
           <h2>6. How long we keep your data</h2>
           <ul>
             <li><strong>Guest data (guest list, RSVPs, wishes, per-guest invitation activity):</strong> automatically deleted <strong>90 days after your invitation expires</strong> (your invitation expires shortly after your last event date). We will email you at least <strong>48 hours before deletion</strong> so you can export your guest list and RSVP report if you wish to keep it. Aggregate counts (for example, total RSVPs) may be retained.</li>
+            <li><strong>Free previews (names, dates, venue, ceremonies and the IP hash):</strong> the link stops working after 15 minutes, and everything is <strong>deleted automatically about 24 hours after you create the preview</strong>, whether or not you buy. If you do buy, the details already copied into your invitation are then kept as invitation content, below.</li>
             <li><strong>Account and invitation content:</strong> retained while your account is active, and deleted when you ask us to delete your account.</li>
             <li><strong>Payment records:</strong> retained for the period required by Indian tax and accounting law, even after account deletion, in de-linked form where possible.</li>
             <li><strong>Website analytics:</strong> raw event data is deleted after 90 days; only aggregated daily statistics are kept.</li>
@@ -129,7 +153,7 @@ export default function PrivacyPage() {
           <h2>16. Contact us</h2>
           <p>If you have any questions about this Privacy Policy or how we handle your data, please contact our Grievance Officer at <a href="mailto:aamantran@plexzuu.com">aamantran@plexzuu.com</a>.</p>
         </div>
-      </main>
-    </>
+      </Container>
+    </div>
   );
 }

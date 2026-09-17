@@ -1,0 +1,13 @@
+.frame {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  background: var(--color-sage);
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--color-sage), var(--color-blush));
+}

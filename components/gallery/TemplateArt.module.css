@@ -1,0 +1,36 @@
+.frame {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--color-sage);
+}
+
+/* Previews are screenshots: the top of the invitation is the part that matters. */
+.img {
+  object-fit: cover;
+  object-position: top center;
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--color-blush), var(--color-sage));
+}
+
+.fallback {
+  padding: var(--space-4);
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  text-align: center;
+  color: var(--color-primary);
+}
+
+@media (max-width: 639px) {
+  .hasPhoneArt {
+    aspect-ratio: 3 / 4;
+  }
+}

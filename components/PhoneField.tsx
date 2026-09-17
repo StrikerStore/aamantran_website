@@ -56,7 +56,7 @@ const REST = [...COUNTRIES].sort((a, b) => a[2].localeCompare(b[2]));
  */
 export function splitTyped(rawCode: string, rawNumber: string): { code: string; national: string } {
   const code = rawCode || DEFAULT_DIAL;
-  let s = String(rawNumber ?? '').trim().replace(/^00/, '+');
+  const s = String(rawNumber ?? '').trim().replace(/^00/, '+');
   const explicit = s.startsWith('+');
   const digits = s.replace(/\D/g, '');
 
@@ -81,6 +81,9 @@ export interface PhoneFieldProps {
   disabled?: boolean;
   className?: string;
   selectClassName?: string;
+  /** Ids of the hint and error for the number input, so they are read with it. */
+  describedBy?: string;
+  invalid?: boolean;
 }
 
 export default function PhoneField({
@@ -93,6 +96,8 @@ export default function PhoneField({
   disabled,
   className,
   selectClassName,
+  describedBy,
+  invalid,
 }: PhoneFieldProps) {
   const code = countryCode || DEFAULT_DIAL;
 
@@ -146,6 +151,8 @@ export default function PhoneField({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
+        aria-describedby={describedBy}
+        aria-invalid={invalid || undefined}
         onChange={(e) => handleNumber(e.target.value)}
         className={`phone-number${className ? ' ' + className : ''}`}
       />

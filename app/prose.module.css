@@ -1,0 +1,145 @@
+/*
+ * Long-form typography: blog articles and the legal pages.
+ *
+ * Styles plain elements by descent, because most of this content is not written
+ * as components — a blog article arrives as HTML from the API, and the legal
+ * pages are paragraphs and lists. One place to change how reading text looks.
+ */
+.prose {
+  max-width: 72ch;
+  font-family: var(--font-ui);
+  font-size: var(--type-body);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+}
+
+.prose > * + * {
+  margin-top: var(--space-4);
+}
+
+.prose h2 {
+  margin-top: var(--space-7);
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 1.2rem + 0.8vw, 1.9rem);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
+
+.prose h3 {
+  margin-top: var(--space-6);
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.prose h4 {
+  margin-top: var(--space-5);
+  font-family: var(--font-ui);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.prose p {
+  margin: 0;
+}
+
+.prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.prose li + li {
+  margin-top: var(--space-2);
+}
+
+.prose li::marker {
+  color: var(--color-primary);
+}
+
+.prose blockquote {
+  margin: 0;
+  padding: var(--space-2) 0 var(--space-2) var(--space-5);
+  border-left: 3px solid var(--color-accent);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-card);
+}
+
+.prose hr {
+  margin-block: var(--space-6);
+  border: 0;
+  border-top: 1px solid var(--color-divider);
+}
+
+.prose code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--color-sage);
+  font-family: ui-monospace, 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.9em;
+  color: var(--color-primary);
+}
+
+.prose pre {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  overflow-x: auto;
+  border-radius: var(--radius-card);
+  background: var(--color-sage);
+}
+
+.prose pre code {
+  padding: 0;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-small);
+}
+
+.prose th,
+.prose td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-divider);
+  text-align: left;
+}
+
+/* A summary box at the top of a policy. */
+.highlight {
+  max-width: 72ch;
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-sage);
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+}
+
+.updated {
+  display: block;
+  margin-bottom: var(--space-5);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  color: var(--color-text-muted);
+}

@@ -1,0 +1,155 @@
+/* The site header is fixed, so every page pads its own top. */
+.page {
+  padding-top: var(--header-height);
+  padding-bottom: var(--section-gap);
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+.hero {
+  padding-block: var(--space-7) calc(var(--space-7) + var(--space-5));
+  background: var(--color-blush);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--type-section);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+}
+
+.intro {
+  max-width: 60ch;
+  margin: var(--space-3) auto 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-body);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.collections {
+  margin-top: var(--space-5);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+}
+
+.collectionsLabel {
+  color: var(--color-text-muted);
+}
+
+.collections ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.collections a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.collections a:hover {
+  background: var(--color-surface);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Lifts the filters over the hero's lower edge. */
+.filters {
+  position: relative;
+  margin-top: calc(-1 * var(--space-6));
+}
+
+.results {
+  margin-top: var(--space-6);
+  scroll-margin-top: var(--space-4);
+}
+
+.summary {
+  margin: 0 0 var(--space-5);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  color: var(--color-text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-6);
+  }
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 500;
+}
+
+.emptyText {
+  max-width: 48ch;
+  margin: 0;
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.skeletonCard {
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--elevation-1);
+}
+
+.skeletonBody {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}

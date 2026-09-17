@@ -1,9 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { getPublicApiUrl } from '@/lib/publicEnv';
+import { useState, type FormEvent } from 'react';
 import PhoneField from '@/components/PhoneField';
+import { Button } from '@/components/ui/Button';
+import { Container } from '@/components/ui/Container';
+import { Field, TextArea, TextInput } from '@/components/ui/Field';
+import { Notice } from '@/components/ui/Notice';
+import { getPublicApiUrl } from '@/lib/publicEnv';
+import { SUPPORT, SUPPORT_RESPONSE_TIME } from '@/lib/content/claims';
 import { IS_INTL } from '@/lib/storefront';
+import page from '../content-page.module.css';
+import styles from './contact.module.css';
 
 const API = getPublicApiUrl();
 
@@ -37,6 +44,8 @@ function phoneProblem(dial: string, national: string): string | null {
     : 'Please enter a valid phone number for the country code selected.';
 }
 
+const EVENT_TYPES = ['Wedding', 'Engagement', 'Birthday', 'Baby Shower', 'Anniversary', 'Other'];
+
 export default function ContactClient() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -46,144 +55,171 @@ export default function ContactClient() {
   const [dial, setDial] = useState(IS_INTL ? '+1' : '+91');
   const [phone, setPhone] = useState('');
 
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError('');
+    setSubmitting(true);
+    const form = event.currentTarget;
+    const data = {
+      name: (form.elements.namedItem('name') as HTMLInputElement).value,
+      phone,
+      phoneCountryCode: dial,
+      email: (form.elements.namedItem('email') as HTMLInputElement).value,
+      eventType: (form.elements.namedItem('event-type') as HTMLSelectElement).value,
+      eventDate: (form.elements.namedItem('event-date') as HTMLInputElement).value,
+      message: (form.elements.namedItem('message') as HTMLTextAreaElement).value,
+    };
+    // Checked in the order the fields appear, so the message names the first
+    // thing the visitor needs to fix rather than a generic "all required fields".
+    const problem =
+      !data.name.trim() ? 'Please enter your name.' :
+      phoneProblem(dial, phone) ??
+      (!data.email.trim() ? 'Please enter your email address.' :
+        !EMAIL_RE.test(data.email.trim()) ? 'Please enter a valid email address.' :
+          !data.message.trim() ? 'Please tell us a little about what you need.' :
+            null);
+    if (problem) {
+      setError(problem);
+      setSubmitting(false);
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.message || 'Failed to send');
+      setSubmitted(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
-    <>
-      <section className="page-hero">
-        <span className="page-eyebrow">Get in touch</span>
-        <h1 className="page-title">Let&apos;s create something<br /><em>beautiful together.</em></h1>
-        <p className="page-subtitle">Have a question, a special request, or ready to get started? We&apos;re just a message away — and we genuinely love helping couples.</p>
-      </section>
+    <div className={page.page}>
+      <header className={page.hero}>
+        <Container>
+          <p className={page.eyebrow}>Get in touch</p>
+          <h1 className={page.title}>Ask us anything</h1>
+          <p className={page.intro}>
+            Before you buy or after — a question about a design, a detail you cannot find, or something that has gone
+            wrong. We answer {SUPPORT.hours}, {SUPPORT_RESPONSE_TIME.value}.
+          </p>
+        </Container>
+      </header>
 
-      <main className="page-body wide">
-        <div className="contact-grid">
-          <div className="contact-info">
-            <h2>We&apos;d love to<br /><em>hear from you.</em></h2>
-            <p>Whether you&apos;re exploring options, finalising details, or need a same-day turnaround — reach out and we&apos;ll make it work.</p>
-
-            {[
-              { icon: '💬', title: 'WhatsApp (Fastest)', detail: <a href="https://wa.me/919174773644" target="_blank" rel="noopener noreferrer">+91 91747 73644</a> },
-              { icon: '✉️', title: 'Email', detail: <a href="mailto:aamantran@plexzuu.com">aamantran@plexzuu.com</a> },
-              { icon: '🕐', title: 'Working Hours', detail: <span>Mon – Sat, 9 AM – 9 PM IST</span> },
-              { icon: '⚡', title: 'Response Time', detail: <span>Usually within 2–4 hours</span> },
-            ].map(m => (
-              <div key={m.title} className="contact-method">
-                <div className="contact-method-icon">{m.icon}</div>
-                <div className="contact-method-text">
-                  <strong>{m.title}</strong>
-                  {m.detail}
-                </div>
-              </div>
-            ))}
-
-            <p className="contact-note">
-              🎁 <strong>Tip:</strong> If your wedding is within 48 hours, message us directly on WhatsApp and mention <em>&quot;urgent&quot;</em> — we&apos;ll prioritise your order immediately.
+      <Container>
+        <div className={styles.layout}>
+          <section aria-labelledby="ways-heading">
+            <h2 id="ways-heading" className={page.sectionTitle}>
+              Ways to reach us
+            </h2>
+            <ul className={styles.methods}>
+              <li>
+                <span className={styles.methodTitle}>WhatsApp, the fastest</span>
+                <a href={SUPPORT.whatsappHref} target="_blank" rel="noopener noreferrer">
+                  {SUPPORT.whatsappLabel}
+                </a>
+              </li>
+              <li>
+                <span className={styles.methodTitle}>Email</span>
+                <a href={`mailto:${SUPPORT.email}`}>{SUPPORT.email}</a>
+              </li>
+              <li>
+                <span className={styles.methodTitle}>When we are here</span>
+                <span>{SUPPORT.hours}</span>
+              </li>
+              <li>
+                <span className={styles.methodTitle}>Already bought an invitation?</span>
+                <span>Raise a ticket from your dashboard — it reaches us with your event attached.</span>
+              </li>
+            </ul>
+            <p className={page.note}>
+              <strong>Wedding in the next few days?</strong> Message us on WhatsApp and say so. We will put your
+              questions to the front of the queue. We cannot build the invitation for you, but we can make sure nothing
+              holds you up while you do.
             </p>
-          </div>
+          </section>
 
-          <div className="contact-form-wrap">
-            <h3>Send us a message</h3>
-            {!submitted ? (
-              <form id="contact-form" onSubmit={async (e) => {
-                e.preventDefault();
-                setError('');
-                setSubmitting(true);
-                const form = e.currentTarget;
-                const data = {
-                  name: (form.elements.namedItem('name') as HTMLInputElement).value,
-                  phone,
-                  phoneCountryCode: dial,
-                  email: (form.elements.namedItem('email') as HTMLInputElement).value,
-                  eventType: (form.elements.namedItem('event-type') as HTMLSelectElement).value,
-                  eventDate: (form.elements.namedItem('event-date') as HTMLInputElement).value,
-                  message: (form.elements.namedItem('message') as HTMLTextAreaElement).value,
-                };
-                // Checked in the order the fields appear, so the message names
-                // the first thing the visitor needs to fix rather than a
-                // generic "all required fields".
-                const problem =
-                  !data.name.trim()    ? 'Please enter your name.' :
-                  phoneProblem(dial, phone) ??
-                  (!data.email.trim()  ? 'Please enter your email address.' :
-                   !EMAIL_RE.test(data.email.trim()) ? 'Please enter a valid email address.' :
-                   !data.message.trim() ? 'Please tell us a little about what you need.' :
-                   null);
-                if (problem) {
-                  setError(problem);
-                  setSubmitting(false);
-                  return;
-                }
-                try {
-                  const res = await fetch(`${API}/api/contact`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                  });
-                  const json = await res.json();
-                  if (!res.ok) throw new Error(json?.message || 'Failed to send');
-                  setSubmitted(true);
-                } catch (err: unknown) {
-                  setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
-                } finally {
-                  setSubmitting(false);
-                }
-              }}>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="name">Your name *</label>
-                    <input type="text" id="name" name="name" placeholder="e.g. Priya Sharma" required />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="phone">Phone / WhatsApp *</label>
-                    <PhoneField
-                      id="phone"
-                      countryCode={dial}
-                      number={phone}
-                      placeholder="98765 43210"
-                      onChange={({ countryCode, number }) => { setDial(countryCode); setPhone(number); }}
-                    />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="email">Email address *</label>
-                  <input type="email" id="email" name="email" placeholder="you@example.com" required />
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="event-type">Type of event</label>
-                    <select id="event-type" name="event-type">
-                      <option value="">Select event type</option>
-                      <option>Wedding</option>
-                      <option>Engagement</option>
-                      <option>Birthday</option>
-                      <option>Baby Shower</option>
-                      <option>Anniversary</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="event-date">Event date</label>
-                    <input type="date" id="event-date" name="event-date" />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="message">Message *</label>
-                  <textarea id="message" name="message" placeholder="Tell us about your wedding — venue, no. of functions, any special requests..." required />
-                </div>
-                {error && <p style={{ color: '#b42318', fontSize: '0.9rem', marginBottom: 8 }}>{error}</p>}
-                <button type="submit" className="btn-submit" disabled={submitting}>
-                  {submitting ? 'Sending…' : 'Send message →'}
-                </button>
-              </form>
+          <section aria-labelledby="form-heading" className={styles.formCard}>
+            <h2 id="form-heading" className={page.sectionTitle}>
+              Send a message
+            </h2>
+
+            {submitted ? (
+              <Notice tone="success" title="Message received" live="polite">
+                Thank you — we will reply to the email or number you gave us. For anything urgent, WhatsApp is quicker.
+              </Notice>
             ) : (
-              <div className="form-success" style={{ display: 'block' }}>
-                <div className="success-icon">🎉</div>
-                <h4>Message received!</h4>
-                <p>Thank you for reaching out. We&apos;ll get back to you within a few hours. Meanwhile, feel free to WhatsApp us directly for an even faster response.</p>
-              </div>
+              <form onSubmit={handleSubmit} className={styles.form} id="contact-form">
+                <Field label="Your name" required id="name">
+                  {(control) => <TextInput {...control} name="name" autoComplete="name" placeholder="e.g. Priya Sharma" />}
+                </Field>
+
+                <div className={styles.phoneField}>
+                  <label htmlFor="phone" className={styles.label}>
+                    Phone or WhatsApp <span aria-hidden="true">*</span>
+                  </label>
+                  <PhoneField
+                    id="phone"
+                    countryCode={dial}
+                    number={phone}
+                    placeholder="98765 43210"
+                    onChange={({ countryCode, number }) => {
+                      setDial(countryCode);
+                      setPhone(number);
+                    }}
+                  />
+                </div>
+
+                <Field label="Email address" required id="email">
+                  {(control) => <TextInput {...control} name="email" type="email" autoComplete="email" placeholder="you@example.com" />}
+                </Field>
+
+                <div className={styles.row}>
+                  <Field label="Type of event" id="event-type">
+                    {(control) => (
+                      <select {...control} name="event-type" className={styles.select}>
+                        <option value="">Select event type</option>
+                        {EVENT_TYPES.map((type) => (
+                          <option key={type}>{type}</option>
+                        ))}
+                      </select>
+                    )}
+                  </Field>
+                  <Field label="Event date" id="event-date">
+                    {(control) => <TextInput {...control} name="event-date" type="date" />}
+                  </Field>
+                </div>
+
+                <Field label="Message" required id="message">
+                  {(control) => (
+                    <TextArea
+                      {...control}
+                      name="message"
+                      placeholder="Tell us what you need — the design you are looking at, your ceremonies, or what has gone wrong."
+                    />
+                  )}
+                </Field>
+
+                {error && (
+                  <Notice tone="error" live="assertive">
+                    {error}
+                  </Notice>
+                )}
+
+                <Button type="submit" loading={submitting} fullWidth>
+                  {submitting ? 'Sending…' : 'Send message'}
+                </Button>
+              </form>
             )}
-          </div>
+          </section>
         </div>
-      </main>
-    </>
+      </Container>
+    </div>
   );
 }

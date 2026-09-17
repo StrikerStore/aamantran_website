@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { track } from '@/lib/track';
+import { getFbq } from '@/lib/metaPixel';
 import { CURRENCY, priceFor } from '@/lib/storefront';
 
 interface Props {
@@ -22,8 +23,9 @@ export default function PixelViewContent({ name, price, priceUsd, slug }: Props)
     const currency = CURRENCY;
     const value = minor / 100;
 
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'ViewContent', {
+    const fbq = getFbq();
+    if (fbq) {
+      fbq('track', 'ViewContent', {
         content_name: name,
         content_ids: [slug],
         content_type: 'product',
@@ -32,6 +34,9 @@ export default function PixelViewContent({ name, price, priceUsd, slug }: Props)
       });
     }
     track('view_template', { slug, value, currency });
+    // Once per mounted product page: the props describe that one design and do
+    // not change while it is open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return null;

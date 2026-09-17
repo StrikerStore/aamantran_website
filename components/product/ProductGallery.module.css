@@ -1,0 +1,115 @@
+.gallery {
+  margin: 0;
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--elevation-1);
+  overflow: hidden;
+}
+
+/* The phone artwork is portrait, so the frame narrows with it. */
+.phoneStage {
+  max-width: 360px;
+  margin-inline: auto;
+}
+
+.layer {
+  grid-area: 1 / 1;
+  transition: opacity var(--dur-crossfade) var(--ease-standard);
+}
+
+.visible {
+  opacity: 1;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Out of flow while hidden, so the two aspect ratios do not fight for height. */
+.phoneLayer.hidden,
+.layer.hidden {
+  position: absolute;
+  inset: 0;
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--color-blush), var(--color-sage));
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  color: var(--color-primary);
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.toggle {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+}
+
+.toggleButton {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--dur-press) var(--ease-standard), color var(--dur-press) var(--ease-standard);
+}
+
+.toggleActive {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.demo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color var(--dur-press) var(--ease-standard);
+}
+
+.demo:hover {
+  background: var(--color-blush);
+}
+
+.demoNote {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}

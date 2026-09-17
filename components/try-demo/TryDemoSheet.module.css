@@ -1,0 +1,273 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.stepHeading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.stepHeading:focus {
+  outline: none;
+}
+
+.stepHeading:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.stepCount {
+  font-size: var(--type-small);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.hint,
+.note,
+.privacy,
+.optional {
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.hint,
+.note,
+.privacy {
+  margin: 0;
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: var(--space-1);
+  padding: 0;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: var(--type-control);
+  cursor: pointer;
+}
+
+.chip:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.chip[aria-pressed='true']::before {
+  content: '✓ ' / '';
+}
+
+.chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.chip:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.ceremonies {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ceremony {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+}
+
+.ceremonyName {
+  grid-column: 1 / -1;
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+
+.inline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  color: var(--color-text);
+}
+
+.inline input {
+  width: 100%;
+  min-width: 0;
+}
+
+.error,
+.formError {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  color: var(--color-error-text);
+}
+
+.formError {
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--color-error-bg);
+}
+
+/* Off-screen rather than display:none, which some bots check for. */
+.trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.nav > * {
+  flex: 1 1 0;
+}
+
+@media (min-width: 641px) {
+  .nav > * {
+    flex: 0 0 auto;
+  }
+}
+
+/* ── Result ─────────────────────────────────────────────────────────── */
+
+.result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.preview {
+  display: flex;
+  justify-content: center;
+}
+
+.frame,
+.ended {
+  width: min(100%, 380px);
+  height: min(62dvh, 680px);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-card);
+  background: var(--color-canvas);
+}
+
+.ended {
+  display: flex;
+  align-items: center;
+  padding: var(--space-6);
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.countdown {
+  margin: 0;
+  font-family: var(--font-ui);
+  color: var(--color-text);
+}
+
+.time {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.actions > * {
+  flex: 1 1 auto;
+}
+
+.copy {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.linkField {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--type-small);
+}
+
+.buy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-divider);
+}
+
+@media (min-width: 900px) {
+  .result {
+    grid-template-columns: 380px minmax(0, 1fr);
+    align-items: start;
+  }
+}

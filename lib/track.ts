@@ -12,12 +12,29 @@ const SID_KEY = 'aam_sid';
 const SID_LAST_KEY = 'aam_sid_last';
 const SESSION_GAP_MS = 30 * 60 * 1000;
 
+/**
+ * Must match the backend allowlist in aamantran_backend/src/lib/analyticsEvents.js
+ * -- any other type is rejected there with a 400. Funnel stages count as
+ * conversions; the storefront interaction events below never do.
+ */
 export type TrackEventType =
   | 'pageview'
+  // Funnel stages
   | 'view_template'
   | 'initiate_checkout'
   | 'purchase'
-  | 'register_complete';
+  | 'register_complete'
+  // Storefront interactions (not conversions)
+  | 'demo_opened'
+  | 'guest_demo_interaction'
+  | 'planning_demo_interaction'
+  | 'checkout_error'
+  | 'payment_failed_return'
+  | 'checkout_retry'
+  | 'try_demo_started'
+  | 'try_demo_created'
+  | 'try_demo_opened'
+  | 'try_demo_to_checkout';
 
 function getSessionId(): string | null {
   if (typeof window === 'undefined') return null;

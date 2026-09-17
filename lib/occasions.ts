@@ -93,7 +93,7 @@ export function occasionKeyFor(value: string): string | null {
 /**
  * Split a template's `bestFor` field into its entries.
  *
- * Same convention as the event dropdown on /templates (TemplatesClient.tsx) —
+ * Same convention as the gallery filters on /templates (lib/gallerySearch.ts) —
  * comma separated, trimmed, empties dropped. Kept identical on purpose: one
  * parsing rule for one stored format.
  */

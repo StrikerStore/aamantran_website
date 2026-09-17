@@ -39,20 +39,23 @@ export function storefrontHeaders(): Record<string, string> {
  *
  * Amounts cross the wire in the minor units of their own currency — paise for
  * INR, cents for USD. Dollars keep their cents because international prices are
- * deliberately .99; rupees drop them, which is how prices have always been shown
- * on the India site.
+ * deliberately .99. Rupees drop paise when there are none, which is how prices
+ * have always been shown on the India site — but an amount that has paise shows
+ * both digits (₹99.90, never ₹99.9).
  */
 export function formatMoney(minor: number, currency: string = CURRENCY): string {
   const amount = (Number(minor) || 0) / 100;
   if (String(currency).toUpperCase() === 'USD') {
     return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
-  return '₹' + amount.toLocaleString('en-IN');
+  return '₹' + formatInr(minor);
 }
 
 /** Rupees, grouped Indian-style, no symbol. */
 export function formatInr(paise: number): string {
-  return ((Number(paise) || 0) / 100).toLocaleString('en-IN');
+  const minor = Math.round(Number(paise) || 0);
+  const whole = minor % 100 === 0;
+  return (minor / 100).toLocaleString('en-IN', whole ? undefined : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /** Dollars with cents, no symbol. */

@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
+import { SUPPORT, SUPPORT_RESPONSE_TIME } from '@/lib/content/claims';
 import { buildPageMetadata } from '@/lib/seo';
 import ContactClient from './ContactClient';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Contact Us',
+  title: 'Contact Aamantran',
   description:
-    'Get in touch with Aamantran — WhatsApp +91 91747 73644 (fastest) or email aamantran@plexzuu.com. Mon–Sat, 9 AM–9 PM IST, replies within 2–4 hours. Urgent wedding? We prioritise same-day setups.',
+    `Get in touch with Aamantran — WhatsApp ${SUPPORT.whatsappLabel} (fastest) or email ${SUPPORT.email}. ${SUPPORT.hours}, ${SUPPORT_RESPONSE_TIME.value}. Wedding this week? Say so and we will prioritise your questions.`,
   path: '/contact',
 });
 

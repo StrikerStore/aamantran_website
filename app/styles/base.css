@@ -1,0 +1,94 @@
+/*
+ * Site-wide accessibility baseline and layout utilities for rebuilt pages.
+ *
+ * The site's reset and document defaults live here too, since Task 25 removed
+ * the legacy stylesheets that used to carry them.
+ */
+
+/* ── Reset and document defaults ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+  /* One stray wide child must never turn the whole page into a sideways
+     scroller; sections that need to bleed do it deliberately. */
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Visible keyboard focus. Zero specificity, so inputs that already style their
+   own focus state (and set outline: none) are left exactly as they are. */
+:where(:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* Honour the visitor's OS "reduce motion" setting: no smooth scrolling and no
+   looping or decorative motion. Only affects visitors who have asked for it. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* In-page anchor jumps land below the fixed site header, not underneath it. */
+html {
+  scroll-padding-top: var(--header-height);
+}
+
+/* The skip link moves focus to the content wrapper; don't ring the whole page. */
+#main-content:focus {
+  outline: none;
+}
+
+/* Hidden visually, still read by screen readers. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Page-width wrapper for rebuilt sections. Separate from the legacy .container
+   (1140px) so the two can coexist during the migration. */
+.ds-container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}

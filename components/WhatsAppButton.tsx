@@ -21,7 +21,8 @@ export default function WhatsAppButton() {
       style={{
         position: 'fixed',
         left: 18,
-        bottom: 84,
+        // Clears the product page's sticky Buy bar, however tall the safe area makes it.
+        bottom: 'max(84px, calc(var(--sticky-bar-height, 0px) + 12px))',
         zIndex: 95,
         width: 48,
         height: 48,

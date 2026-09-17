@@ -1,0 +1,126 @@
+/*
+ * Two widgets whose classes are deliberately global.
+ *
+ * The phone field's country-code box is drawn by components/PhoneField.tsx and
+ * resized by the forms it sits in (checkout and onboarding target `.phone-cc`
+ * through :global), so its class names have to be stable and global rather than
+ * hashed by a CSS module. The template tag is positioned by whichever thumbnail
+ * wraps it and picks its colour from a per-tag modifier class.
+ *
+ * Moved here from the legacy stylesheets in Task 25, with the old palette
+ * variables swapped for design tokens.
+ */
+
+/* ── Phone number field ──────────────────────────────────────────────────── */
+.phone-field {
+  display: flex;
+  gap: var(--space-2);
+  align-items: stretch;
+  min-width: 0;
+}
+
+.phone-field .phone-number {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.phone-cc {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* Wide enough for the longest dial code (+1242) plus the caret. */
+  min-width: 5.25rem;
+  border: 1px solid var(--color-control-border);
+  background: var(--color-surface);
+  font-family: var(--font-ui);
+  color: var(--color-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.phone-cc-code {
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.phone-cc-caret {
+  margin-left: auto;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--color-text-muted);
+  flex: 0 0 auto;
+}
+
+/* Invisible but fully interactive: it covers the box, so a click anywhere on
+   the box opens the real dropdown. Font-size 16px keeps iOS from zooming the
+   page when it takes focus. */
+.phone-cc-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  font-size: 16px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.phone-cc:focus-within {
+  border-color: var(--color-primary);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.phone-cc.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.phone-cc.is-disabled .phone-cc-native {
+  cursor: not-allowed;
+}
+
+/* ── Template corner tag ─────────────────────────────────────────────────── */
+.tpl-tag {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 2;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: #fff;
+  /* Thumbnails range from near-white to near-black, so the tag carries its own
+     contrast rather than relying on whatever sits behind it. */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+  white-space: nowrap;
+}
+
+.tpl-tag-new { background: #2e7d4f; }
+.tpl-tag-trending { background: #c2701c; }
+.tpl-tag-bestseller { background: var(--color-primary); }
+.tpl-tag-popular { background: #2f6191; }
+.tpl-tag-limited { background: #a3324a; }
+
+@media (max-width: 768px) {
+  .tpl-tag {
+    font-size: 0.58rem;
+    padding: 2px 7px;
+  }
+}

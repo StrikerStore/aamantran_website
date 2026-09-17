@@ -24,7 +24,7 @@ function markdownToHtml(md: string): string {
   // heading, list item and blockquote fall through to a plain paragraph.
   const normalised = md.replace(/\r\n?/g, '\n');
   // Escape everything first — the parser below only ever inserts its own tags.
-  let html = escapeHtml(normalised)
+  const html = escapeHtml(normalised)
     // Code blocks (must be before other replacements)
     .replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) =>
       `<pre><code class="lang-${lang || 'text'}">${code}</code></pre>`)

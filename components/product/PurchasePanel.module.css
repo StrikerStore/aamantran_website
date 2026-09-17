@@ -1,0 +1,92 @@
+.panel {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--elevation-1);
+}
+
+.price {
+  margin: 0;
+}
+
+.once,
+.offerNote {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  color: var(--color-text-muted);
+}
+
+.offers {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+}
+
+.offer,
+.offerLocked {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+}
+
+.offer {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.offerLocked {
+  background: var(--color-sage);
+  color: var(--color-text);
+}
+
+.offerLabel {
+  font-weight: 600;
+}
+
+.buy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-height);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-control);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-ui);
+  font-size: var(--type-control);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color var(--dur-press) var(--ease-standard);
+}
+
+.buy:hover {
+  background: var(--color-primary-hover);
+}
+
+.free {
+  font-weight: 400;
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.facts strong {
+  color: var(--color-text);
+}

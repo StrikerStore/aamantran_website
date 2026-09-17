@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:claims": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-claims.mjs"
   },
   "dependencies": {
     "next": "16.2.2",

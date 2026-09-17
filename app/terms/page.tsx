@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Container } from '@/components/ui/Container';
 import { IS_INTL } from '@/lib/storefront';
 import { buildPageMetadata } from '@/lib/seo';
+import page from '../content-page.module.css';
+import prose from '../prose.module.css';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Terms of Service',
@@ -11,16 +14,20 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default function TermsPage() {
   return (
-    <>
-      <section className="page-hero">
-        <span className="page-eyebrow">Legal</span>
-        <h1 className="page-title">Terms of <em>Service</em></h1>
-        <p className="page-subtitle">By using Aamantran, you agree to these terms. We&apos;ve written them in plain language — please take a few minutes to read through.</p>
-      </section>
+    <div className={page.page}>
+      <header className={page.hero}>
+        <Container>
+          <p className={page.eyebrow}>Legal</p>
+          <h1 className={page.title}>Terms of Service</h1>
+          <p className={page.intro}>
+            The rules that apply when you buy and use an Aamantran invitation, in plain language.
+          </p>
+        </Container>
+      </header>
 
-      <main className="page-body">
-        <div className="prose">
-          <span className="last-updated">Last updated: 8 July 2026</span>
+      <Container>
+        <div className={prose.prose}>
+          <span className={prose.updated}>Last updated: 8 July 2026</span>
 
           <h2>1. Acceptance of terms</h2>
           <p><strong>Aamantran</strong> is a brand under <strong>PLEXZUU</strong>. By accessing or using Aamantran&apos;s services, you agree to be bound by these Terms of Service and consent to the processing of your personal data as described in our <Link href="/privacy">Privacy Policy</Link>. If you do not agree, please do not use our platform.</p>
@@ -75,7 +82,7 @@ export default function TermsPage() {
           <h2>12. Contact</h2>
           <p>For questions about these terms, contact us at <a href="mailto:aamantran@plexzuu.com">aamantran@plexzuu.com</a>.</p>
         </div>
-      </main>
-    </>
+      </Container>
+    </div>
   );
 }

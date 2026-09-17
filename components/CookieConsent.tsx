@@ -105,7 +105,8 @@ export default function CookieConsent() {
       style={{
         position: 'fixed',
         insetInline: 16,
-        bottom: 16,
+        // Above the product page's sticky Buy bar when it is showing (0px elsewhere).
+        bottom: 'calc(16px + var(--sticky-bar-height, 0px))',
         zIndex: 1000,
         maxWidth: 560,
         marginInline: 'auto',

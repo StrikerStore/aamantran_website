@@ -1,0 +1,80 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.trigger:hover {
+  background: var(--color-sage);
+}
+
+.bars {
+  display: grid;
+  gap: 5px;
+  width: 22px;
+}
+
+.bars span {
+  display: block;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+@media (min-width: 1024px) {
+  .trigger {
+    display: none;
+  }
+}
+
+.nav {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  border-bottom: 1px solid var(--color-control-border);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: var(--type-body);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.subList {
+  display: grid;
+  margin: 0;
+  padding: 0 0 0 var(--space-4);
+  list-style: none;
+}
+
+.subLink {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  text-decoration: none;
+}
+
+.actions {
+  display: grid;
+  gap: var(--space-3);
+}

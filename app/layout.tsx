@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
-import './globals.css';
-import './extra.css';
-import Nav from '@/components/Nav';
-import Footer from '@/components/Footer';
-import StickyBar from '@/components/StickyBar';
-import ScrollToTopButton from '@/components/ScrollToTopButton';
+import './styles/tokens.css';
+import './styles/base.css';
+import './styles/widgets.css';
+import { fontVariables } from './fonts';
+import SiteHeader from '@/components/shell/SiteHeader';
+import SiteFooter from '@/components/shell/SiteFooter';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import PixelTracker from '@/components/PixelTracker';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import CookieConsent from '@/components/CookieConsent';
+import { HideOnCommerce } from '@/components/shell/HideOnCommerce';
 import JsonLd from '@/components/JsonLd';
 import { getInstagramHandle, getYouTubeHandle } from '@/lib/publicEnv';
 import { CONTACT_EMAIL, DEFAULT_OG_IMAGE, OG_LOCALE, SITE_NAME, SITE_TAGLINE, SITE_URL, WHATSAPP_NUMBER } from '@/lib/seo';
@@ -85,12 +86,9 @@ const webSiteJsonLd = {
   url: SITE_URL,
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Same cached fetch generateMetadata uses, so this is one request per hour,
-  // not one per render.
-  const startingPrice = await getStartingPrice();
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={fontVariables}>
       <head>
         {/*
           Meta domain verification: intentionally absent. aamantran.online is still
@@ -104,24 +102,25 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/logo.png" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap"
-          rel="stylesheet"
-        />
+        {/* Fonts are self-hosted by next/font (app/fonts.ts): no request to Google from the browser. */}
       </head>
       <body>
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={webSiteJsonLd} />
         <PixelTracker />
         <AnalyticsTracker />
-        <Nav />
-        {children}
-        <StickyBar startingPrice={startingPrice} />
-        <ScrollToTopButton />
+        {/* Checkout and onboarding draw their own minimal header and footer. */}
+        <HideOnCommerce>
+          <SiteHeader />
+        </HideOnCommerce>
+        {/* Skip-link target. A div, not <main>: several pages render their own <main>. */}
+        <div id="main-content" tabIndex={-1}>
+          {children}
+        </div>
         <WhatsAppButton />
-        <Footer />
+        <HideOnCommerce>
+          <SiteFooter />
+        </HideOnCommerce>
         {/* Meta Pixel loads only after consent — see privacy policy §14 */}
         <CookieConsent />
       </body>
