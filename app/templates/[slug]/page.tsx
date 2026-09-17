@@ -19,7 +19,7 @@ import { getRelatedTemplates, getTemplate, getTemplateReviews } from '@/lib/api/
 import type { Review, TemplateDetail } from '@/lib/api/types';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
 import { BUILDER_STEPS } from '@/lib/content/builderSteps';
-import { CHANGEABLE, INCLUDED, NAME_FREEZE } from '@/lib/content/entitlements';
+import { CHANGEABLE, NAME_FREEZE, productInclusions } from '@/lib/content/entitlements';
 import { PURCHASE_FAQ_IDS, faqsByIds } from '@/lib/content/faqs';
 import { TRY_DEMO } from '@/lib/content/tryDemo';
 import { languageLabel, pluralize, truncateWords } from '@/lib/format';
@@ -37,6 +37,14 @@ import styles from './product.module.css';
  * invented reviews ("Sample feedback") when a design had none, and it quoted a
  * price without the GST checkout adds. Both are now honest — no reviews means
  * the page says so, and the price shows the total that will be charged.
+ *
+ * THE ORDER IS A BUYING ORDER. One purchase panel used to be followed by six
+ * explanation sections before a shopper reached another design. What is left
+ * open is what a buyer is deciding on — what this design looks like, what it
+ * costs, what you fill in on it, what the price covers, what other people
+ * thought, and what else the shop has. How the builder works and what locks
+ * after publishing are real and still here, folded into the accordion at the
+ * bottom with the questions, where somebody who wants them will look.
  */
 
 type Props = { params: Promise<{ slug: string }> };
@@ -125,6 +133,7 @@ export default async function ProductPage({ params }: Props) {
   const occasions = cardOccasionLabels(template.bestFor, 4);
   const summary = template.shortDescription ?? (template.aboutText ? truncateWords(template.aboutText, 32) : null);
   const faqs = faqsByIds(PURCHASE_FAQ_IDS);
+  const included = productInclusions();
   const attributes = [
     { label: 'Style', value: template.style },
     { label: 'Colours', value: template.colourPalette },
@@ -253,12 +262,14 @@ export default async function ProductPage({ params }: Props) {
             </section>
           )}
 
+          {/* Six, not twelve: what a buyer is choosing between designs on. The
+              rest is one link away. */}
           <section aria-labelledby="included-heading" className={styles.section}>
             <h2 id="included-heading" className={styles.sectionTitle}>
               What the price includes
             </h2>
             <ul className={styles.included}>
-              {INCLUDED.map((item) => (
+              {included.map((item) => (
                 <li key={item.id}>
                   <span className={styles.includedTitle}>{item.title}</span>
                   <span className={styles.includedDetail}>
@@ -268,45 +279,9 @@ export default async function ProductPage({ params }: Props) {
                 </li>
               ))}
             </ul>
-          </section>
-
-          <section aria-labelledby="setup-heading" className={styles.section}>
-            <h2 id="setup-heading" className={styles.sectionTitle}>
-              How you set it up
-            </h2>
-            <ol className={styles.steps}>
-              {BUILDER_STEPS.map((step) => (
-                <li key={step.id}>
-                  <span className={styles.stepLabel}>{step.label}</span>
-                  <span className={styles.stepText}>{step.youEnter}</span>
-                </li>
-              ))}
-            </ol>
-            <p className={styles.note}>{NAME_FREEZE.long}</p>
-          </section>
-
-          <section aria-labelledby="change-heading" className={styles.section}>
-            <h2 id="change-heading" className={styles.sectionTitle}>
-              What you can change later, and what you cannot
-            </h2>
-            <div className={styles.changeGrid}>
-              <div className={styles.changeCard}>
-                <h3 className={styles.changeTitle}>Change any time</h3>
-                <ul>
-                  {CHANGEABLE.canChange.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className={styles.changeCard}>
-                <h3 className={styles.changeTitle}>Fixed</h3>
-                <ul>
-                  {CHANGEABLE.fixed.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            <p className={styles.more}>
+              <Link href="/features">Everything that comes with an invitation</Link>
+            </p>
           </section>
 
           <section id="reviews" aria-labelledby="reviews-heading" className={styles.section}>
@@ -314,30 +289,6 @@ export default async function ProductPage({ params }: Props) {
               Reviews of this design
             </h2>
             <ReviewList reviews={reviews} avgRating={reviewsResponse?.avgRating ?? 0} totalCount={genuineTotal} curatedCount={curatedTotal} />
-          </section>
-
-          <section aria-labelledby="faq-heading" className={styles.section}>
-            <h2 id="faq-heading" className={styles.sectionTitle}>
-              Before you buy
-            </h2>
-            <Accordion
-              headingLevel={3}
-              items={faqs.map((faq) => ({
-                id: faq.id,
-                title: faq.q,
-                content: (
-                  <p>
-                    {faq.a}
-                    {faq.link && (
-                      <>
-                        {' '}
-                        <Link href={faq.link.href}>{faq.link.label}</Link>
-                      </>
-                    )}
-                  </p>
-                ),
-              }))}
-            />
           </section>
 
           {related.length > 0 && (
@@ -359,6 +310,84 @@ export default async function ProductPage({ params }: Props) {
               </p>
             </section>
           )}
+
+          {/* How the builder works, what locks, and the questions — folded away
+              rather than dropped. Nothing here is new: it is the same copy the
+              page used to spend two thousand pixels on before a buyer saw
+              another design. */}
+          <section aria-labelledby="details-heading" className={styles.section}>
+            <h2 id="details-heading" className={styles.sectionTitle}>
+              Before you buy
+            </h2>
+            <Accordion
+              headingLevel={3}
+              items={[
+                {
+                  id: 'setup',
+                  title: 'How you set it up',
+                  content: (
+                    <>
+                      <ol className={styles.steps}>
+                        {BUILDER_STEPS.map((step) => (
+                          <li key={step.id}>
+                            <span className={styles.stepLabel}>{step.label}</span>
+                            <span className={styles.stepText}>{step.youEnter}</span>
+                          </li>
+                        ))}
+                      </ol>
+                      <p className={styles.note}>{NAME_FREEZE.long}</p>
+                    </>
+                  ),
+                },
+                {
+                  id: 'changeable',
+                  title: 'What you can change later, and what you cannot',
+                  content: (
+                    <div className={styles.changeGrid}>
+                      <div className={styles.changeCard}>
+                        <h4 className={styles.changeTitle}>Change any time</h4>
+                        <ul>
+                          {CHANGEABLE.canChange.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className={styles.changeCard}>
+                        <h4 className={styles.changeTitle}>Fixed</h4>
+                        <ul>
+                          {CHANGEABLE.fixed.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ),
+                },
+                ...faqs.map((faq) => ({
+                  id: faq.id,
+                  title: faq.q,
+                  content: (
+                    <p>
+                      {faq.a}
+                      {faq.link && (
+                        <>
+                          {' '}
+                          <Link href={faq.link.href}>{faq.link.label}</Link>
+                        </>
+                      )}
+                    </p>
+                  ),
+                })),
+              ]}
+            />
+            <p className={styles.more}>
+              <Link href="/how-it-works">How setting up works</Link>
+              {' · '}
+              <Link href="/features">What you can change later</Link>
+              {' · '}
+              <Link href="/faq">Every question</Link>
+            </p>
+          </section>
         </Container>
       </div>
 

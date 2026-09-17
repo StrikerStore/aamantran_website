@@ -282,6 +282,14 @@
 
 .more {
   margin: var(--space-5) 0 0;
+  font-family: var(--font-ui);
+}
+
+/* A plain link in this row, where the row holds a button elsewhere. */
+.more a:not([class]) {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* "See it with your names" — only on designs that can show a couple's names. */

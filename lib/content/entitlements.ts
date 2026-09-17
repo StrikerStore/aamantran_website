@@ -69,6 +69,25 @@ export const INCLUDED: readonly Inclusion[] = [
   { id: 'support', title: 'Support from our team', detail: 'Raise a ticket from your dashboard, or reach us on WhatsApp or email.', templateDependent: false },
 ];
 
+/**
+ * The six inclusions a buyer weighing up one design is actually choosing on, in
+ * that order. For pages that have to stay short; `INCLUDED` in full is on
+ * /features, and every page that shows this six links there.
+ *
+ * Checkout keeps its own, shorter list: it deliberately shows only the items
+ * that hold for every design, because a buyer at the payment step should not be
+ * reading "where this design supports it". A product page can show the
+ * design-dependent ones, because the page has already said what this design
+ * supports.
+ */
+export const PRODUCT_INCLUSION_IDS = ['rsvp', 'link', 'guests', 'partial', 'planning', 'support'] as const;
+
+export function productInclusions(): Inclusion[] {
+  return PRODUCT_INCLUSION_IDS
+    .map((id) => INCLUDED.find((item) => item.id === id))
+    .filter((item): item is Inclusion => Boolean(item));
+}
+
 /** What a customer can change after publishing, and what stays fixed. */
 export const CHANGEABLE = {
   canChange: [
