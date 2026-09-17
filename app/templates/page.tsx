@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import JsonLd from '@/components/JsonLd';
 import { FilterBar } from '@/components/gallery/FilterBar';
+import { AisleRail } from '@/components/shop/AisleRail';
 import { Pagination } from '@/components/gallery/Pagination';
 import { TemplateCard } from '@/components/gallery/TemplateCard';
 import { LinkButton } from '@/components/ui/Button';
@@ -12,16 +13,16 @@ import type { TemplateSummary } from '@/lib/api/types';
 import { COLLECTIONS } from '@/lib/collections';
 import { pluralize } from '@/lib/format';
 import { activeFilterLabels, galleryFacets } from '@/lib/galleryFacets';
+import { lowestPrice, priceBands } from '@/lib/galleryPrice';
+import { galleryResults, priceFilterIsSafe } from '@/lib/galleryResults';
 import {
   GALLERY_PAGE_SIZE,
   galleryHref,
-  galleryQuery,
   isFilteredGallery,
   parseGallerySearch,
   totalPages,
   type GalleryState,
 } from '@/lib/gallerySearch';
-import { occasionPagesInShop } from '@/lib/occasionPages';
 import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
 import { getStartingPrice } from '@/lib/startingPrice';
 import styles from './templates.module.css';
@@ -33,6 +34,11 @@ import styles from './templates.module.css';
  * themselves are in the HTML, so a shared link opens the same view, Back works,
  * and search engines can read the catalogue. It replaces a client-only grid
  * that fetched everything in the browser and showed crawlers an empty page.
+ *
+ * THE SHOP FLOOR. An eyebrow, a heading, two paragraphs and two rows of link
+ * lists used to push the first design roughly 800px down the page. The doors are
+ * a compact aisle rail now and the introduction is one line, because on a shelf
+ * the goods come first — the prose that was here is on the pages it belongs to.
  */
 
 /** Filter options are read from the catalogue, so a filter never leads to nothing. */
@@ -79,15 +85,25 @@ function itemListJsonLd(templates: TemplateSummary[], state: GalleryState) {
 }
 
 export default async function TemplatesPage({ searchParams }: Props) {
-  const state = parseGallerySearch(await searchParams);
-  const [result, catalogue] = await Promise.all([
-    getTemplates(galleryQuery(state)),
-    getTemplates({ limit: FACET_SAMPLE_LIMIT, sort: 'new' }),
-  ]);
+  const asked = parseGallerySearch(await searchParams);
+  const catalogue = await getTemplates({ limit: FACET_SAMPLE_LIMIT, sort: 'new' });
 
-  const facets = galleryFacets(catalogue?.templates ?? result?.templates ?? []);
-  const occasionPages = occasionPagesInShop(catalogue?.templates ?? []);
-  const filters = activeFilterLabels(state);
+  // Price bands are only offered while the whole catalogue fits in one request,
+  // because that is what lets lib/galleryResults.ts guarantee the count is real
+  // on a backend that ignores the price bounds. Above that the filter is not
+  // offered, and one asked for in the URL is dropped.
+  const priceSafe = priceFilterIsSafe(catalogue?.total ?? 0);
+  const bands = priceSafe ? priceBands(catalogue?.templates ?? []) : [];
+  const state = priceSafe ? asked : { ...asked, price: null };
+
+  const { response: result } = await galleryResults(state, bands);
+
+  // Facets come from the catalogue when it loaded, and from this page of results
+  // when it did not, so the controls still show something usable either way.
+  const sample = catalogue?.templates ?? result?.templates ?? [];
+  const facets = galleryFacets(sample);
+  const cheapest = lowestPrice(sample);
+  const filters = activeFilterLabels(state, bands);
   const filtered = isFilteredGallery(state);
   const pages = result ? totalPages(result.total) : 1;
   const shown = result?.templates ?? [];
@@ -112,39 +128,24 @@ export default async function TemplatesPage({ searchParams }: Props) {
           <Container>
             <p className={styles.eyebrow}>Invitations</p>
             <h1 className={styles.title}>Find your invitation design</h1>
-            <p className={styles.intro}>
-              Every design has a live demo you can open before you buy. After you buy, you fill in your own names,
-              ceremonies and photos in our guided builder.
-            </p>
-            <nav aria-label="Collections" className={styles.collections}>
-              <span className={styles.collectionsLabel}>Browse by tradition:</span>
+            <p className={styles.intro}>Every design has a live demo you can open before you buy.</p>
+            <AisleRail templates={sample} className={styles.rail} />
+            <nav aria-label="Traditions" className={styles.collections}>
+              <span className={styles.collectionsLabel}>By tradition:</span>
               <ul>
                 {COLLECTIONS.map((c) => (
                   <li key={c.slug}>
-                    <Link href={`/collections/${c.slug}`}>{c.heading}</Link>
+                    <Link href={`/collections/${c.slug}`}>{c.short}</Link>
                   </li>
                 ))}
               </ul>
             </nav>
-            {/* Only occasions the catalogue can support have a page; see lib/occasionPages.ts. */}
-            {occasionPages.length > 0 && (
-              <nav aria-label="Occasions" className={styles.collections}>
-                <span className={styles.collectionsLabel}>Browse by occasion:</span>
-                <ul>
-                  {occasionPages.map(({ page }) => (
-                    <li key={page.slug}>
-                      <Link href={`/${page.slug}`}>{page.heading}</Link>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            )}
           </Container>
         </header>
 
         <Container>
           <div className={styles.filters}>
-            <FilterBar state={state} occasions={facets.occasions} communities={facets.communities} />
+            <FilterBar state={state} occasions={facets.occasions} communities={facets.communities} priceBands={bands} />
           </div>
 
           <section id="results" aria-labelledby="results-heading" className={styles.results}>
@@ -196,7 +197,7 @@ export default async function TemplatesPage({ searchParams }: Props) {
                 {shown.map((template, i) => (
                   <li key={template.id || template.slug}>
                     {/* The first row is above the fold on most screens. */}
-                    <TemplateCard template={template} eager={i < 2} />
+                    <TemplateCard template={template} eager={i < 2} lowestPrice={cheapest} />
                   </li>
                 ))}
               </ul>

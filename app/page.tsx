@@ -19,6 +19,7 @@ import { ACCESS } from '@/lib/content/entitlements';
 import { PURCHASE_FAQ_IDS, faqsByIds } from '@/lib/content/faqs';
 import { HERO_REASSURANCE, SHOP_STEPS } from '@/lib/content/shopHome';
 import { pluralize } from '@/lib/format';
+import { lowestPrice } from '@/lib/galleryPrice';
 import { alternateLanguages } from '@/lib/seo';
 import { getStartingPrice } from '@/lib/startingPrice';
 import { formatMoney, IS_INTL } from '@/lib/storefront';
@@ -84,6 +85,7 @@ export default async function HomePage() {
   const hasTryable = designs.some((design) => design.tryWithNames);
   const designCount = stats?.total ?? catalogue?.total ?? 0;
   const faqs = faqsByIds(PURCHASE_FAQ_IDS).slice(0, HOME_FAQS);
+  const cheapest = lowestPrice(templates);
   // The window shows the newest designs; the grid below shows the popular ones.
   const windowDesigns = (templates.length > 0 ? templates : designs).slice(0, WINDOW_DESIGNS);
 
@@ -168,7 +170,7 @@ export default async function HomePage() {
               <ul className={styles.grid}>
                 {designs.map((design, i) => (
                   <li key={design.id || design.slug}>
-                    <TemplateCard template={design} eager={i < 2} source="home" />
+                    <TemplateCard template={design} eager={i < 2} source="home" lowestPrice={cheapest} />
                   </li>
                 ))}
               </ul>

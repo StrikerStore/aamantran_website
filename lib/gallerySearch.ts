@@ -1,3 +1,4 @@
+import { parsePriceBand } from './galleryPrice';
 import { OCCASION_BY_KEY } from './occasions';
 import type { GallerySort, TemplateListQuery } from './api/types';
 
@@ -9,11 +10,12 @@ import type { GallerySort, TemplateListQuery } from './api/types';
  * Bad input is ignored rather than rejected, matching the backend: a stale or
  * hand-edited link should still show a catalogue.
  *
- * Price filtering is not part of the URL yet; the gallery rebuild (Task 12)
- * decides how bands read on both storefronts.
+ * Price is the one filter whose options are not listed here: its bands come from
+ * the live catalogue (lib/galleryPrice.ts), so this module only parses the shape
+ * of the value and hands the bounds to the backend.
  */
 
-export const GALLERY_PAGE_SIZE = 12;
+export const GALLERY_PAGE_SIZE = 24;
 export const GALLERY_QUERY_MAX_LENGTH = 60;
 /** Today's gallery sorts newest first; kept so existing links keep their order. */
 export const DEFAULT_GALLERY_SORT: GallerySort = 'new';
@@ -41,6 +43,8 @@ export interface GalleryState {
   /** A key from lib/occasions.ts, or null for every occasion. */
   occasion: string | null;
   community: string | null;
+  /** A band key from lib/galleryPrice.ts ("99900" or "99900-299900"), or null. */
+  price: string | null;
   sort: GallerySort;
   page: number;
 }
@@ -49,6 +53,7 @@ export const DEFAULT_GALLERY_STATE: GalleryState = {
   q: '',
   occasion: null,
   community: null,
+  price: null,
   sort: DEFAULT_GALLERY_SORT,
   page: 1,
 };
@@ -68,12 +73,14 @@ export function parseGallerySearch(raw: RawSearchParams): GalleryState {
   const q = first(raw, 'q').replace(/\s+/g, ' ').trim().slice(0, GALLERY_QUERY_MAX_LENGTH);
   const occasion = first(raw, 'occasion').trim().toLowerCase();
   const community = first(raw, 'community').trim().toLowerCase();
+  const price = first(raw, 'price').trim();
   const sort = first(raw, 'sort').trim();
   const page = /^\d{1,5}$/.test(first(raw, 'page').trim()) ? Number(first(raw, 'page').trim()) : 1;
   return {
     q,
     occasion: OCCASION_BY_KEY.has(occasion) ? occasion : null,
     community: COMMUNITY_VALUES.has(community) ? community : null,
+    price: parsePriceBand(price) ? price : null,
     sort: SORT_VALUES.has(sort) ? (sort as GallerySort) : DEFAULT_GALLERY_SORT,
     page: page >= 1 ? page : 1,
   };
@@ -88,6 +95,7 @@ export function galleryQuery(state: GalleryState, pageSize = GALLERY_PAGE_SIZE):
     // aliases apply to client-side matching only.
     eventType: state.occasion ? OCCASION_BY_KEY.get(state.occasion)?.label : undefined,
     community: state.community ?? undefined,
+    ...(parsePriceBand(state.price ?? '') ?? {}),
     sort: state.sort,
     limit: pageSize,
     page: state.page,
@@ -100,6 +108,7 @@ export function gallerySearchParams(state: GalleryState): URLSearchParams {
   if (state.q) params.set('q', state.q);
   if (state.occasion) params.set('occasion', state.occasion);
   if (state.community) params.set('community', state.community);
+  if (state.price) params.set('price', state.price);
   if (state.sort !== DEFAULT_GALLERY_SORT) params.set('sort', state.sort);
   if (state.page > 1) params.set('page', String(state.page));
   return params;
@@ -117,13 +126,17 @@ export function galleryHref(state: GalleryState, path = '/templates'): string {
 export function withGalleryChange(state: GalleryState, patch: Partial<GalleryState>): GalleryState {
   const next = { ...state, ...patch };
   const filtersChanged =
-    next.q !== state.q || next.occasion !== state.occasion || next.community !== state.community || next.sort !== state.sort;
+    next.q !== state.q ||
+    next.occasion !== state.occasion ||
+    next.community !== state.community ||
+    next.price !== state.price ||
+    next.sort !== state.sort;
   return filtersChanged && patch.page === undefined ? { ...next, page: 1 } : next;
 }
 
 /** True for searched, filtered or re-sorted views, which are noindex with a canonical of /templates. */
 export function isFilteredGallery(state: GalleryState): boolean {
-  return Boolean(state.q || state.occasion || state.community || state.sort !== DEFAULT_GALLERY_SORT);
+  return Boolean(state.q || state.occasion || state.community || state.price || state.sort !== DEFAULT_GALLERY_SORT);
 }
 
 export function totalPages(total: number, pageSize = GALLERY_PAGE_SIZE): number {

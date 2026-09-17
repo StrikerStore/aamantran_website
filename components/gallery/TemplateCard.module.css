@@ -85,6 +85,34 @@
   color: var(--color-text);
 }
 
+.proof {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+}
+
+.rating {
+  display: inline-flex;
+  align-items: baseline;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+/* The star is decoration: the number and its accessible name carry the meaning,
+   and --color-accent is 2.89:1, which is fine for an ornament and nothing else. */
+.rating [aria-hidden] {
+  color: var(--color-accent);
+}
+
+.buyers {
+  color: var(--color-text-muted);
+}
+
 .occasions,
 .highlights {
   display: flex;
@@ -148,6 +176,19 @@
   margin-right: var(--space-2);
 }
 
+.tier {
+  display: inline-block;
+  margin-left: var(--space-3);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  vertical-align: 2px;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -181,26 +222,15 @@
   background: var(--color-blush);
 }
 
-/* "Try it with your names": a quieter third action, under the two buttons. */
+/*
+ * "Try it with your names": the free way in, so it is a button of its own under
+ * the other two rather than a text link beside them. Ghost, because View design
+ * is still the action the card is for.
+ */
 .try {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  min-height: 44px;
-  font-family: var(--font-ui);
-  font-size: var(--type-small);
-  font-weight: 600;
-  color: var(--color-primary);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.try::before {
-  content: '✦' / '';
-  margin-right: var(--space-2);
-  text-decoration: none;
+  border: 1px solid var(--color-divider);
 }
 
 .try:hover {
-  color: var(--color-primary-hover);
+  border-color: var(--color-primary);
 }

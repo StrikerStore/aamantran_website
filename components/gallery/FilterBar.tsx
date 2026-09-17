@@ -7,6 +7,7 @@ import { useEffect, useOptimistic, useRef, useState, useTransition, type FormEve
 import { Button } from '@/components/ui/Button';
 import type { GallerySort } from '@/lib/api/types';
 import { withSelected, type FacetOption } from '@/lib/galleryFacets';
+import type { PriceBand } from '@/lib/galleryPrice';
 import {
   GALLERY_COMMUNITIES,
   GALLERY_QUERY_MAX_LENGTH,
@@ -39,10 +40,13 @@ export function FilterBar({
   state,
   occasions,
   communities,
+  priceBands = [],
 }: {
   state: GalleryState;
   occasions: FacetOption[];
   communities: FacetOption[];
+  /** Derived from the live catalogue; empty when every design costs the same. */
+  priceBands?: PriceBand[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -97,6 +101,7 @@ export function FilterBar({
     apply({});
   }
 
+  const priceOptions: FacetOption[] = priceBands.map((band) => ({ value: band.key, label: band.label }));
   const occasionOptions = withSelected(occasions, shown.occasion, ALL_OCCASIONS);
   const communityOptions = withSelected(communities, shown.community, GALLERY_COMMUNITIES);
 
@@ -170,7 +175,29 @@ export function FilterBar({
             ))}
           </select>
         </div>
-        <div className={styles.sort}>
+        {/* Offered only when the catalogue has more than one price. */}
+        {priceOptions.length > 0 && (
+          <div>
+            <label htmlFor="gallery-price" className={styles.label}>
+              Price
+            </label>
+            <select
+              id="gallery-price"
+              name="price"
+              value={shown.price ?? ''}
+              onChange={(e) => apply({ price: e.target.value || null })}
+              className={styles.control}
+            >
+              <option value="">Any price</option>
+              {priceOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        <div>
           <label htmlFor="gallery-sort" className={styles.label}>
             Sort by
           </label>

@@ -9,7 +9,7 @@
 .hero {
   position: relative;
   isolation: isolate;
-  padding-block: var(--space-7) calc(var(--space-7) + var(--space-5));
+  padding-block: var(--space-6) var(--space-6);
   background-color: var(--color-canvas);
   background-image: var(--wash-warm), var(--wash-gold);
   text-align: center;
@@ -24,6 +24,11 @@
   height: 1px;
   background: var(--hairline-gold);
   pointer-events: none;
+}
+
+.rail ul,
+.rail {
+  justify-content: center;
 }
 
 .eyebrow {
@@ -54,23 +59,50 @@
 }
 
 .collections {
-  margin-top: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
   font-family: var(--font-ui);
   font-size: var(--type-small);
 }
 
+@media (min-width: 900px) {
+  .collections {
+    justify-content: center;
+  }
+}
+
 .collectionsLabel {
+  flex: 0 0 auto;
   color: var(--color-text-muted);
 }
 
 .collections ul {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-wrap: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: var(--space-2);
-  margin: var(--space-2) 0 0;
-  padding: 0;
+  margin: 0;
+  padding: 0 0 var(--space-2);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
   list-style: none;
+}
+
+.collections li {
+  flex: 0 0 auto;
+}
+
+@media (min-width: 900px) {
+  .collections ul {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-bottom: 0;
+    overflow-x: visible;
+  }
 }
 
 .collections a {
@@ -126,7 +158,13 @@
 @media (min-width: 1024px) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-6);
+    gap: var(--space-5);
+  }
+}
+
+@media (min-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

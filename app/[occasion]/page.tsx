@@ -9,6 +9,7 @@ import { Container } from '@/components/ui/Container';
 import { Notice } from '@/components/ui/Notice';
 import { getRecentPosts } from '@/lib/api/blog';
 import { getTemplates } from '@/lib/api/templates';
+import { lowestPrice } from '@/lib/galleryPrice';
 import type { TemplateSummary } from '@/lib/api/types';
 import { COLLECTIONS } from '@/lib/collections';
 import { SELF_BUILD } from '@/lib/content/entitlements';
@@ -160,6 +161,7 @@ export default async function OccasionLandingPage({ params }: Props) {
   const faqs = faqsByIds(page.faqIds);
   const posts = await getRecentPosts(3);
   const siblings = occasionPagesInShop(catalogue).filter((p) => p.page.slug !== page.slug);
+  const cheapest = lowestPrice(catalogue);
 
   return (
     <>
@@ -208,7 +210,12 @@ export default async function OccasionLandingPage({ params }: Props) {
                 <ul className={styles.grid}>
                   {templates.map((template, i) => (
                     <li key={template.id || template.slug}>
-                      <TemplateCard template={template} eager={i < 2} source={`occasion:${page.slug}`} />
+                      <TemplateCard
+                        template={template}
+                        eager={i < 2}
+                        source={`occasion:${page.slug}`}
+                        lowestPrice={cheapest}
+                      />
                     </li>
                   ))}
                 </ul>

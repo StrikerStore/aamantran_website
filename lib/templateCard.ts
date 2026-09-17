@@ -37,6 +37,44 @@ export function cardHighlights(highlights: readonly string[], max = CARD_MAX_HIG
   return highlights.slice(0, max);
 }
 
+/**
+ * Below this many buyers the number is noise rather than evidence: "1 couple
+ * chose this" tells a shopper nothing they can use, and reads as a warning it
+ * was never meant to be. The card says nothing instead — it never says zero, and
+ * it never rounds one up.
+ */
+export const CARD_MIN_BUYERS = 5;
+
+/**
+ * The rating to show on a card, or null.
+ *
+ * `avgRating` is the average of genuine customer reviews and is null when there
+ * are none, so there is nothing here to qualify — but the card has no review
+ * count to show beside it, which is why the accessible name says where the
+ * number comes from.
+ */
+export function cardRating(template: Pick<TemplateSummary, 'avgRating'>): string | null {
+  const rating = template.avgRating;
+  if (typeof rating !== 'number' || !Number.isFinite(rating) || rating <= 0) return null;
+  return rating.toFixed(1);
+}
+
+/** How many couples bought this design, when that number means anything yet. */
+export function cardBuyers(template: Pick<TemplateSummary, 'buyerCount'>, min = CARD_MIN_BUYERS): number | null {
+  const count = template.buyerCount;
+  return Number.isFinite(count) && count >= min ? count : null;
+}
+
+/**
+ * Whether this design sits at the catalogue's lowest price.
+ *
+ * `lowest` comes from lib/galleryPrice.ts and is null when every design costs
+ * the same, because then the chip would be on all of them and mean nothing.
+ */
+export function isLowestPrice(template: Pick<TemplateSummary, 'price'>, lowest: number | null): boolean {
+  return lowest != null && template.price === lowest;
+}
+
 /** The watermarked live demo, priced for this storefront (same URL the product page uses). */
 export function templateDemoUrl(slug: string): string {
   return `${getPublicApiUrl()}/demo/${encodeURIComponent(slug)}?storefront=${STOREFRONT}`;

@@ -1,3 +1,4 @@
+import { bandByKey, type PriceBand } from './galleryPrice';
 import { OCCASIONS, OCCASION_BY_KEY } from './occasions';
 import { DEFAULT_GALLERY_SORT, GALLERY_COMMUNITIES, GALLERY_SORTS, type GalleryState } from './gallerySearch';
 
@@ -45,12 +46,19 @@ export function withSelected(options: readonly FacetOption[], selected: string |
   return all.filter((o) => present.has(o.value));
 }
 
-/** Human labels for what is applied, e.g. ['"royal"', 'Wedding', 'Hindu']. */
-export function activeFilterLabels(state: GalleryState): string[] {
+/**
+ * Human labels for what is applied, e.g. ['"royal"', 'Wedding', 'Hindu', '₹999'].
+ *
+ * The price band needs the catalogue to name itself, so its bands are passed in.
+ * Without them a stale or hand-edited band still gets a label — the raw key is
+ * useless to a reader, so it says the filter is there rather than what it is.
+ */
+export function activeFilterLabels(state: GalleryState, bands: readonly PriceBand[] = []): string[] {
   const labels: string[] = [];
   if (state.q) labels.push(`“${state.q}”`);
   if (state.occasion) labels.push(OCCASION_BY_KEY.get(state.occasion)?.label ?? state.occasion);
   if (state.community) labels.push(GALLERY_COMMUNITIES.find((c) => c.value === state.community)?.label ?? state.community);
+  if (state.price) labels.push(bandByKey(bands, state.price)?.label ?? 'a price range');
   if (state.sort !== DEFAULT_GALLERY_SORT) labels.push(GALLERY_SORTS.find((s) => s.value === state.sort)?.label ?? state.sort);
   return labels;
 }

@@ -1,0 +1,93 @@
+.rail {
+  margin-top: var(--space-4);
+}
+
+/*
+ * One row that scrolls sideways on a phone, rather than eight chips wrapping
+ * into five rows and pushing the first design off the screen. The chips are
+ * links, so a keyboard reaches every aisle by tabbing and the row follows the
+ * focus; the page itself never scrolls sideways, only this strip.
+ */
+.list {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+  margin: 0;
+  /* Room for the chips' shadow, and for the scrollbar under them. */
+  padding: 2px 0 var(--space-2);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  list-style: none;
+}
+
+.list > li {
+  flex: 0 0 auto;
+}
+
+@media (min-width: 900px) {
+  .list {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-bottom: 0;
+    overflow-x: visible;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.stocked {
+  background: var(--surface-raised);
+  box-shadow: var(--elevation-1);
+  color: var(--color-primary);
+  transition:
+    background-color var(--dur-press) var(--ease-standard),
+    box-shadow var(--dur-hover) var(--ease-standard);
+}
+
+.stocked:hover,
+.stocked:focus-visible {
+  background: var(--color-blush);
+  box-shadow: var(--elevation-2);
+}
+
+/* The aisle being browsed. Marked with aria-current too: the colour is not the
+   only thing saying so. */
+.current {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* Nothing on this shelf yet. Not a link, and it does not pretend to be one. */
+.empty {
+  border: 1px dashed var(--color-divider);
+  background: var(--surface-sunken);
+  color: var(--color-text-muted);
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.soon {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

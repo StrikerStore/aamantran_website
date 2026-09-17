@@ -1,7 +1,7 @@
 .bar {
   position: relative;
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
   padding: var(--space-4);
   background: var(--color-surface);
   border-radius: var(--radius-card);
@@ -59,7 +59,7 @@ select.control {
   gap: var(--space-3);
 }
 
-.sort {
+.selects > *:last-child:nth-child(odd) {
   grid-column: 1 / -1;
 }
 
@@ -69,7 +69,7 @@ select.control {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  min-height: 24px;
+  min-height: 20px;
   font-family: var(--font-ui);
   font-size: var(--type-small);
 }
@@ -98,10 +98,10 @@ select.control {
   }
 
   .selects {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
-  .sort {
+  .selects > *:last-child:nth-child(odd) {
     grid-column: auto;
   }
 
