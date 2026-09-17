@@ -3,7 +3,7 @@ import { ACCESS, NAME_FREEZE, PARTIAL_INVITE, PLANNING_TOOLS, SELF_BUILD } from 
 import { SUPPORT } from '@/lib/content/claims';
 import { FAQ_CATEGORIES } from '@/lib/content/faqs';
 import { COLLECTIONS } from '@/lib/collections';
-import { publishedOccasionPages } from '@/lib/occasionPages';
+import { indexableOccasionPages } from '@/lib/occasionPages';
 import { SITE_URL } from '@/lib/seo';
 import { getStartingPrice } from '@/lib/startingPrice';
 import { IS_INTL } from '@/lib/storefront';
@@ -40,7 +40,7 @@ export async function GET(): Promise<Response> {
   const templates = catalogue?.templates ?? [];
   const designCount = stats?.total ?? templates.length;
   const designs = designCount > 0 ? `${designCount} designs` : 'Every design';
-  const occasions = publishedOccasionPages(templates);
+  const occasions = indexableOccasionPages(templates);
   const storiesWorthListing = (reviews?.totalCount ?? 0) >= MIN_REVIEWS_FOR_STORIES;
   const price = IS_INTL
     ? `Prices start at ${startingPrice} per invitation, charged in US dollars with no GST added.`

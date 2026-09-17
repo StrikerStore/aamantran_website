@@ -3,7 +3,7 @@ import { getPublicApiUrl } from '@/lib/publicEnv';
 import { SITE_URL, alternateLanguages } from '@/lib/seo';
 import { COLLECTIONS } from '@/lib/collections';
 import { getFeaturedReviews, getTemplates } from '@/lib/api/templates';
-import { publishedOccasionPages } from '@/lib/occasionPages';
+import { indexableOccasionPages } from '@/lib/occasionPages';
 
 /** Matches MIN_REVIEWS_TO_INDEX on /stories: below this the page is noindex. */
 const MIN_REVIEWS_FOR_STORIES = 3;
@@ -67,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Occasion pages are listed only while the catalogue supports them, so the
   // sitemap never points at a page that answers with a 404.
-  const occasionRoutes: MetadataRoute.Sitemap = publishedOccasionPages(templates).map(({ page }) => ({
+  const occasionRoutes: MetadataRoute.Sitemap = indexableOccasionPages(templates).map(({ page }) => ({
     url: `${SITE_URL}/${page.slug}`,
     changeFrequency: 'weekly' as const,
     priority: 0.85,

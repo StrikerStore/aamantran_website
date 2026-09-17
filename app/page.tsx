@@ -20,7 +20,7 @@ import { ACCESS, INCLUDED, PLANNING_TOOLS, SELF_BUILD } from '@/lib/content/enti
 import { PURCHASE_FAQ_IDS, faqsByIds } from '@/lib/content/faqs';
 import { sampleWeddingDate } from '@/lib/content/sampleInvite';
 import { pluralize } from '@/lib/format';
-import { publishedOccasionPages } from '@/lib/occasionPages';
+import { occasionPagesInShop } from '@/lib/occasionPages';
 import { alternateLanguages } from '@/lib/seo';
 import { getStartingPrice } from '@/lib/startingPrice';
 import { formatMoney, IS_INTL } from '@/lib/storefront';
@@ -72,7 +72,7 @@ export default async function HomePage() {
   // Only offered when a design on this page can take it: the hero links to these cards.
   const hasTryable = designs.some((design) => design.tryWithNames);
   const designCount = stats?.total ?? catalogue?.total ?? 0;
-  const occasionPages = publishedOccasionPages(catalogue?.templates ?? []);
+  const occasionPages = occasionPagesInShop(catalogue?.templates ?? []);
   const faqs = faqsByIds(PURCHASE_FAQ_IDS);
   const heroArt = catalogue?.templates[0] ?? designs[0] ?? null;
   // Fixed here rather than in the browser, so the sample dates in the guest

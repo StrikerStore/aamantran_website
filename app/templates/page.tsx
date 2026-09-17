@@ -21,7 +21,7 @@ import {
   totalPages,
   type GalleryState,
 } from '@/lib/gallerySearch';
-import { publishedOccasionPages } from '@/lib/occasionPages';
+import { occasionPagesInShop } from '@/lib/occasionPages';
 import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
 import { getStartingPrice } from '@/lib/startingPrice';
 import styles from './templates.module.css';
@@ -86,7 +86,7 @@ export default async function TemplatesPage({ searchParams }: Props) {
   ]);
 
   const facets = galleryFacets(catalogue?.templates ?? result?.templates ?? []);
-  const occasionPages = publishedOccasionPages(catalogue?.templates ?? []);
+  const occasionPages = occasionPagesInShop(catalogue?.templates ?? []);
   const filters = activeFilterLabels(state);
   const filtered = isFilteredGallery(state);
   const pages = result ? totalPages(result.total) : 1;

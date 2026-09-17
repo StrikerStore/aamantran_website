@@ -41,6 +41,7 @@ export const OCCASIONS: Occasion[] = [
   { key: 'griha-pravesh', label: 'Griha Pravesh', aliases: ['grihapravesh', 'grah pravesh', 'grahpravesh', 'griha pravesh puja'] },
   { key: 'birthday',      label: 'Birthday',      aliases: ['birthdays', 'birthday party'] },
   { key: 'baby-shower',   label: 'Baby Shower',   aliases: ['babyshower', 'godh bharai', 'godbharai'] },
+  { key: 'naming-ceremony', label: 'Naming Ceremony', aliases: ['naamkaran', 'namkaran', 'naming', 'cradle ceremony', 'christening'] },
   { key: 'house-warming', label: 'House Warming', aliases: ['housewarming', 'house-warming'] },
   { key: 'anniversary',   label: 'Anniversary',   aliases: ['anniversery', 'anniversaries', 'wedding anniversary'] },
   { key: 'retirement',    label: 'Retirement',    aliases: ['retirement party', 'farewell'] },

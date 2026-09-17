@@ -19,7 +19,7 @@ import {
   occasionPageBySlug,
   occasionPageSlugs,
   occasionPageVerdict,
-  publishedOccasionPages,
+  occasionPagesInShop,
   templatesForOccasion,
 } from '@/lib/occasionPages';
 import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
@@ -58,21 +58,23 @@ async function loadOccasion(slug: string): Promise<{
   page: OccasionPage;
   templates: TemplateSummary[];
   catalogue: TemplateSummary[];
-  publish: boolean;
+  verdict: ReturnType<typeof occasionPageVerdict>;
   catalogueFailed: boolean;
 } | null> {
   const page = occasionPageBySlug(slug);
   if (!page) return null;
 
   const catalogue = await getTemplates({ limit: CATALOGUE_LIMIT, sort: 'new' });
-  if (!catalogue) return { page, templates: [], catalogue: [], publish: false, catalogueFailed: true };
+  if (!catalogue) {
+    return { page, templates: [], catalogue: [], verdict: occasionPageVerdict(0, 0), catalogueFailed: true };
+  }
 
   const templates = templatesForOccasion(catalogue.templates, page);
   return {
     page,
     templates,
     catalogue: catalogue.templates,
-    publish: occasionPageVerdict(templates.length, catalogue.total).publish,
+    verdict: occasionPageVerdict(templates.length, catalogue.total),
     catalogueFailed: false,
   };
 }
@@ -88,9 +90,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     path: `/${loaded.page.slug}`,
   });
 
-  // While the catalogue cannot be read the page still answers the question that
-  // brought the visitor here, but it must not be indexed without its designs.
-  return loaded.catalogueFailed ? { ...metadata, robots: { index: false, follow: true } } : metadata;
+  // A page can exist for shoppers and still be wrong to offer search engines:
+  // too few designs to be worth a result, a near-copy of /templates, or a
+  // catalogue that could not be read at all.
+  if (loaded.catalogueFailed || loaded.verdict.status === 'noindex') {
+    return {
+      ...metadata,
+      robots: { index: false, follow: true },
+      ...(loaded.verdict.reason === 'covers-most-of-catalogue'
+        ? { alternates: { ...metadata.alternates, canonical: `${SITE_URL}/templates` } }
+        : {}),
+    };
+  }
+  return metadata;
 }
 
 function schemaFor(page: OccasionPage, templates: TemplateSummary[], faqs: { q: string; a: string }[]) {
@@ -141,13 +153,13 @@ function schemaFor(page: OccasionPage, templates: TemplateSummary[], faqs: { q: 
 export default async function OccasionLandingPage({ params }: Props) {
   const { occasion } = await params;
   const loaded = await loadOccasion(occasion);
-  // Not a candidate slug, or the catalogue cannot support this page today.
-  if (!loaded || (!loaded.publish && !loaded.catalogueFailed)) notFound();
+  // Not a candidate slug, or nothing in this aisle to show.
+  if (!loaded || (loaded.verdict.status === 'none' && !loaded.catalogueFailed)) notFound();
 
   const { page, templates, catalogue, catalogueFailed } = loaded;
   const faqs = faqsByIds(page.faqIds);
   const posts = await getRecentPosts(3);
-  const siblings = publishedOccasionPages(catalogue).filter((p) => p.page.slug !== page.slug);
+  const siblings = occasionPagesInShop(catalogue).filter((p) => p.page.slug !== page.slug);
 
   return (
     <>
