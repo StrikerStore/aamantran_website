@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import JsonLd from '@/components/JsonLd';
 import { TemplateCard } from '@/components/gallery/TemplateCard';
+import { AisleRail } from '@/components/shop/AisleRail';
+import { SubAisleBar } from '@/components/shop/SubAisleBar';
 import { Accordion } from '@/components/ui/Accordion';
 import { LinkButton } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
@@ -24,6 +26,8 @@ import {
   templatesForOccasion,
 } from '@/lib/occasionPages';
 import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
+import { aisleForPageSlug } from '@/lib/content/shopTaxonomy';
+import { parseTradition, subAisles, templatesInSubAisle, traditionLabel } from '@/lib/subAisle';
 import styles from '@/components/landing/landing.module.css';
 
 /**
@@ -38,8 +42,22 @@ import styles from '@/components/landing/landing.module.css';
  * rather than a thin page or a copy of /templates. That is checked on every
  * render, so a page appears or disappears with the stock instead of with a
  * deploy.
+ *
+ * SUB-AISLES. `?tradition=hindu` narrows the aisle without leaving it, the way
+ * a shopper moves along a shelf. It is a query parameter and not a route,
+ * because a route would be a fourth address for the same designs; the filtered
+ * view is `noindex` with a canonical back to the aisle, exactly as /templates
+ * treats its own filters. Only aisles whose shopTaxonomy entry is narrowed by
+ * tradition offer it, and only with the traditions actually in stock.
  */
 
+/*
+ * Reading `?tradition=` makes this route render per request, so `revalidate`
+ * no longer governs the page shell. It still matters: the catalogue fetch
+ * inside carries its own revalidate (lib/api/templates.ts), so a render costs
+ * CPU and not an API call, and this value is what the shell goes back to if the
+ * sub-aisle filter is ever removed.
+ */
 export const revalidate = 300;
 export const dynamicParams = false;
 
@@ -47,7 +65,10 @@ export function generateStaticParams() {
   return occasionPageSlugs().map((occasion) => ({ occasion }));
 }
 
-type Props = { params: Promise<{ occasion: string }> };
+type Props = {
+  params: Promise<{ occasion: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
 const CATALOGUE_LIMIT = 100;
 
@@ -80,7 +101,7 @@ async function loadOccasion(slug: string): Promise<{
   };
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { occasion } = await params;
   const loaded = await loadOccasion(occasion);
   if (!loaded) return {};
@@ -90,6 +111,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: loaded.page.description,
     path: `/${loaded.page.slug}`,
   });
+
+  // A narrowed shelf is the same designs in a smaller pile: never its own result.
+  const options = subAisles(loaded.templates, aisleForPageSlug(loaded.page.slug));
+  if (parseTradition((await searchParams).tradition, options)) {
+    return {
+      ...metadata,
+      robots: { index: false, follow: true },
+      alternates: { ...metadata.alternates, canonical: `${SITE_URL}/${loaded.page.slug}` },
+    };
+  }
 
   // A page can exist for shoppers and still be wrong to offer search engines:
   // too few designs to be worth a result, a near-copy of /templates, or a
@@ -151,9 +182,9 @@ function schemaFor(page: OccasionPage, templates: TemplateSummary[], faqs: { q: 
   return schemas;
 }
 
-export default async function OccasionLandingPage({ params }: Props) {
+export default async function OccasionLandingPage({ params, searchParams }: Props) {
   const { occasion } = await params;
-  const loaded = await loadOccasion(occasion);
+  const [loaded, query] = await Promise.all([loadOccasion(occasion), searchParams]);
   // Not a candidate slug, or nothing in this aisle to show.
   if (!loaded || (loaded.verdict.status === 'none' && !loaded.catalogueFailed)) notFound();
 
@@ -163,9 +194,17 @@ export default async function OccasionLandingPage({ params }: Props) {
   const siblings = occasionPagesInShop(catalogue).filter((p) => p.page.slug !== page.slug);
   const cheapest = lowestPrice(catalogue);
 
+  const aisle = aisleForPageSlug(page.slug);
+  const traditions = subAisles(templates, aisle);
+  const tradition = parseTradition(query.tradition, traditions);
+  const shown = templatesInSubAisle(templates, tradition);
+  const narrowedTo = traditionLabel(traditions, tradition);
+
   return (
     <>
-      {!catalogueFailed && schemaFor(page, templates, faqs).map((data, i) => <JsonLd key={i} data={data} />)}
+      {/* The aisle's own designs, never a filtered subset: the structured data
+          describes the page search engines are offered. */}
+      {!catalogueFailed && !tradition && schemaFor(page, templates, faqs).map((data, i) => <JsonLd key={i} data={data} />)}
 
       <div className={styles.page}>
         <header className={styles.hero}>
@@ -184,14 +223,23 @@ export default async function OccasionLandingPage({ params }: Props) {
             <h1 className={styles.title}>{page.heading}</h1>
             <p className={styles.intro}>{page.intro}</p>
             <p className={styles.selfBuild}>{SELF_BUILD.short}</p>
+            <AisleRail templates={catalogue} currentKey={aisle?.key} />
           </Container>
         </header>
 
         <Container>
           <section id="designs" aria-labelledby="designs-heading" className={styles.section}>
             <h2 id="designs-heading" className={styles.sectionTitle}>
-              {catalogueFailed ? 'Designs' : `${pluralize(templates.length, 'design')} for this occasion`}
+              {catalogueFailed
+                ? 'Designs'
+                : narrowedTo
+                  ? `${narrowedTo}: ${pluralize(shown.length, 'design')}`
+                  : `${pluralize(templates.length, 'design')} for this occasion`}
             </h2>
+
+            {!catalogueFailed && traditions.length > 0 && (
+              <SubAisleBar slug={page.slug} options={traditions} selected={tradition} />
+            )}
 
             {catalogueFailed ? (
               <Notice
@@ -208,7 +256,7 @@ export default async function OccasionLandingPage({ params }: Props) {
             ) : (
               <>
                 <ul className={styles.grid}>
-                  {templates.map((template, i) => (
+                  {shown.map((template, i) => (
                     <li key={template.id || template.slug}>
                       <TemplateCard
                         template={template}

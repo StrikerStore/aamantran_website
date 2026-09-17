@@ -7,6 +7,8 @@ import { LinkButton } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import styles from '@/components/landing/landing.module.css';
 import { getTemplates } from '@/lib/api/templates';
+import { AISLES } from '@/lib/content/shopTaxonomy';
+import { occasionPagesInShop } from '@/lib/occasionPages';
 import type { TemplateSummary } from '@/lib/api/types';
 import { COLLECTIONS, collectionBySlug, type Collection } from '@/lib/collections';
 import { SELF_BUILD } from '@/lib/content/entitlements';
@@ -76,14 +78,36 @@ function schemaFor(c: Collection, templates: TemplateSummary[]) {
   ];
 }
 
+/**
+ * The aisles a community collection can narrow into: the ones shopTaxonomy
+ * marks as narrowed by tradition, which is what makes `?tradition=` mean
+ * anything on them.
+ */
+/** Enough to decide which aisle pages exist; see lib/occasionPages.ts. */
+const CATALOGUE_LIMIT = 100;
+
+const SUB_AISLE_SLUGS = new Set(
+  AISLES.filter((aisle) => aisle.subCategory === 'tradition' && aisle.pageSlug).map((aisle) => aisle.pageSlug),
+);
+
 export default async function CollectionPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const c = collectionBySlug(slug);
   if (!c) notFound();
 
-  const response = await getTemplates({ community: c.community, limit: 50, sort: 'new' });
+  const [response, catalogue] = await Promise.all([
+    getTemplates({ community: c.community, limit: 50, sort: 'new' }),
+    getTemplates({ limit: CATALOGUE_LIMIT, sort: 'new' }),
+  ]);
   const templates = response?.templates ?? [];
   const siblings = COLLECTIONS.filter((x) => x.slug !== c.slug);
+
+  // Only aisles that currently have a page: lib/occasionPages.ts decides that
+  // from the catalogue on every render, so linking without asking would put a
+  // dead internal link on the page whose whole job is to be crawled.
+  const subAisleLinks = occasionPagesInShop(catalogue?.templates ?? [])
+    .filter(({ page }) => SUB_AISLE_SLUGS.has(page.slug))
+    .map(({ page }) => ({ slug: page.slug, label: page.heading }));
 
   return (
     <>
@@ -158,7 +182,9 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
           </section>
 
           {/* Internal links: these pages must be reachable by crawl from each
-              other, not only from the sitemap. */}
+              other, not only from the sitemap. The aisle links are the same
+              designs on the shop floor — this page is the one written for the
+              search that brings someone here, the aisle is where they browse. */}
           <section aria-labelledby="other-heading" className={styles.section}>
             <h2 id="other-heading" className={styles.sectionTitle}>
               Other collections
@@ -167,6 +193,13 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
               {siblings.map((s) => (
                 <li key={s.slug}>
                   <Link href={`/collections/${s.slug}`}>{s.heading}</Link>
+                </li>
+              ))}
+              {subAisleLinks.map((aisle) => (
+                <li key={aisle.slug}>
+                  <Link href={`/${aisle.slug}?tradition=${encodeURIComponent(c.community)}`}>
+                    {c.short} in {aisle.label.toLowerCase()}
+                  </Link>
                 </li>
               ))}
               <li>

@@ -34,7 +34,8 @@ export type TrackEventType =
   | 'try_demo_started'
   | 'try_demo_created'
   | 'try_demo_opened'
-  | 'try_demo_to_checkout';
+  | 'try_demo_to_checkout'
+  | 'occasion_interest';
 
 function getSessionId(): string | null {
   if (typeof window === 'undefined') return null;

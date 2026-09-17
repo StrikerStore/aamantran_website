@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ComingSoon } from './ComingSoon';
 import { cx } from '@/lib/cx';
 import { shopAisles } from '@/lib/content/shopTaxonomy';
 import type { TemplateSummary } from '@/lib/api/types';
@@ -12,8 +13,9 @@ import styles from './AisleTiles.module.css';
  * counted from the live catalogue. An aisle with nothing in it says "Coming
  * soon" rather than disappearing — a shop with five empty shelves is still
  * recognisably a shop, while one that hides them looks like it sells only
- * weddings. Phase 30 makes those tiles capture the interest; here they are
- * honest and inert.
+ * weddings. An empty one offers to take the customer's interest instead: one tap
+ * to WhatsApp with the question written, and an anonymous `occasion_interest`
+ * event that is the evidence for which aisle to commission next.
  *
  * The count is on the tile because it is the single most useful thing a shopper
  * can know before clicking: eight designs is worth a look, zero is not.
@@ -39,7 +41,7 @@ export function AisleTiles({
             <Heading className={styles.label}>{aisle.label}</Heading>
             <p className={styles.blurb}>{aisle.blurb}</p>
             <p className={styles.count}>
-              {count > 0 ? pluralize(count, 'design') : 'Coming soon'}
+              {count > 0 ? pluralize(count, 'design') : 'Coming soon — tell us'}
             </p>
           </>
         );
@@ -51,8 +53,11 @@ export function AisleTiles({
                 {body}
               </Link>
             ) : (
-              // Not a link, and not styled as one: there is nothing behind it yet.
-              <div className={cx(styles.tile, styles.empty)}>{body}</div>
+              // Still quieter than a stocked tile — it leads to a conversation,
+              // not to designs — but it is something to tap rather than a dead end.
+              <ComingSoon aisle={aisle} className={cx(styles.tile, styles.empty)}>
+                {body}
+              </ComingSoon>
             )}
           </li>
         );
