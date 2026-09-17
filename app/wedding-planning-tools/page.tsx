@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { PlanningDemo } from '@/components/demos/PlanningDemo';
 import { LinkButton } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { PLANNING_TOOLS, PLANNING_TOOLS_ACCESS } from '@/lib/content/entitlements';
@@ -12,6 +13,10 @@ import styles from '../content-page.module.css';
  * The limits are as prominent as the features on purpose: this is the part of
  * the product most easily oversold, and a couple who expects the budget tool to
  * pay vendors has been misled by the page, not by the tool.
+ *
+ * The working budget-and-tasks demo lives here rather than on the homepage.
+ * It is about 900px of interaction that sells nothing directly, and the visitor
+ * who wants to poke at it has already said so by clicking through to this page.
  */
 
 export const metadata: Metadata = buildPageMetadata({
@@ -35,7 +40,7 @@ export default function PlanningToolsPage() {
           </p>
           <div className={styles.heroActions}>
             <LinkButton href="/templates">Browse invitations</LinkButton>
-            <LinkButton href="/#planning-demo" variant="secondary">
+            <LinkButton href="#planning-demo" variant="secondary">
               Try the tools
             </LinkButton>
           </div>
@@ -43,6 +48,17 @@ export default function PlanningToolsPage() {
       </header>
 
       <Container>
+        <section id="planning-demo" aria-labelledby="demo-heading" className={styles.section}>
+          <h2 id="demo-heading" className={styles.sectionTitle}>
+            The budget and tasks, working
+          </h2>
+          <p className={styles.sectionIntro}>
+            These two are live below — add an expense, mark one paid, move a task on. Nothing is saved, and nothing
+            here is sent anywhere.
+          </p>
+          <PlanningDemo />
+        </section>
+
         <section aria-labelledby="tools-heading" className={styles.section}>
           <h2 id="tools-heading" className={styles.sectionTitle}>
             What each one does — and what it does not
@@ -69,7 +85,7 @@ export default function PlanningToolsPage() {
           </p>
           <ul className={styles.linkRow}>
             <li>
-              <Link href="/#planning-demo">Try the budget and tasks on the homepage</Link>
+              <Link href="#planning-demo">Try the budget and tasks above</Link>
             </li>
             <li>
               <Link href="/how-it-works">How setting up works</Link>

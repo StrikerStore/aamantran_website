@@ -27,6 +27,11 @@ export interface Collection {
   community: string;
   /** <h1>. Reads as the phrase someone would actually search for. */
   heading: string;
+  /**
+   * What a shop tile calls this tradition — two or three words. The heading is
+   * written for a search engine and is too long to sit under a thumbnail.
+   */
+  short: string;
   /** <title>, kept short enough that Google does not truncate it. */
   title: string;
   /** Meta description, ~150-160 chars. */
@@ -42,6 +47,7 @@ export const COLLECTIONS: Collection[] = [
     slug: 'hindu-wedding-invitations',
     community: 'hindu',
     heading: 'Hindu Wedding Invitation Templates',
+    short: 'Hindu weddings',
     title: 'Hindu Wedding Invitation Templates Online',
     description:
       'Digital Hindu wedding invitations with every ceremony on one link — mehendi, haldi, sangeet and the wedding — plus live RSVP and WhatsApp sharing.',
@@ -66,6 +72,7 @@ export const COLLECTIONS: Collection[] = [
     slug: 'muslim-wedding-invitations',
     community: 'muslim',
     heading: 'Muslim Wedding & Nikah Invitation Templates',
+    short: 'Muslim weddings & nikah',
     title: 'Muslim Nikah & Walima Invitation Templates',
     description:
       'Digital Nikah and Walima invitations with separate guest lists per event, live RSVP tracking and one WhatsApp-ready link for the whole celebration.',
@@ -90,6 +97,7 @@ export const COLLECTIONS: Collection[] = [
     slug: 'sikh-wedding-invitations',
     community: 'sikh',
     heading: 'Sikh Wedding Invitation Templates',
+    short: 'Sikh weddings',
     title: 'Sikh & Anand Karaj Invitation Templates',
     description:
       'Digital Sikh wedding invitations covering the Anand Karaj, the functions around it and the reception on one link, with per-event RSVP and WhatsApp sharing.',
@@ -114,6 +122,7 @@ export const COLLECTIONS: Collection[] = [
     slug: 'modern-wedding-invitations',
     community: 'universal',
     heading: 'Modern & Non-Religious Wedding Invitations',
+    short: 'Modern & non-religious',
     title: 'Modern Digital Wedding Invitation Templates',
     description:
       'Minimal, non-religious digital wedding invitations — clean typography, live RSVP, a photo gallery and one WhatsApp-ready link for every event.',

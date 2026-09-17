@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { GuestExperienceDemo } from '@/components/demos/GuestExperienceDemo';
 import { LinkButton } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { ACCESS, CHANGEABLE, INCLUDED, PLANNING_TOOLS, SELF_BUILD } from '@/lib/content/entitlements';
+import { sampleWeddingDate } from '@/lib/content/sampleInvite';
 import { buildPageMetadata } from '@/lib/seo';
 import styles from '../content-page.module.css';
 
@@ -11,6 +13,10 @@ import styles from '../content-page.module.css';
  *
  * Items that depend on the design say so rather than being promised flatly: a
  * buyer checks the design's own page for the ones marked that way.
+ *
+ * The working guest-side demo lives here rather than on the homepage. It is
+ * about 900px of interaction, and this is the page a visitor reaches by asking
+ * the question it answers.
  */
 
 export const metadata: Metadata = buildPageMetadata({
@@ -21,6 +27,8 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default function FeaturesPage() {
+  const sampleWeddingIso = sampleWeddingDate().toISOString();
+
   return (
     <div className={styles.page}>
       <header className={styles.hero}>
@@ -33,7 +41,7 @@ export default function FeaturesPage() {
           </p>
           <div className={styles.heroActions}>
             <LinkButton href="/templates">Browse invitations</LinkButton>
-            <LinkButton href="/#guest-demo" variant="secondary">
+            <LinkButton href="#guest-demo" variant="secondary">
               See what guests see
             </LinkButton>
           </div>
@@ -41,6 +49,17 @@ export default function FeaturesPage() {
       </header>
 
       <Container>
+        <section id="guest-demo" aria-labelledby="demo-heading" className={styles.section}>
+          <h2 id="demo-heading" className={styles.sectionTitle}>
+            What your guests see
+          </h2>
+          <p className={styles.sectionIntro}>
+            A working sample of the invitation itself: the ceremonies, the directions, the RSVP and the wishes wall.
+            Try it — nothing here is sent anywhere.
+          </p>
+          <GuestExperienceDemo weddingDateIso={sampleWeddingIso} />
+        </section>
+
         <section aria-labelledby="included-heading" className={styles.section}>
           <h2 id="included-heading" className={styles.sectionTitle}>
             Included with any design

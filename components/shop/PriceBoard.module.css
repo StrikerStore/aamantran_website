@@ -1,0 +1,71 @@
+.board {
+  margin-top: var(--space-5);
+}
+
+.tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tier {
+  position: relative;
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--surface-raised);
+  box-shadow: var(--elevation-1);
+  font-family: var(--font-ui);
+  text-align: center;
+}
+
+/* A gold edge on every tier: they are equals, so none is singled out. */
+.tier::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--edge-gold);
+  pointer-events: none;
+}
+
+.amount {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 2.1rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
+
+.tax {
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.count {
+  margin: var(--space-2) 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.same {
+  max-width: 62ch;
+  margin: var(--space-5) auto 0;
+  font-family: var(--font-ui);
+  line-height: var(--leading-body);
+  text-align: center;
+  color: var(--color-text);
+}
+
+.action {
+  margin: var(--space-5) 0 0;
+  text-align: center;
+}

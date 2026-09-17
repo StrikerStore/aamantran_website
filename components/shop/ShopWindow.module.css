@@ -1,0 +1,103 @@
+.window {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .window {
+    gap: var(--space-4);
+  }
+}
+
+.pane {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 220px;
+}
+
+/*
+ * The stagger. Small on purpose — a display, not a fan of cards. The middle
+ * pane is the centrepiece, so it sits highest and a little larger.
+ */
+.pane[data-position='0'] {
+  transform: translateY(var(--space-4)) rotate(-2deg);
+}
+
+.pane[data-position='1'] {
+  z-index: 1;
+  transform: scale(1.06);
+}
+
+.pane[data-position='2'] {
+  transform: translateY(var(--space-4)) rotate(2deg);
+}
+
+.frame {
+  display: block;
+  border-radius: var(--radius-card);
+  color: inherit;
+  text-decoration: none;
+}
+
+.art {
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-blush);
+  box-shadow: var(--elevation-2);
+  transition: box-shadow var(--dur-hover) var(--ease-standard);
+}
+
+.art :global(img) {
+  transition: transform var(--dur-crossfade) var(--ease-standard);
+}
+
+.frame:hover .art,
+.frame:focus-visible .art {
+  box-shadow: var(--elevation-3);
+}
+
+.frame:hover .art :global(img),
+.frame:focus-visible .art :global(img) {
+  transform: scale(var(--zoom-hover));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame:hover .art :global(img),
+  .frame:focus-visible .art :global(img) {
+    transform: none;
+  }
+}
+
+.fallback {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: var(--space-3);
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  line-height: var(--leading-tight);
+  text-align: center;
+  color: var(--color-primary);
+}
+
+/* The design's name, under its pane. Small: the artwork is the message. */
+.name {
+  display: block;
+  margin-top: var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 500;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 400px) {
+  .name {
+    font-size: 0.78rem;
+  }
+}

@@ -5,6 +5,8 @@
   color: var(--color-text);
 }
 
+/* ── 1. The shop window ─────────────────────────────────────────────────── */
+
 .hero {
   position: relative;
   isolation: isolate;
@@ -32,7 +34,7 @@
 
 @media (min-width: 1024px) {
   .heroInner {
-    grid-template-columns: 44fr 56fr;
+    grid-template-columns: 46fr 54fr;
     gap: var(--space-8);
   }
 }
@@ -42,7 +44,7 @@
 }
 
 .title {
-  max-width: 18ch;
+  max-width: 17ch;
   margin: 0;
   font-family: var(--font-heading);
   font-size: var(--type-hero);
@@ -51,7 +53,7 @@
 }
 
 .lede {
-  max-width: 56ch;
+  max-width: 52ch;
   margin: var(--space-5) 0 0;
   font-family: var(--font-ui);
   font-size: var(--type-body);
@@ -74,8 +76,9 @@
 }
 
 .reassurance {
-  display: grid;
-  gap: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
   margin: var(--space-5) 0 0;
   padding: 0;
   list-style: none;
@@ -92,21 +95,63 @@
   font-weight: 700;
 }
 
+/* On a phone the display goes first: the point of the rebuild is that an
+   invitation is on the first screen. */
 .heroArt {
-  display: flex;
-  justify-content: center;
+  order: -1;
   min-width: 0;
+  padding-block: var(--space-4) var(--space-5);
 }
 
-.heroImage {
-  max-width: 420px;
-  border-radius: var(--radius-card);
-  box-shadow: var(--elevation-2);
+@media (min-width: 1024px) {
+  .heroArt {
+    order: 0;
+    padding-block: 0;
+  }
 }
+
+/* ── Sections ───────────────────────────────────────────────────────────── */
 
 .section {
   margin-top: var(--section-gap);
   scroll-margin-top: var(--space-4);
+}
+
+/*
+ * Small-caps label above a heading, with a short gold rule after it. The rule
+ * is a pseudo-element, so a screen reader hears only the words.
+ */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.eyebrow::after {
+  content: '';
+  flex: 0 0 auto;
+  width: 34px;
+  height: 1px;
+  background: var(--edge-gold);
+}
+
+.eyebrowCenter {
+  justify-content: center;
+}
+
+.eyebrowCenter::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 34px;
+  height: 1px;
+  background: var(--edge-gold);
 }
 
 .sectionTitle {
@@ -117,11 +162,8 @@
   line-height: var(--leading-tight);
 }
 
-.subTitle {
-  margin: var(--space-6) 0 0;
-  font-family: var(--font-heading);
-  font-size: 1.4rem;
-  font-weight: 600;
+.centered {
+  text-align: center;
 }
 
 .sectionIntro {
@@ -132,33 +174,29 @@
   color: var(--color-text-muted);
 }
 
-.tiles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin: var(--space-5) 0 0;
-  padding: 0;
-  list-style: none;
-  font-family: var(--font-ui);
+/* A full-width band, so the page reads as rooms rather than one long column. */
+.bandSunken {
+  position: relative;
+  margin-top: var(--section-gap);
+  padding-block: var(--space-8);
+  background: var(--surface-sunken);
 }
 
-.tiles a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 48px;
-  padding: 0 var(--space-5);
-  border-radius: var(--radius-full);
-  background: var(--color-surface);
-  box-shadow: var(--elevation-1);
-  color: var(--color-primary);
-  font-weight: 500;
-  text-decoration: none;
-  transition: background-color var(--dur-press) var(--ease-standard);
+.bandSunken::before,
+.bandSunken::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--hairline-gold);
+  pointer-events: none;
 }
 
-.tiles a:hover {
-  background: var(--color-blush);
+.bandSunken::after {
+  inset: auto 0 0;
 }
+
+/* ── 3. The designs ─────────────────────────────────────────────────────── */
 
 .grid {
   display: grid;
@@ -177,8 +215,8 @@
 
 @media (min-width: 1024px) {
   .grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-6);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-5);
   }
 }
 
@@ -193,31 +231,37 @@
   text-underline-offset: 3px;
 }
 
+/* ── 6. How it works ────────────────────────────────────────────────────── */
+
 .steps {
   display: grid;
-  gap: var(--space-5);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
   margin: var(--space-5) 0 0;
   padding: 0;
   list-style: none;
-  counter-reset: step;
 }
 
-@media (min-width: 720px) {
+@media (min-width: 640px) {
   .steps {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  .step {
+    padding: var(--space-5);
   }
 }
 
 @media (min-width: 1024px) {
   .steps {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 .step {
-  padding: var(--space-5);
+  padding: var(--space-4);
   border-radius: var(--radius-card);
-  background: var(--color-surface);
+  background: var(--surface-raised);
   box-shadow: var(--elevation-1);
 }
 
@@ -225,25 +269,25 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-full);
   background: var(--color-primary);
   color: var(--color-on-primary);
   font-family: var(--font-ui);
+  font-size: var(--type-small);
   font-weight: 600;
 }
 
 .stepTitle {
   margin: var(--space-3) 0 0;
   font-family: var(--font-heading);
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 600;
   line-height: var(--leading-tight);
 }
 
-.stepText,
-.note {
+.stepText {
   margin: var(--space-2) 0 0;
   font-family: var(--font-ui);
   font-size: var(--type-small);
@@ -251,85 +295,13 @@
   color: var(--color-text-muted);
 }
 
-.note {
-  max-width: 72ch;
-  margin-top: var(--space-5);
-  padding: var(--space-4) var(--space-5);
-  border-radius: var(--radius-card);
-  background: var(--color-sage);
-  color: var(--color-text);
-}
+/* ── 10. The closing band ───────────────────────────────────────────────── */
 
-.included,
-.tools,
-.guides {
-  display: grid;
-  gap: var(--space-4);
-  margin: var(--space-5) 0 0;
-  padding: 0;
-  list-style: none;
-  font-family: var(--font-ui);
-  line-height: var(--leading-body);
-}
-
-@media (min-width: 720px) {
-  .included,
-  .tools {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .included {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-.included li {
-  display: grid;
-  gap: var(--space-1);
-  padding: var(--space-4) var(--space-5);
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
-  box-shadow: var(--elevation-1);
-}
-
-.includedTitle {
-  font-weight: 600;
-}
-
-.includedDetail,
-.toolText,
-.guideText {
-  font-size: var(--type-small);
-  color: var(--color-text-muted);
-}
-
-.tools li {
-  display: grid;
-  gap: var(--space-2);
-  justify-items: start;
-}
-
-.guides li {
-  display: grid;
-  gap: var(--space-1);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--color-divider);
-}
-
-.guides a {
-  color: var(--color-primary);
-  font-size: var(--type-body);
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
+/* Background comes from the global .ds-ink utility: this is the page's one
+   dark surface, and it carries its own text colours. */
 .cta {
   margin-top: var(--section-gap);
   padding-block: var(--space-8);
-  background: var(--color-sage);
   text-align: center;
 }
 
@@ -346,5 +318,19 @@
   margin: var(--space-4) auto var(--space-5);
   font-family: var(--font-ui);
   line-height: var(--leading-body);
-  color: var(--color-text);
+}
+
+/*
+ * The primary button's burgundy is only 1.9:1 against the ink band, so on this
+ * one surface the action inverts: paper on ink, well clear of 3:1, with the
+ * burgundy kept for the label.
+ */
+.ctaButton {
+  background: var(--color-on-ink);
+  color: var(--color-primary);
+}
+
+.ctaButton:hover:not(:disabled) {
+  background: #FFFFFF;
+  color: var(--color-primary-hover);
 }

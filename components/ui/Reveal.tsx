@@ -24,12 +24,15 @@ export function Reveal({
   delay = 0,
   className,
   children,
+  ...rest
 }: {
   as?: ElementType;
   /** Milliseconds to stagger a sibling by. Keep under ~150ms. */
   delay?: number;
   className?: string;
   children: ReactNode;
+  /** Anything else the element needs — `id`, `aria-labelledby`, and so on. */
+  [key: string]: unknown;
 }) {
   const ref = useRef<HTMLElement>(null);
 
@@ -56,7 +59,12 @@ export function Reveal({
   }, []);
 
   return (
-    <Tag ref={ref} className={cx(styles.reveal, className)} style={delay ? { transitionDelay: `${delay}ms` } : undefined}>
+    <Tag
+      {...rest}
+      ref={ref}
+      className={cx(styles.reveal, className)}
+      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+    >
       {children}
     </Tag>
   );

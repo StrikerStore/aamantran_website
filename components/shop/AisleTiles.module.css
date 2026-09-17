@@ -1,0 +1,117 @@
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+}
+
+@media (min-width: 1024px) {
+  .tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.item {
+  display: flex;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  border-radius: var(--radius-card);
+  font-family: var(--font-ui);
+  text-decoration: none;
+}
+
+.stocked {
+  background: var(--surface-raised);
+  box-shadow: var(--elevation-1);
+  color: var(--color-text);
+  transition:
+    transform var(--dur-hover) var(--ease-standard),
+    box-shadow var(--dur-hover) var(--ease-standard);
+}
+
+/* The gold edge of a raised surface, as on the product card. Decoration only. */
+.stocked::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--edge-gold);
+  opacity: 0;
+  transition: opacity var(--dur-hover) var(--ease-standard);
+  pointer-events: none;
+}
+
+.stocked:hover,
+.stocked:focus-visible {
+  transform: translateY(var(--lift-hover));
+  box-shadow: var(--elevation-2);
+}
+
+.stocked:hover::after,
+.stocked:focus-visible::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stocked:hover,
+  .stocked:focus-visible {
+    transform: none;
+  }
+}
+
+/*
+ * An aisle with nothing in it. Deliberately flatter and quieter than a stocked
+ * one — it is a shelf being built, not a destination — and it is a <div>, so it
+ * is never announced or focused as a link.
+ */
+.empty {
+  background: var(--surface-sunken);
+  border: 1px dashed var(--color-divider);
+  color: var(--color-text-muted);
+}
+
+.label {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: inherit;
+}
+
+.blurb {
+  margin: 0;
+  flex: 1;
+  font-size: var(--type-small);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+}
+
+.count {
+  margin: var(--space-2) 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.empty .count {
+  color: var(--color-text-muted);
+}
