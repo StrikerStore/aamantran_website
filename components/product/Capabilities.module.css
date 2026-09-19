@@ -15,6 +15,12 @@
 }
 
 .group {
+  /*
+   * A grid item will not shrink below its own min-content unless told to, and a
+   * chip cannot wrap — so ONE label longer than the screen set the width of
+   * every card in this column, and all of them ran off the side of a phone.
+   */
+  min-width: 0;
   padding: var(--space-5);
   border-radius: var(--radius-card);
   background: var(--color-surface);
@@ -40,8 +46,25 @@
   flex-wrap: wrap;
   gap: var(--space-2);
   margin: 0;
+  min-width: 0;
   padding: 0;
   list-style: none;
+}
+
+.groupItems li {
+  max-width: 100%;
+}
+
+/*
+ * These labels are written by whoever built the invite, so their length is not
+ * ours to assume. A chip keeps its pill shape and stays on one line until it
+ * cannot — then it wraps inside itself rather than pushing the card off the
+ * screen. Chips elsewhere on the site, whose text we do control, are unchanged.
+ */
+.groupItems li > * {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .note {
