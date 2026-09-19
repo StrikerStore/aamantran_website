@@ -35,14 +35,18 @@ export const SUPPORT_RESPONSE_TIME: Claim<string> = {
 };
 
 /**
- * How long building an invitation takes. Used in the self-build line, so it is
- * shown before confirmation; correct it here if it is wrong.
+ * How long building an invitation takes.
+ *
+ * Confirmed by the business, so it is stated as fact — but the sentences around
+ * it keep their qualifiers ("most couples", "once their details are ready"),
+ * because it is a typical time and not a promise. Change the figure here and it
+ * changes everywhere it is quoted; nothing else on the site may state a setup
+ * time of its own (see the `setup-time` rule in forbiddenClaims.ts).
  */
 export const SETUP_TIME: Claim<{ minutes: number; phrase: string }> = {
-  value: { minutes: 30, phrase: 'about 30 minutes' },
-  ownerConfirmed: false,
-  // claims-ok: records the conflicting figures being replaced.
-  note: 'The FAQ and homepage say under 30 minutes, the About page says 24 hrs and the old footer said 10 minutes.',
+  value: { minutes: 15, phrase: 'about 15 minutes' },
+  ownerConfirmed: true,
+  note: 'Confirmed by the owner on 2026-09-20: most couples build their invitation in about 15 minutes.',
 };
 
 export const MARKETING_STATS: Claim<{ figure: string; label: string }>[] = [
