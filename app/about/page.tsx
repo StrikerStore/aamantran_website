@@ -7,6 +7,7 @@ import { getFeaturedReviews, getTemplates } from '@/lib/api/templates';
 import { SETUP_TIME, SUPPORT, publishableStats } from '@/lib/content/claims';
 import { ACCESS } from '@/lib/content/entitlements';
 import { pluralize } from '@/lib/format';
+import { IS_INTL } from '@/lib/storefront';
 import { buildPageMetadata, breadcrumbList } from '@/lib/seo';
 import { getStartingPrice } from '@/lib/startingPrice';
 import styles from '../content-page.module.css';
@@ -25,8 +26,12 @@ export const revalidate = 300;
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'About Aamantran',
-  description:
-    'Why Aamantran exists: digital invitations built for Indian celebrations, where a wedding runs over days and every ceremony has its own guests, timings and venue.',
+  // The global site serves the same celebrations held abroad, so it does not
+  // call them Indian — the sentence is about how a wedding actually runs, not
+  // about where it happens.
+  description: IS_INTL
+    ? 'Why Aamantran exists: digital invitations built for celebrations that run over days, where every ceremony has its own guests, timings and venue.'
+    : 'Why Aamantran exists: digital invitations built for Indian celebrations, where a wedding runs over days and every ceremony has its own guests, timings and venue.',
   path: '/about',
 });
 
@@ -60,7 +65,11 @@ export default async function AboutPage() {
       <header className={styles.hero}>
         <Container>
           <p className={styles.eyebrow}>Our story</p>
-          <h1 className={styles.title}>Invitations built for the way Indian celebrations actually run</h1>
+          <h1 className={styles.title}>
+            {IS_INTL
+              ? 'Invitations built for the way these celebrations actually run'
+              : 'Invitations built for the way Indian celebrations actually run'}
+          </h1>
           <p className={styles.intro}>
             An Indian wedding is rarely one afternoon, wherever it is held. It is haldi at home, mehendi the next evening, a sangeet that runs
             late, the ceremony itself and a reception — each with its own hour, its own venue and often its own guest

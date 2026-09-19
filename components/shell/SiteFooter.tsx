@@ -120,7 +120,9 @@ export default function SiteFooter() {
       </div>
 
       <div className={cx('ds-container', styles.bottom)}>
-        <p>© {year} Aamantran. Made with ❤️ for Indian celebrations.</p>
+        {/* Same sentiment, without telling a buyer in New Jersey that the site
+            is for somewhere else. */}
+        <p>© {year} Aamantran. Made with ❤️ for {IS_INTL ? 'celebrations everywhere' : 'Indian celebrations'}.</p>
         <p>
           <a href={`mailto:${SUPPORT.email}`}>Share an idea to improve Aamantran</a>
         </p>
