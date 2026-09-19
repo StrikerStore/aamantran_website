@@ -159,8 +159,39 @@
  * carries this button; two of them on one screen is a choice the reader has to
  * make twice.
  */
+/*
+ * The try-it button, beside the live demo on a phone.
+ *
+ * Filled where the demo link is an outline, so the pair reads as two different
+ * offers rather than the same button twice: one leaves for the demo, one opens
+ * the form here.
+ */
 .tryOnPhone {
   flex: 1 1 auto;
+  border: 1px solid var(--color-primary);
+  background: var(--color-blush);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* One line each: the long wording is for wider screens. */
+.labelShort {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .labelLong {
+    display: none;
+  }
+
+  .labelShort {
+    display: inline;
+  }
+
+  .demo,
+  .tryOnPhone {
+    white-space: nowrap;
+  }
 }
 
 @media (min-width: 900px) {

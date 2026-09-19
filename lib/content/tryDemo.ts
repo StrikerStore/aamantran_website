@@ -14,6 +14,9 @@ export const TRY_DEMO = {
   dataHours: 24,
   cta: 'Try it with your names',
   ctaShort: 'Try free',
+  /** For the pair under the artwork, where two buttons share one line. */
+  ctaCompact: 'Use your names',
+  demoCompact: 'Live demo',
   bandTitle: 'See it with your names in about a minute',
   bandText:
     'Enter the names, the date, the venue and the events, and see this invite filled in with them. Free, with no account and no email address.',

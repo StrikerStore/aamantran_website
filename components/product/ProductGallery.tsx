@@ -71,12 +71,22 @@ export function ProductGallery({
       </div>
 
       <figcaption className={styles.actions}>
+        {/*
+          * Two buttons side by side on a phone, so they say the shortest true
+          * thing and look different from each other: the demo is an outline and
+          * leaves the site, the try-it is filled and stays. "Open the live demo"
+          * and "Try it with your names" each wrapped onto two lines and read as
+          * the same button twice.
+          */}
         <DemoLink slug={slug} href={demoUrl} name={name} source="product" className={styles.demo}>
-          Open the live demo
+          <span className={styles.labelLong}>Open the live demo</span>
+          <span className={styles.labelShort}>{TRY_DEMO.demoCompact}</span>
         </DemoLink>
         {tryWithNames && (
           <TryDemoButton source="product-gallery" className={styles.tryOnPhone}>
-            {TRY_DEMO.cta}
+            <span aria-hidden="true">✦ </span>
+            <span className={styles.labelLong}>{TRY_DEMO.cta}</span>
+            <span className={styles.labelShort}>{TRY_DEMO.ctaCompact}</span>
           </TryDemoButton>
         )}
       </figcaption>

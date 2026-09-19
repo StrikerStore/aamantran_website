@@ -1,0 +1,134 @@
+.wrap {
+  margin-top: var(--space-5);
+}
+
+/*
+ * One row, scrolled sideways, snapping card by card.
+ *
+ * This is the mechanism: touch, trackpad and keyboard all scroll it with no
+ * JavaScript at all. `scroll-padding-inline` keeps a snapped card clear of the
+ * row's own edge.
+ */
+.scroller {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 2px 0 var(--space-3);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.scroller:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/*
+ * Card widths decide how many pages there are, so they are exact fractions of
+ * the row: a part-visible card at the edge would make "one screenful" a
+ * different distance from one page of dots.
+ */
+.scroller > li {
+  flex: 0 0 auto;
+  width: 100%;
+  scroll-snap-align: start;
+}
+
+@media (min-width: 720px) {
+  .scroller > li {
+    width: calc((100% - var(--space-4)) / 2);
+  }
+}
+
+@media (min-width: 1100px) {
+  .scroller > li {
+    width: calc((100% - 2 * var(--space-4)) / 3);
+  }
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.arrow {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color var(--dur-hover) var(--ease-standard), color var(--dur-hover) var(--ease-standard);
+}
+
+.arrow:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* The dot is small; the tap target around it is not. */
+.dot {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.dot::after {
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-control-border);
+  transform: translate(-50%, -50%);
+  transition: background var(--dur-hover) var(--ease-standard), width var(--dur-hover) var(--ease-standard);
+}
+
+.dotCurrent::after {
+  width: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+}
+
+.dot:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-full);
+}
+
+.counter {
+  margin: 0;
+  min-width: 5ch;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  color: var(--color-text-muted);
+  text-align: center;
+}

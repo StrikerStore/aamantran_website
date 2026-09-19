@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Review } from '@/lib/api/types';
+import { ReviewCarousel } from './ReviewCarousel';
 import { formatDate, pluralize } from '@/lib/format';
 import styles from './ReviewList.module.css';
 
@@ -10,6 +11,10 @@ import styles from './ReviewList.module.css';
  * site or the owner transcribed it from a message, so the rating and the count
  * cover all of them. With no reviews at all the section says so — the page it
  * replaces invented three.
+ *
+ * The cards sit in a row that scrolls sideways (ReviewCarousel), so a long list
+ * is a swipe rather than a wall of cards to scroll past. This stays a server
+ * component: only the scrolling and its controls are client-side.
  */
 export function ReviewList({
   reviews,
@@ -43,7 +48,7 @@ export function ReviewList({
         </p>
       )}
 
-      <ul className={styles.list}>
+      <ReviewCarousel label={`Reviews, ${reviews.length} in all`}>
         {reviews.map((review) => (
           <li key={review.id} className={styles.card}>
             <p className={styles.stars}>
@@ -63,7 +68,7 @@ export function ReviewList({
             )}
           </li>
         ))}
-      </ul>
+      </ReviewCarousel>
     </div>
   );
 }
