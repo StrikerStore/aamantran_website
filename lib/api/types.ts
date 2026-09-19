@@ -215,12 +215,44 @@ export interface PayuOrderResponse extends OrderBase {
   payuParams: Record<string, string>;
 }
 
+/** Everything Razorpay's Checkout.js needs. `keyId` is the publishable key; the secret stays on the server. */
+export interface RazorpayCheckout {
+  keyId: string;
+  orderId: string;
+  /** Minor units of `currency`, exactly as the server recorded the order. */
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  prefill: { name?: string; email?: string; contact?: string };
+}
+
+/** Real payment through Razorpay: open the modal, then have the server verify the result. */
+export interface RazorpayOrderResponse extends OrderBase {
+  razorpay: RazorpayCheckout;
+}
+
 /** Backend DUMMY_PAYMENT_MODE: no gateway involved. */
 export interface DummyOrderResponse extends OrderBase {
   dummy: true;
 }
 
-export type OrderResponse = PayuOrderResponse | DummyOrderResponse;
+/**
+ * Which gateway takes an order is the server's decision, per storefront, so the
+ * page handles whichever shape comes back rather than assuming one.
+ */
+export type OrderResponse = PayuOrderResponse | RazorpayOrderResponse | DummyOrderResponse;
+
+/** What the server says after it has checked a Razorpay payment's signature. */
+export interface RazorpayVerified {
+  ok: true;
+  paymentId: string;
+  orderId: string;
+  templateSlug: string;
+  templateName: string;
+  amount: number;
+  currency: string;
+}
 
 export interface PaymentStatus {
   /** Payment.status as stored: "pending", "paid" or "failed". */

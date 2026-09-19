@@ -42,7 +42,7 @@ export default function PrivacyPage() {
             <li><strong>Account information:</strong> Your username, email address, phone number, and a password (stored only as a secure cryptographic hash) when you purchase an invitation and create an account.</li>
             <li><strong>Wedding details:</strong> Names of the couple and family members, photos you upload, event dates, venue names, and ceremony details needed to create your invitation.</li>
             <li><strong>Guest information:</strong> Names, phone numbers, or email addresses of your guests if you use our guest management features. This data is provided by you and belongs to you.</li>
-            <li><strong>Payment information:</strong> The amount, order reference, and the email you enter at checkout. We do <strong>not</strong> store your card, UPI, or bank details — payments are processed by third-party providers (PayU / UPI) and are subject to their privacy policies.</li>
+            <li><strong>Payment information:</strong> The amount, order reference, and the email you enter at checkout. We do <strong>not</strong> store your card, UPI, or bank details — payments are processed by third-party providers (PayU, Razorpay / UPI) and are subject to their privacy policies.</li>
             <li><strong>Communications:</strong> Messages you send us via WhatsApp, email, our contact form, or support tickets raised from your dashboard.</li>
           </ul>
 
@@ -110,7 +110,7 @@ export default function PrivacyPage() {
           <h2>7. Data sharing</h2>
           <p>We do not sell, rent, or trade your personal information. We share data only in these limited circumstances:</p>
           <ul>
-            <li><strong>Service providers (Data Processors):</strong> We work with trusted third-party services — cloud hosting, media storage (Cloudflare), payment processing (PayU), and email delivery — who handle data only as needed to provide their services and are contractually bound to protect it with reasonable security safeguards.</li>
+            <li><strong>Service providers (Data Processors):</strong> We work with trusted third-party services — cloud hosting, media storage (Cloudflare), payment processing (PayU, Razorpay), and email delivery — who handle data only as needed to provide their services and are contractually bound to protect it with reasonable security safeguards.</li>
             <li><strong>Legal requirements:</strong> We may disclose data if required by law, court order, or a lawful request from a government authority, or to protect the rights and safety of our users or the public.</li>
             <li><strong>Advertising measurement (with your consent only):</strong> If you accept advertising cookies, the Meta Pixel shares your website interactions with Meta — see Section 14.</li>
           </ul>

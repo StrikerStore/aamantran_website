@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { Notice } from '@/components/ui/Notice';
 import { RemoteImage } from '@/components/ui/RemoteImage';
 import { apiRequest } from '@/lib/api/client';
-import { createOrder, getOffers, isDummyOrder, previewCoupon } from '@/lib/api/checkout';
+import { createOrder, getOffers, isDummyOrder, isRazorpayOrder, previewCoupon, verifyRazorpayPayment } from '@/lib/api/checkout';
+import { openRazorpayCheckout } from '@/lib/razorpay';
 import type { OfferCoupon, PriceBreakup } from '@/lib/api/types';
 import {
   contactError,
@@ -52,7 +53,9 @@ export interface CheckoutTemplate {
   image: string | null;
 }
 
-type Status = 'idle' | 'creatingOrder' | 'redirecting' | 'failed';
+// 'paying' is the Razorpay modal sitting open over the page; 'confirming' is the
+// server checking its signature. PayU has neither: it leaves the page entirely.
+type Status = 'idle' | 'creatingOrder' | 'paying' | 'confirming' | 'redirecting' | 'failed';
 
 type CouponState =
   | { kind: 'none' }
@@ -170,7 +173,7 @@ function CheckoutForm({
   const errors: CheckoutErrors = validateCheckout({ email, contactCountryCode, contactNational, agreeTerms });
   const shown = (field: CheckoutField) => (attempted || touched[field] ? errors[field] : undefined);
   const emailValid = !emailError(email);
-  const busy = status === 'creatingOrder' || status === 'redirecting';
+  const busy = status === 'creatingOrder' || status === 'paying' || status === 'confirming' || status === 'redirecting';
   const appliedCode = coupon.kind === 'applied' ? coupon.code : '';
   const money = (minor: number) => formatMoney(minor, breakup.currency || CURRENCY);
 
@@ -336,6 +339,64 @@ function CheckoutForm({
       return;
     }
 
+    // ── Razorpay: a modal over this page, not a redirect away from it ────────
+    //
+    // Nothing the modal hands back is trusted. The payment becomes real only
+    // when the server has checked its signature, which is what the confirming
+    // step below does. A buyer who closes the tab before that is covered by
+    // Razorpay's webhook, which does the same job server to server.
+    if (isRazorpayOrder(order.data)) {
+      setStatus('paying');
+      const outcome = await openRazorpayCheckout(order.data.razorpay);
+
+      if (outcome.kind === 'unavailable') {
+        setStatus('failed');
+        setSubmitError('We could not open the payment window. Check your connection, or any ad blocker, and try again — nothing has been charged.');
+        track('checkout_error', { slug, stage: 'razorpay_script' });
+        focusSoon(() => submitErrorRef.current);
+        return;
+      }
+
+      if (outcome.kind === 'dismissed') {
+        // Closing the window is a decision, not a failure. Back to the form,
+        // still filled in, with nothing charged.
+        setStatus('idle');
+        setSubmitError('Payment window closed. This order was not placed — your details are still here when you’re ready.');
+        focusSoon(() => submitErrorRef.current);
+        return;
+      }
+
+      if (outcome.kind === 'failed') {
+        setStatus('failed');
+        setSubmitError(`${outcome.message} This order was not placed.`);
+        track('checkout_error', { slug, stage: 'razorpay' });
+        focusSoon(() => submitErrorRef.current);
+        return;
+      }
+
+      setStatus('confirming');
+      const verified = await verifyRazorpayPayment(outcome);
+      if (!verified.ok) {
+        setStatus('failed');
+        setSubmitError(verified.message);
+        track('checkout_error', { slug, stage: 'razorpay_verify', status: verified.status });
+        focusSoon(() => submitErrorRef.current);
+        return;
+      }
+
+      clearCheckoutDraft();
+      setStatus('redirecting');
+      router.push(onboardingHref({
+        paymentId: verified.data.paymentId,
+        slug,
+        templateName: template.name,
+        orderId: verified.data.orderId,
+        amount: verified.data.amount,
+        currency: verified.data.currency || breakup.currency,
+      }));
+      return;
+    }
+
     setStatus('redirecting');
     submitPayUForm(order.data.payuUrl, order.data.payuParams);
   }
@@ -343,11 +404,15 @@ function CheckoutForm({
   const errorList = attempted ? (Object.entries(errors) as [CheckoutField, string][]) : [];
   const payLabel = status === 'creatingOrder'
     ? 'Preparing your order…'
-    : status === 'redirecting'
-      ? DUMMY_PAYMENT_MODE ? 'Completing test purchase…' : 'Taking you to PayU…'
-      : DUMMY_PAYMENT_MODE
-        ? `Complete test purchase · ${money(breakup.finalAmount)}`
-        : `Pay ${money(breakup.finalAmount)}`;
+    : status === 'paying'
+      ? 'Waiting for your payment…'
+      : status === 'confirming'
+        ? 'Confirming your payment…'
+        : status === 'redirecting'
+          ? DUMMY_PAYMENT_MODE ? 'Completing test purchase…' : 'Taking you to the payment page…'
+          : DUMMY_PAYMENT_MODE
+            ? `Complete test purchase · ${money(breakup.finalAmount)}`
+            : `Pay ${money(breakup.finalAmount)}`;
   const describedBy = (field: CheckoutField, hint?: string) =>
     [hint, shown(field) ? `${fieldId(field)}-error` : ''].filter(Boolean).join(' ') || undefined;
 
@@ -360,7 +425,7 @@ function CheckoutForm({
 
         {DUMMY_PAYMENT_MODE && (
           <Notice tone="info" title="Test mode">
-            Completing this purchase does not charge a card or open PayU.
+            Completing this purchase does not charge a card or open a payment page.
           </Notice>
         )}
 
@@ -666,7 +731,7 @@ function CheckoutForm({
             </button>
 
             <p className={styles.reassure}>
-              {IS_INTL ? 'Payments are processed securely by PayU.' : 'Pay with UPI, cards or net banking, processed securely by PayU.'}
+              {IS_INTL ? 'Payments are processed securely by our payment partner.' : 'Pay with UPI, cards or net banking, processed securely by our payment partner.'}
             </p>
           </form>
         </div>

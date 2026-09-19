@@ -47,7 +47,7 @@ export default function TermsPage() {
           <p>You are responsible for maintaining the security of your account credentials and for all activity that occurs under your account. Notify us immediately of any unauthorised access at <a href="mailto:aamantran@plexzuu.com">aamantran@plexzuu.com</a>.</p>
 
           <h2>4. Payments</h2>
-          <p>All payments are processed securely via PayU or UPI. {IS_INTL
+          <p>All payments are processed securely via our payment partners — PayU and Razorpay — or UPI. {IS_INTL
             ? 'Prices are shown in US Dollars ($). As a supply of services to a recipient outside India, these orders are zero-rated and no GST is charged.'
             : 'Prices are shown in Indian Rupees (₹) exclusive of GST; any applicable GST is added at checkout and shown separately before you pay.'} By completing a purchase, you authorise the charge for your <strong>digital e-invitation</strong> and related online services. <strong>No physical product is sold or delivered.</strong> See our <Link href="/refund">Refund Policy</Link> for cancellation terms.</p>
 

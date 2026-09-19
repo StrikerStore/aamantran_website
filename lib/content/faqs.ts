@@ -160,13 +160,13 @@ const ALL_CATEGORIES: FaqCategory[] = [
       {
         id: 'payment-methods',
         q: 'What payment methods do you accept?',
-        a: 'UPI, credit and debit cards, and net banking, through our secure payment partner PayU.',
+        a: 'UPI, credit and debit cards, and net banking, through our secure payment partners PayU and Razorpay.',
         storefront: 'IN',
       },
       {
         id: 'payment-methods-intl',
         q: 'How do I pay?',
-        a: 'Payments are processed securely in US dollars by our payment partner PayU.',
+        a: 'Payments are processed securely in US dollars by our payment partner Razorpay. Cards are accepted; you never enter card details on our site.',
         storefront: 'INTL',
       },
       {

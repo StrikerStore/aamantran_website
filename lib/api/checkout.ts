@@ -9,6 +9,8 @@ import type {
   OrderRequest,
   OrderResponse,
   PaymentStatus,
+  RazorpayOrderResponse,
+  RazorpayVerified,
 } from './types';
 
 /**
@@ -52,6 +54,31 @@ export function createOrder(input: OrderRequest): Promise<ApiResult<OrderRespons
 
 export function isDummyOrder(order: OrderResponse): order is DummyOrderResponse {
   return 'dummy' in order && order.dummy === true;
+}
+
+/** Razorpay orders open a modal instead of leaving the page. */
+export function isRazorpayOrder(order: OrderResponse): order is RazorpayOrderResponse {
+  return 'razorpay' in order && isRecord(order.razorpay) && typeof order.razorpay.orderId === 'string';
+}
+
+/**
+ * Has the server verify what the Razorpay modal handed back.
+ *
+ * The three fields come from the buyer's own browser, so this call is what makes
+ * the payment real: the server checks the signature with its secret and only
+ * then marks the order paid.
+ */
+export function verifyRazorpayPayment(
+  input: { orderId: string; paymentId: string; signature: string },
+): Promise<ApiResult<RazorpayVerified>> {
+  return apiRequest<RazorpayVerified>('POST', '/api/checkout/razorpay-verify', {
+    body: {
+      razorpay_order_id: input.orderId,
+      razorpay_payment_id: input.paymentId,
+      razorpay_signature: input.signature,
+    },
+    headers: storefrontHeaders(),
+  });
 }
 
 /** Where a payment stands, for onboarding. A 404 means the id is unknown. */
