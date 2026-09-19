@@ -85,6 +85,17 @@ const webSiteJsonLd = {
   '@type': 'WebSite',
   name: SITE_NAME,
   url: SITE_URL,
+  // The gallery really does answer ?q=, so a search box in search results leads
+  // somewhere useful rather than to an empty page. Claiming one a site cannot
+  // serve is the usual way this markup goes wrong.
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${SITE_URL}/templates?q={search_term_string}`,
+    },
+    'query-input': 'required name=search_term_string',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

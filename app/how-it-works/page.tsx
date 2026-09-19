@@ -1,3 +1,4 @@
+import JsonLd from '@/components/JsonLd';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Accordion } from '@/components/ui/Accordion';
@@ -6,7 +7,7 @@ import { Container } from '@/components/ui/Container';
 import { BUILDER_RULES, BUILDER_STEPS, PURCHASE_STEPS } from '@/lib/content/builderSteps';
 import { ACCESS, NAME_FREEZE, PARTIAL_INVITE, SELF_BUILD } from '@/lib/content/entitlements';
 import { faqsByIds } from '@/lib/content/faqs';
-import { buildPageMetadata } from '@/lib/seo';
+import { buildPageMetadata, breadcrumbList } from '@/lib/seo';
 import styles from '../content-page.module.css';
 
 /**
@@ -31,6 +32,8 @@ export default function HowItWorksPage() {
 
   return (
     <div className={styles.page}>
+      <JsonLd data={breadcrumbList([{ name: "How it works", path: "/how-it-works" }])} />
+
       <header className={styles.hero}>
         <Container>
           <p className={styles.eyebrow}>How it works</p>

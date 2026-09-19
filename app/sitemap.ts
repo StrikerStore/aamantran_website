@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getPublicApiUrl } from '@/lib/publicEnv';
-import { SITE_URL, alternateLanguages } from '@/lib/seo';
+import { SITE_URL, STATIC_PAGE_UPDATED, alternateLanguages } from '@/lib/seo';
 import { COLLECTIONS } from '@/lib/collections';
 import { getFeaturedReviews, getTemplates } from '@/lib/api/templates';
 import { indexableOccasionPages } from '@/lib/occasionPages';
@@ -27,20 +27,29 @@ async function getBlogSlugs(): Promise<BlogListItem[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  /**
+   * Fixed pages carry the date their words last changed, from one hand-kept
+   * list. Not the build date: a deploy that changes nothing should not claim
+   * every page changed, and a lastModified that cannot be trusted is worth less
+   * than none at all.
+   */
+  const updated = (path: string) =>
+    STATIC_PAGE_UPDATED[path] ? { lastModified: new Date(STATIC_PAGE_UPDATED[path]) } : {};
+
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${SITE_URL}/`, changeFrequency: 'weekly', priority: 1 },
-    { url: `${SITE_URL}/templates`, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${SITE_URL}/pricing`, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${SITE_URL}/how-it-works`, changeFrequency: 'monthly', priority: 0.75 },
-    { url: `${SITE_URL}/features`, changeFrequency: 'monthly', priority: 0.75 },
-    { url: `${SITE_URL}/wedding-planning-tools`, changeFrequency: 'monthly', priority: 0.75 },
-    { url: `${SITE_URL}/blog`, changeFrequency: 'daily', priority: 0.8 },
-    { url: `${SITE_URL}/about`, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${SITE_URL}/faq`, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${SITE_URL}/contact`, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.2 },
-    { url: `${SITE_URL}/refund`, changeFrequency: 'yearly', priority: 0.2 },
-    { url: `${SITE_URL}/terms`, changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${SITE_URL}/`, ...updated('/'), changeFrequency: 'weekly', priority: 1 },
+    { url: `${SITE_URL}/templates`, ...updated('/templates'), changeFrequency: 'daily', priority: 0.9 },
+    { url: `${SITE_URL}/pricing`, ...updated('/pricing'), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${SITE_URL}/how-it-works`, ...updated('/how-it-works'), changeFrequency: 'monthly', priority: 0.75 },
+    { url: `${SITE_URL}/features`, ...updated('/features'), changeFrequency: 'monthly', priority: 0.75 },
+    { url: `${SITE_URL}/wedding-planning-tools`, ...updated('/wedding-planning-tools'), changeFrequency: 'monthly', priority: 0.75 },
+    { url: `${SITE_URL}/blog`, ...updated('/blog'), changeFrequency: 'daily', priority: 0.8 },
+    { url: `${SITE_URL}/about`, ...updated('/about'), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${SITE_URL}/faq`, ...updated('/faq'), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${SITE_URL}/contact`, ...updated('/contact'), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${SITE_URL}/privacy`, ...updated('/privacy'), changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${SITE_URL}/refund`, ...updated('/refund'), changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${SITE_URL}/terms`, ...updated('/terms'), changeFrequency: 'yearly', priority: 0.2 },
   ];
 
   const collectionRoutes: MetadataRoute.Sitemap = COLLECTIONS.map(c => ({
@@ -62,7 +71,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // and the page agree about whether /stories is worth finding.
   const reviews = await getFeaturedReviews(1);
   const storyRoutes: MetadataRoute.Sitemap = (reviews?.totalCount ?? 0) >= MIN_REVIEWS_FOR_STORIES
-    ? [{ url: `${SITE_URL}/stories`, changeFrequency: 'weekly' as const, priority: 0.6 }]
+    ? [{ url: `${SITE_URL}/stories`, ...updated('/stories'), changeFrequency: 'weekly' as const, priority: 0.6 }]
     : [];
 
   // Occasion pages are listed only while the catalogue supports them, so the

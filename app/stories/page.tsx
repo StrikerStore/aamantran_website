@@ -1,10 +1,11 @@
+import JsonLd from '@/components/JsonLd';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ReviewList } from '@/components/product/ReviewList';
 import { LinkButton } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { getFeaturedReviews } from '@/lib/api/templates';
-import { buildPageMetadata } from '@/lib/seo';
+import { buildPageMetadata, breadcrumbList } from '@/lib/seo';
 import styles from '../content-page.module.css';
 
 /**
@@ -41,6 +42,7 @@ export default async function StoriesPage() {
 
   return (
     <div className={styles.page}>
+      <JsonLd data={breadcrumbList([{ name: 'Stories', path: '/stories' }])} />
       <header className={styles.hero}>
         <Container>
           <p className={styles.eyebrow}>Stories</p>

@@ -1,10 +1,11 @@
+import JsonLd from '@/components/JsonLd';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PlanningDemo } from '@/components/demos/PlanningDemo';
 import { LinkButton } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { PLANNING_TOOLS, PLANNING_TOOLS_ACCESS } from '@/lib/content/entitlements';
-import { buildPageMetadata } from '@/lib/seo';
+import { buildPageMetadata, breadcrumbList } from '@/lib/seo';
 import styles from '../content-page.module.css';
 
 /**
@@ -29,6 +30,8 @@ export const metadata: Metadata = buildPageMetadata({
 export default function PlanningToolsPage() {
   return (
     <div className={styles.page}>
+      <JsonLd data={breadcrumbList([{ name: "Wedding planning tools", path: "/wedding-planning-tools" }])} />
+
       <header className={styles.hero}>
         <Container>
           <p className={styles.eyebrow}>Planning tools</p>

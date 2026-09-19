@@ -1,3 +1,4 @@
+import JsonLd from '@/components/JsonLd';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GuestExperienceDemo } from '@/components/demos/GuestExperienceDemo';
@@ -5,7 +6,7 @@ import { LinkButton } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { ACCESS, CHANGEABLE, INCLUDED, PLANNING_TOOLS, SELF_BUILD } from '@/lib/content/entitlements';
 import { sampleWeddingDate } from '@/lib/content/sampleInvite';
-import { buildPageMetadata } from '@/lib/seo';
+import { buildPageMetadata, breadcrumbList } from '@/lib/seo';
 import styles from '../content-page.module.css';
 
 /**
@@ -31,6 +32,8 @@ export default function FeaturesPage() {
 
   return (
     <div className={styles.page}>
+      <JsonLd data={breadcrumbList([{ name: "What's included", path: "/features" }])} />
+
       <header className={styles.hero}>
         <Container>
           <p className={styles.eyebrow}>What&rsquo;s included</p>

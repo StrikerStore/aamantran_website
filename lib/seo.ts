@@ -119,3 +119,56 @@ export function buildPageMetadata({
     ...(noIndex ? { robots: { index: false, follow: false } } : {}),
   };
 }
+
+/**
+ * A BreadcrumbList, for a trail that always starts at the home page.
+ *
+ * Search engines use this to show a page's place in the site instead of a bare
+ * URL. The product, collection and occasion pages each built one inline; this is
+ * the same shape, so a page cannot describe a different hierarchy from its
+ * neighbours by accident.
+ *
+ * Paths are site-relative ('/pricing'); the home crumb is added here.
+ */
+export function breadcrumbList(trail: { name: string; path: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+      ...trail.map((crumb, i) => ({
+        '@type': 'ListItem',
+        position: i + 2,
+        name: crumb.name,
+        item: `${SITE_URL}${crumb.path}`,
+      })),
+    ],
+  };
+}
+
+/**
+ * When each fixed page was last actually rewritten, for the sitemap.
+ *
+ * Deliberately hand-kept rather than taken from the build date: a deploy that
+ * changes nothing on /terms should not tell search engines that /terms changed.
+ * A date here that drifts from reality is worse than no date at all, so bump the
+ * entry when you edit a page's words — and leave it alone when you do not.
+ *
+ * These dates are the shop rebuild, when every one of these pages was rewritten.
+ */
+export const STATIC_PAGE_UPDATED: Record<string, string> = {
+  '/': '2026-09-17',
+  '/templates': '2026-09-17',
+  '/pricing': '2026-09-17',
+  '/how-it-works': '2026-09-17',
+  '/features': '2026-09-17',
+  '/wedding-planning-tools': '2026-09-17',
+  '/blog': '2026-09-17',
+  '/about': '2026-09-19',
+  '/faq': '2026-09-19',
+  '/contact': '2026-09-17',
+  '/privacy': '2026-09-19',
+  '/refund': '2026-09-17',
+  '/terms': '2026-09-19',
+  '/stories': '2026-09-17',
+};

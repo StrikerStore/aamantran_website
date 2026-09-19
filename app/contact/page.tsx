@@ -1,6 +1,7 @@
+import JsonLd from '@/components/JsonLd';
 import type { Metadata } from 'next';
 import { SUPPORT, SUPPORT_RESPONSE_TIME } from '@/lib/content/claims';
-import { buildPageMetadata } from '@/lib/seo';
+import { buildPageMetadata, breadcrumbList } from '@/lib/seo';
 import ContactClient from './ContactClient';
 
 export const metadata: Metadata = buildPageMetadata({
@@ -11,5 +12,10 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default function ContactPage() {
-  return <ContactClient />;
+  return (
+    <>
+      <JsonLd data={breadcrumbList([{ name: 'Contact', path: '/contact' }])} />
+      <ContactClient />
+    </>
+  );
 }

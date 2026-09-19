@@ -84,6 +84,10 @@ function productSchema(template: TemplateDetail, reviews: Review[], total: numbe
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: template.name,
+    // The slug is the design's public, permanent identifier — the same one in
+    // its URL — so it is what a shopping result should key on.
+    sku: template.slug,
+    ...(template.languages.length > 0 ? { inLanguage: template.languages } : {}),
     description: template.shortDescription ?? template.aboutText ?? `${template.name} — digital invitation design by ${SITE_NAME}.`,
     ...(image ? { image: [image] } : {}),
     brand: { '@type': 'Brand', name: SITE_NAME },

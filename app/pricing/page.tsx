@@ -1,3 +1,4 @@
+import JsonLd from '@/components/JsonLd';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Accordion } from '@/components/ui/Accordion';
@@ -8,7 +9,7 @@ import { getTemplates } from '@/lib/api/templates';
 import { ACCESS, INCLUDED, SELF_BUILD } from '@/lib/content/entitlements';
 import { faqsByIds } from '@/lib/content/faqs';
 import { computePriceBreakdown } from '@/lib/priceMath';
-import { buildPageMetadata } from '@/lib/seo';
+import { buildPageMetadata, breadcrumbList } from '@/lib/seo';
 import { formatMoney, IS_INTL, priceFor } from '@/lib/storefront';
 import styles from '../content-page.module.css';
 
@@ -50,6 +51,8 @@ export default async function PricingPage() {
 
   return (
     <div className={styles.page}>
+      <JsonLd data={breadcrumbList([{ name: "Pricing", path: "/pricing" }])} />
+
       <header className={styles.hero}>
         <Container>
           <p className={styles.eyebrow}>Pricing</p>
