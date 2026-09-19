@@ -15,6 +15,17 @@
   margin: 0;
   padding: 2px 0 var(--space-3);
   overflow-x: auto;
+  /*
+   * Keep this row's overflow to itself.
+   *
+   * A scroll container's content still counts toward the document's scrollable
+   * width. On a phone the browser answers that by widening the layout viewport
+   * and zooming the whole page out — a page of tiny text with blank space
+   * beside it — even though nothing can actually be scrolled sideways.
+   * `contain: paint` says the row paints nothing outside its own box, so the
+   * page stays the width of the screen.
+   */
+  contain: paint;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 0;
