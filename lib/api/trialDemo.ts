@@ -9,12 +9,29 @@ import { STOREFRONT, storefrontHeaders } from '../storefront';
  * would put every visitor behind the one address of this deployment.
  */
 
-export async function getTrialDemoOptions(signal?: AbortSignal): Promise<TrialDemoOptions | null> {
-  const res = await apiRequest<unknown>('GET', '/api/trial-demo/options', { signal, headers: storefrontHeaders() });
+const ROLE_RE = /^[a-z][a-z0-9_]{0,40}$/;
+
+/**
+ * What the form should ask for this design: its names, its events, and what to
+ * call the date. Null when the design cannot be tried or the answer is not one
+ * the form can use — the sheet then says so, rather than guessing at a couple.
+ */
+export async function getTrialDemoOptions(slug: string, signal?: AbortSignal): Promise<TrialDemoOptions | null> {
+  const res = await apiRequest<unknown>('GET', `/api/trial-demo/options?slug=${encodeURIComponent(slug)}`, {
+    signal,
+    headers: storefrontHeaders(),
+  });
   if (!res.ok || !isRecord(res.data)) return null;
+  const people = (Array.isArray(res.data.people) ? res.data.people : [])
+    .filter(isRecord)
+    .map((person) => ({ role: str(person.role), label: str(person.label), required: person.required === true }))
+    .filter((person) => ROLE_RE.test(person.role) && person.label);
   const ceremonies = list(res.data.ceremonies);
+  const dateLabel = str(res.data.dateLabel) || 'Date';
   const expiresInMinutes = num(res.data.expiresInMinutes);
-  return ceremonies.length > 0 && expiresInMinutes > 0 ? { ceremonies, expiresInMinutes } : null;
+  return people.length > 0 && ceremonies.length > 0 && expiresInMinutes > 0
+    ? { people, ceremonies, dateLabel, expiresInMinutes }
+    : null;
 }
 
 export type TrialDemoFailure = { ok: false; status: number; message: string; field: string | null; aborted?: boolean };

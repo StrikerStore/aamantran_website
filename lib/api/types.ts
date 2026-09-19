@@ -57,8 +57,11 @@ export interface TemplateSummary {
   tryWithNames: boolean;
 }
 
+/** What the try-it form asks for one design. See trialOptionsFor on the backend. */
 export interface TrialDemoOptions {
+  people: { role: string; label: string; required: boolean }[];
   ceremonies: string[];
+  dateLabel: string;
   expiresInMinutes: number;
 }
 

@@ -64,7 +64,7 @@ const ALL_CATEGORIES: FaqCategory[] = [
       {
         id: 'try-with-names',
         q: 'Can I see a design with our own names before buying?',
-        a: `Yes, on wedding designs with a "${TRY_DEMO.cta}" button. Enter the two names, your wedding date, the venue and the ceremonies, and you see that design filled in with them — free, with no account and no email address. The preview is watermarked, RSVPs and wishes on it don't send anything, and the link works for ${TRY_DEMO.linkMinutes} minutes. If you buy that design within a day, your new invitation starts with those details for you to check; otherwise what you typed is deleted about a day later.`,
+        a: `Yes, on any design with a "${TRY_DEMO.cta}" button, whatever the occasion. Enter the names the design asks for, the date, the venue and the events, and you see that design filled in with them — free, with no account and no email address. The preview is watermarked, RSVPs and wishes on it don't send anything, and the link works for ${TRY_DEMO.linkMinutes} minutes. If you buy that design within a day, your new invitation starts with those details for you to check, without the watermark; otherwise what you typed is deleted about a day later.`,
         link: { href: '/privacy', label: 'How we handle preview details' },
       },
     ],

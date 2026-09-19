@@ -8,6 +8,11 @@
  *
  * Pure apart from the sessionStorage helpers at the end, so it can be tested
  * without a browser.
+ *
+ * WHAT THE FORM ASKS COMES FROM THE DESIGN. `TryDemoForm` is what the API says
+ * this design takes — which names, which events, what to call the date — so a
+ * wedding asks for the bride and groom and a birthday for the person whose
+ * birthday it is. Nothing here names an occasion.
  */
 
 export const MAX_CEREMONIES = 6;
@@ -43,47 +48,90 @@ export const CEREMONY_OFFSETS: Readonly<Record<string, number>> = {
 
 export interface CeremonyChoice {
   name: string;
-  /** YYYY-MM-DD, or '' until a wedding date exists. */
+  /** YYYY-MM-DD, or '' until the main date exists. */
   date: string;
   /** hh:mm, or '' for none. */
   time: string;
-  /** Once the visitor sets a date, changing the wedding date leaves it alone. */
+  /** Once the visitor sets a date, changing the main date leaves it alone. */
   dateEdited: boolean;
 }
 
+/** One name the design asks for. `role` is the template's own key. */
+export interface TryDemoPerson {
+  role: string;
+  label: string;
+  required: boolean;
+}
+
+/** What the form asks for this design, as the API reports it. */
+export interface TryDemoForm {
+  people: TryDemoPerson[];
+  ceremonies: string[];
+  dateLabel: string;
+}
+
 export interface TryDemoValues {
-  brideName: string;
-  groomName: string;
-  weddingDate: string;
+  /** role → name, for the roles the design asks for. */
+  names: Record<string, string>;
+  eventDate: string;
   venueName: string;
   city: string;
   ceremonies: CeremonyChoice[];
 }
 
-export type TryDemoField = 'brideName' | 'groomName' | 'weddingDate' | 'venueName' | 'city' | 'ceremonies';
+/** 'people.<role>', 'eventDate', 'venueName', 'city' or 'ceremonies' — as the server names them. */
+export type TryDemoField = string;
 export type FieldErrors = Partial<Record<TryDemoField, string>>;
 export type Step = 1 | 2 | 3;
 
-export const STEP_FIELDS: Readonly<Record<Step, readonly TryDemoField[]>> = {
-  1: ['brideName', 'groomName'],
-  2: ['weddingDate', 'venueName', 'city'],
-  3: ['ceremonies'],
-};
+export const nameField = (role: string): TryDemoField => `people.${role}`;
+
+/** The fields on each step, for this design. */
+export function stepFields(step: Step, form: TryDemoForm): TryDemoField[] {
+  if (step === 1) return form.people.map((person) => nameField(person.role));
+  if (step === 2) return ['eventDate', 'venueName', 'city'];
+  return ['ceremonies'];
+}
 
 export const EMPTY_VALUES: TryDemoValues = {
-  brideName: '',
-  groomName: '',
-  weddingDate: '',
+  names: {},
+  eventDate: '',
   venueName: '',
   city: '',
   ceremonies: [],
 };
 
+/**
+ * Values made to fit this design's form.
+ *
+ * Remembered details can come from another design — a wedding tried, then a
+ * birthday — so events this design does not offer are dropped (the server would
+ * refuse them), matched to the design's own spelling where they are offered.
+ * A design with a single event has it chosen already: there is nothing to pick.
+ */
+export function fitValuesToForm(values: TryDemoValues, form: TryDemoForm): TryDemoValues {
+  const offered = new Map(form.ceremonies.map((name) => [name.toLowerCase(), name]));
+  let ceremonies = values.ceremonies
+    .filter((c) => offered.has(c.name.toLowerCase()))
+    .map((c) => ({ ...c, name: offered.get(c.name.toLowerCase()) as string }));
+  if (ceremonies.length === 0 && form.ceremonies.length === 1) {
+    const only = form.ceremonies[0];
+    ceremonies = [{
+      name: only,
+      date: values.eventDate ? addDays(values.eventDate, CEREMONY_OFFSETS[only] ?? 0) : '',
+      time: '',
+      dateEdited: false,
+    }];
+  }
+  return { ...values, ceremonies };
+}
+
 /** Which step owns a field the server complained about. */
 export function stepForField(field: string | null | undefined): Step | null {
-  for (const step of [1, 2, 3] as const) {
-    if (STEP_FIELDS[step].includes(field as TryDemoField)) return step;
-  }
+  if (!field) return null;
+  if (field.startsWith('people.')) return 1;
+  if (field === 'eventDate' || field === 'venueName' || field === 'city') return 2;
+  if (field === 'ceremonies') return 3;
   return null;
 }
 
@@ -112,16 +160,16 @@ export function addDays(value: string, days: number): string {
   return toDateInput(date);
 }
 
-export function weddingDateBounds(now: Date): { min: string; max: string } {
+export function eventDateBounds(now: Date): { min: string; max: string } {
   const min = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const max = new Date(min);
   max.setFullYear(max.getFullYear() + WEDDING_MAX_YEARS_AHEAD);
   return { min: toDateInput(min), max: toDateInput(max) };
 }
 
-export function ceremonyDateBounds(weddingDate: string): { min: string; max: string } | null {
-  if (!parseDateInput(weddingDate)) return null;
-  return { min: addDays(weddingDate, -CEREMONY_DAYS_BEFORE), max: addDays(weddingDate, CEREMONY_DAYS_AFTER) };
+export function ceremonyDateBounds(eventDate: string): { min: string; max: string } | null {
+  if (!parseDateInput(eventDate)) return null;
+  return { min: addDays(eventDate, -CEREMONY_DAYS_BEFORE), max: addDays(eventDate, CEREMONY_DAYS_AFTER) };
 }
 
 // ── Updates ─────────────────────────────────────────────────────────────────
@@ -134,7 +182,7 @@ export function toggleCeremony(values: TryDemoValues, name: string, order: reado
   if (values.ceremonies.length >= MAX_CEREMONIES) return values;
   const added: CeremonyChoice = {
     name,
-    date: values.weddingDate ? addDays(values.weddingDate, CEREMONY_OFFSETS[name] ?? 0) : '',
+    date: values.eventDate ? addDays(values.eventDate, CEREMONY_OFFSETS[name] ?? 0) : '',
     time: '',
     dateEdited: false,
   };
@@ -146,16 +194,20 @@ export function toggleCeremony(values: TryDemoValues, name: string, order: reado
   return { ...values, ceremonies };
 }
 
-/** Sets the wedding date and moves every ceremony date the visitor has not set. */
-export function setWeddingDate(values: TryDemoValues, weddingDate: string): TryDemoValues {
-  const valid = Boolean(parseDateInput(weddingDate));
+/** Sets the main date and moves every event date the visitor has not set. */
+export function setEventDate(values: TryDemoValues, eventDate: string): TryDemoValues {
+  const valid = Boolean(parseDateInput(eventDate));
   return {
     ...values,
-    weddingDate,
+    eventDate,
     ceremonies: values.ceremonies.map((c) =>
-      c.dateEdited || !valid ? c : { ...c, date: addDays(weddingDate, CEREMONY_OFFSETS[c.name] ?? 0) },
+      c.dateEdited || !valid ? c : { ...c, date: addDays(eventDate, CEREMONY_OFFSETS[c.name] ?? 0) },
     ),
   };
+}
+
+export function setName(values: TryDemoValues, role: string, name: string): TryDemoValues {
+  return { ...values, names: { ...values.names, [role]: name } };
 }
 
 export function updateCeremony(
@@ -184,20 +236,30 @@ function nameError(value: string): string | undefined {
   return undefined;
 }
 
-export function validateStep(step: Step, values: TryDemoValues, now: Date): FieldErrors {
+export function validateStep(step: Step, values: TryDemoValues, now: Date, form: TryDemoForm): FieldErrors {
   const errors: FieldErrors = {};
   if (step === 1) {
-    const bride = nameError(values.brideName);
-    const groom = nameError(values.groomName);
-    if (bride) errors.brideName = bride;
-    if (groom) errors.groomName = groom;
+    let named = 0;
+    for (const person of form.people) {
+      const value = clean(values.names[person.role] ?? '');
+      if (!value) {
+        if (person.required) errors[nameField(person.role)] = 'Please enter this name.';
+        continue;
+      }
+      named += 1;
+      const problem = nameError(value);
+      if (problem) errors[nameField(person.role)] = problem;
+    }
+    if (named === 0 && form.people[0] && !errors[nameField(form.people[0].role)]) {
+      errors[nameField(form.people[0].role)] = 'Please enter a name.';
+    }
   }
   if (step === 2) {
-    const wedding = parseDateInput(values.weddingDate);
-    const { min, max } = weddingDateBounds(now);
-    if (!wedding) errors.weddingDate = 'Please choose the wedding date.';
-    else if (values.weddingDate < min) errors.weddingDate = 'The wedding date is in the past.';
-    else if (values.weddingDate > max) errors.weddingDate = 'Please choose a date within the next three years.';
+    const date = parseDateInput(values.eventDate);
+    const { min, max } = eventDateBounds(now);
+    if (!date) errors.eventDate = 'Please choose the date.';
+    else if (values.eventDate < min) errors.eventDate = 'That date is in the past.';
+    else if (values.eventDate > max) errors.eventDate = 'Please choose a date within the next three years.';
 
     const venue = clean(values.venueName);
     if (!venue) errors.venueName = 'Please enter the venue.';
@@ -207,14 +269,14 @@ export function validateStep(step: Step, values: TryDemoValues, now: Date): Fiel
     if (city && (city.length > CITY_MAX || !CITY_RE.test(city))) errors.city = 'Please enter a shorter city name, without symbols.';
   }
   if (step === 3) {
-    const bounds = ceremonyDateBounds(values.weddingDate);
-    if (values.ceremonies.length === 0) errors.ceremonies = 'Please choose at least one ceremony.';
-    else if (values.ceremonies.length > MAX_CEREMONIES) errors.ceremonies = `Please choose up to ${MAX_CEREMONIES} ceremonies.`;
+    const bounds = ceremonyDateBounds(values.eventDate);
+    if (values.ceremonies.length === 0) errors.ceremonies = 'Please choose at least one event.';
+    else if (values.ceremonies.length > MAX_CEREMONIES) errors.ceremonies = `Please choose up to ${MAX_CEREMONIES} events.`;
     else {
       for (const c of values.ceremonies) {
         if (!parseDateInput(c.date)) { errors.ceremonies = `Please choose a date for the ${c.name}.`; break; }
         if (bounds && (c.date < bounds.min || c.date > bounds.max)) {
-          errors.ceremonies = `The ${c.name} date is too far from the wedding date.`;
+          errors.ceremonies = `The ${c.name} date is too far from the main date.`;
           break;
         }
         if (c.time && !TIME_RE.test(c.time)) { errors.ceremonies = `Please enter the ${c.name} time as hh:mm.`; break; }
@@ -225,23 +287,24 @@ export function validateStep(step: Step, values: TryDemoValues, now: Date): Fiel
 }
 
 /** The first step with a problem, checking every step in order. */
-export function firstInvalidStep(values: TryDemoValues, now: Date): { step: Step; errors: FieldErrors } | null {
+export function firstInvalidStep(values: TryDemoValues, now: Date, form: TryDemoForm): { step: Step; errors: FieldErrors } | null {
   for (const step of [1, 2, 3] as const) {
-    const errors = validateStep(step, values, now);
+    const errors = validateStep(step, values, now, form);
     if (Object.keys(errors).length > 0) return { step, errors };
   }
   return null;
 }
 
 /** The request body. `website` is the honeypot, sent as the visitor left it. */
-export function toRequestBody(values: TryDemoValues, input: { slug: string; startedAt: number; website: string }) {
+export function toRequestBody(values: TryDemoValues, form: TryDemoForm, input: { slug: string; startedAt: number; website: string }) {
   return {
     slug: input.slug,
     website: input.website,
     startedAt: input.startedAt,
-    brideName: clean(values.brideName),
-    groomName: clean(values.groomName),
-    weddingDate: values.weddingDate,
+    people: form.people
+      .map((person) => ({ role: person.role, name: clean(values.names[person.role] ?? '') }))
+      .filter((person) => person.name),
+    eventDate: values.eventDate,
     venueName: clean(values.venueName),
     ...(clean(values.city) ? { city: clean(values.city) } : {}),
     ceremonies: values.ceremonies.map((c) => ({ name: c.name, date: c.date, ...(c.time ? { time: c.time } : {}) })),
@@ -285,12 +348,16 @@ export interface StoredTryDemo {
  * sessionStorage, not localStorage: the details stay in this tab and are gone
  * when it closes, instead of sitting in the browser for the next person.
  */
-const STORAGE_KEY = 'aam_try_demo_v1';
+// v2: names are keyed by role. A v1 entry (bride, groom, weddingDate) is simply
+// not read, rather than being replayed into a form that no longer has those fields.
+const STORAGE_KEY = 'aam_try_demo_v2';
 
 function isValues(value: unknown): value is TryDemoValues {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  return ['brideName', 'groomName', 'weddingDate', 'venueName', 'city'].every((k) => typeof v[k] === 'string')
+  return ['eventDate', 'venueName', 'city'].every((k) => typeof v[k] === 'string')
+    && Boolean(v.names) && typeof v.names === 'object' && !Array.isArray(v.names)
+    && Object.values(v.names as Record<string, unknown>).every((name) => typeof name === 'string')
     && Array.isArray(v.ceremonies)
     && v.ceremonies.every((c) => c && typeof c === 'object' && typeof (c as CeremonyChoice).name === 'string'
       && typeof (c as CeremonyChoice).date === 'string' && typeof (c as CeremonyChoice).time === 'string');

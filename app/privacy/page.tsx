@@ -49,13 +49,13 @@ export default function PrivacyPage() {
           <h3>Information you give us for a free preview</h3>
           <p>You can see a design filled in with your own details before buying, without an account and without paying. For this we ask for:</p>
           <ul>
-            <li>the two names to show on the invitation;</li>
-            <li>the wedding date;</li>
+            <li>the names to show on the invitation — the ones the design asks for, at most three;</li>
+            <li>the date of the celebration;</li>
             <li>the venue name and, if you choose to give it, the city;</li>
-            <li>the ceremonies you want to see, with their dates and, if you choose, their times;</li>
+            <li>the ceremonies or events you want to see, with their dates and, if you choose, their times;</li>
             <li>the design you are previewing.</li>
           </ul>
-          <p>We do <strong>not</strong> ask for your email address, phone number or any other way to contact you, and a preview is not linked to any account. Please use only names you are entitled to share — normally your own and your partner&apos;s.</p>
+          <p>We do <strong>not</strong> ask for your email address, phone number or any other way to contact you, and a preview is not linked to any account. Please use only names you are entitled to share — normally your own, your partner&apos;s or your family&apos;s.</p>
           <p>We use these details <strong>only</strong> to show you the preview. The preview link works for <strong>15 minutes</strong>. Anyone you send the link to can see the names and dates on it during that time, so share it only with people you are happy to show them to. The page is marked so search engines do not index it.</p>
           <p>If you buy the design from that preview, we use the same details to fill in your new invitation so you do not have to type them again; you can change them in the builder before you confirm them.</p>
           <p>To stop one connection creating an unreasonable number of previews, we also keep a <strong>one-way, salted hash of your IP address</strong> — a scrambled value that cannot practically be turned back into the address. We never store the address itself. The hash is deleted along with the preview.</p>

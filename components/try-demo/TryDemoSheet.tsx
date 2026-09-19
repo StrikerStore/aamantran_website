@@ -11,37 +11,51 @@ import { TRY_DEMO, tryDemoPrivacyNote } from '@/lib/content/tryDemo';
 import { track } from '@/lib/track';
 import {
   EMPTY_VALUES,
-  FALLBACK_CEREMONIES,
   MAX_CEREMONIES,
-  STEP_FIELDS,
   ceremonyDateBounds,
   checkoutHrefWithTrial,
+  eventDateBounds,
   firstInvalidStep,
+  fitValuesToForm,
   formatCountdown,
   loadStoredTryDemo,
+  nameField,
   saveStoredTryDemo,
-  setWeddingDate,
+  setEventDate,
+  setName,
+  stepFields,
   stepForField,
   toRequestBody,
   toggleCeremony,
   updateCeremony,
   validateStep,
-  weddingDateBounds,
   whatsappShareUrl,
   type FieldErrors,
   type Step,
   type TryDemoField,
+  type TryDemoForm,
   type TryDemoResult,
   type TryDemoValues,
 } from '@/lib/trialDemo';
 import { TRY_DEMO_EVENT, type TryDemoEventDetail } from './TryDemoButton';
 import styles from './TryDemoSheet.module.css';
 
-const STEP_TITLES: Record<Step, string> = {
-  1: 'The couple',
-  2: 'Date and venue',
-  3: 'Ceremonies',
-};
+/**
+ * Step titles for this design. A wedding reads as it always has; anything else
+ * gets words that fit a birthday or a housewarming as well.
+ */
+function stepTitles(form: TryDemoForm | null): Record<Step, string> {
+  const wedding = isWeddingForm(form);
+  return {
+    1: wedding ? 'The couple' : form && form.people.length === 1 ? 'Who it’s for' : 'The names',
+    2: 'Date and venue',
+    3: wedding ? 'Ceremonies' : 'Events',
+  };
+}
+
+function isWeddingForm(form: TryDemoForm | null): boolean {
+  return Boolean(form && /^wedding/i.test(form.dateLabel));
+}
 
 function withoutError(errors: FieldErrors, field: TryDemoField): FieldErrors {
   if (!errors[field]) return errors;
@@ -53,6 +67,11 @@ function withoutError(errors: FieldErrors, field: TryDemoField): FieldErrors {
 /**
  * "Try it with your names": a three-step form, then the design filled in with
  * what the visitor typed.
+ *
+ * What the form asks is fetched for this design when the sheet opens — the
+ * names its template declares, its own events, what to call the date — so the
+ * same sheet serves a wedding, a birthday or a housewarming. Until that arrives
+ * step 1 says it is loading rather than guessing at a couple.
  *
  * One per product page, opened by TryDemoButton from anywhere on the page, or
  * by arriving with ?try=1 from a gallery card. Nothing is sent until the last
@@ -68,7 +87,8 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<TryDemoResult | null>(null);
-  const [ceremonyOrder, setCeremonyOrder] = useState<string[]>(FALLBACK_CEREMONIES);
+  const [form, setForm] = useState<TryDemoForm | null>(null);
+  const [formFailed, setFormFailed] = useState(false);
   const [linkMinutes, setLinkMinutes] = useState<number>(TRY_DEMO.linkMinutes);
   const [now, setNow] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -89,7 +109,7 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
       const live = stored?.result && stored.result.slug === slug && stored.result.expiresAt > current ? stored.result : null;
       startedAt.current = current;
       setNow(current);
-      if (stored) setValues(stored.values);
+      if (stored) setValues(form ? fitValuesToForm(stored.values, form) : stored.values);
       setResult(live);
       setView(live ? 'result' : 'form');
       setStep(1);
@@ -99,17 +119,29 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
       setOpen(true);
       track('try_demo_started', { slug, source });
 
-      if (!optionsRequested.current) {
-        optionsRequested.current = true;
-        getTrialDemoOptions().then((options) => {
-          if (!options) return;
-          setCeremonyOrder(options.ceremonies);
-          setLinkMinutes(options.expiresInMinutes);
-        });
-      }
+      if (!optionsRequested.current) loadForm();
     },
+    // loadForm only touches state setters and the slug.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [slug],
   );
+
+  /** What this design asks for. Asked once per page; retried if it failed. */
+  function loadForm() {
+    optionsRequested.current = true;
+    setFormFailed(false);
+    getTrialDemoOptions(slug).then((options) => {
+      if (!options) {
+        optionsRequested.current = false;
+        setFormFailed(true);
+        return;
+      }
+      const loaded: TryDemoForm = { people: options.people, ceremonies: options.ceremonies, dateLabel: options.dateLabel };
+      setForm(loaded);
+      setLinkMinutes(options.expiresInMinutes);
+      setValues((current) => fitValuesToForm(current, loaded));
+    });
+  }
 
   // Opened by a button anywhere on the page, or by ?try=1 in the address.
   useEffect(() => {
@@ -162,7 +194,7 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
     setView('form');
     setStep(target);
     setErrors(found);
-    const first = STEP_FIELDS[target].find((field) => found[field]);
+    const first = form ? stepFields(target, form).find((field) => found[field]) : undefined;
     if (first) focusSoon(() => document.getElementById(fieldId(first)));
   }
 
@@ -174,7 +206,8 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
   }
 
   async function create() {
-    const invalid = firstInvalidStep(values, new Date());
+    if (!form) return;
+    const invalid = firstInvalidStep(values, new Date(), form);
     if (invalid) {
       showErrors(invalid.step, invalid.errors);
       return;
@@ -182,7 +215,7 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
     setSubmitting(true);
     setFormError('');
     const response = await createTrialDemo(
-      toRequestBody(values, { slug, startedAt: startedAt.current, website: honeypot.current?.value ?? '' }),
+      toRequestBody(values, form, { slug, startedAt: startedAt.current, website: honeypot.current?.value ?? '' }),
     );
     setSubmitting(false);
 
@@ -211,8 +244,8 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting) return;
-    const found = validateStep(step, values, new Date());
+    if (submitting || !form) return;
+    const found = validateStep(step, values, new Date(), form);
     if (Object.keys(found).length > 0) {
       showErrors(step, found);
       return;
@@ -244,8 +277,10 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
   const remaining = result ? result.expiresAt - now : 0;
   const expired = !result || remaining <= 0;
   // `now` is set whenever the sheet opens, which is the only time these render.
-  const weddingBounds = weddingDateBounds(new Date(now));
-  const ceremonyBounds = ceremonyDateBounds(values.weddingDate);
+  const dateBounds = eventDateBounds(new Date(now));
+  const ceremonyBounds = ceremonyDateBounds(values.eventDate);
+  const titles = stepTitles(form);
+  const wedding = isWeddingForm(form);
 
   const title =
     view === 'form' ? `Try ${name} with your names` : expired ? 'Your demo link has ended' : 'Your demo is ready';
@@ -262,50 +297,62 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
         <form noValidate onSubmit={handleSubmit} className={styles.form}>
           <h3 ref={stepHeading} tabIndex={-1} className={styles.stepHeading}>
             <span className={styles.stepCount}>Step {step} of 3</span>
-            {STEP_TITLES[step]}
+            {titles[step]}
           </h3>
 
-          {step === 1 && (
+          {step === 1 && !form && (
+            <div role="status" className={styles.hint}>
+              {formFailed ? (
+                <>
+                  <p>We couldn’t load this design’s details just now.</p>
+                  <Button variant="secondary" size="sm" onClick={loadForm}>
+                    Try again
+                  </Button>
+                </>
+              ) : (
+                <p>Getting this design ready…</p>
+              )}
+            </div>
+          )}
+
+          {step === 1 && form && (
             <>
               <p className={styles.hint}>As you’d like them to appear on the invitation.</p>
-              <Field label="Bride’s name" id={fieldId('brideName')} error={errors.brideName} required>
-                {(control) => (
-                  <TextInput
-                    {...control}
-                    value={values.brideName}
-                    onChange={(e) => change({ ...values, brideName: e.target.value }, 'brideName')}
-                    autoComplete="off"
-                    autoCapitalize="words"
-                    maxLength={60}
-                  />
-                )}
-              </Field>
-              <Field label="Groom’s name" id={fieldId('groomName')} error={errors.groomName} required>
-                {(control) => (
-                  <TextInput
-                    {...control}
-                    value={values.groomName}
-                    onChange={(e) => change({ ...values, groomName: e.target.value }, 'groomName')}
-                    autoComplete="off"
-                    autoCapitalize="words"
-                    maxLength={60}
-                  />
-                )}
-              </Field>
+              {form.people.map((person) => (
+                <Field
+                  key={person.role}
+                  label={person.label}
+                  hint={person.required ? undefined : 'Optional'}
+                  id={fieldId(nameField(person.role))}
+                  error={errors[nameField(person.role)]}
+                  required={person.required}
+                >
+                  {(control) => (
+                    <TextInput
+                      {...control}
+                      value={values.names[person.role] ?? ''}
+                      onChange={(e) => change(setName(values, person.role, e.target.value), nameField(person.role))}
+                      autoComplete="off"
+                      autoCapitalize="words"
+                      maxLength={60}
+                    />
+                  )}
+                </Field>
+              ))}
             </>
           )}
 
           {step === 2 && (
             <>
-              <Field label="Wedding date" id={fieldId('weddingDate')} error={errors.weddingDate} required>
+              <Field label={form?.dateLabel ?? 'Date'} id={fieldId('eventDate')} error={errors.eventDate} required>
                 {(control) => (
                   <TextInput
                     {...control}
                     type="date"
-                    min={weddingBounds.min}
-                    max={weddingBounds.max}
-                    value={values.weddingDate}
-                    onChange={(e) => change(setWeddingDate(values, e.target.value), 'weddingDate')}
+                    min={dateBounds.min}
+                    max={dateBounds.max}
+                    value={values.eventDate}
+                    onChange={(e) => change(setEventDate(values, e.target.value), 'eventDate')}
                   />
                 )}
               </Field>
@@ -341,12 +388,14 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
                 .filter(Boolean)
                 .join(' ')}
             >
-              <legend className={styles.legend}>Which ceremonies should it show?</legend>
+              <legend className={styles.legend}>
+                {wedding ? 'Which ceremonies should it show?' : 'Which events should it show?'}
+              </legend>
               <p id={`${baseId}-ceremony-hint`} className={styles.hint}>
-                Choose up to {MAX_CEREMONIES}. Dates start from your wedding date, and you can change any of them.
+                Choose up to {MAX_CEREMONIES}. Dates start from the date you chose, and you can change any of them.
               </p>
               <div className={styles.chips}>
-                {ceremonyOrder.map((ceremony, i) => {
+                {(form?.ceremonies ?? []).map((ceremony, i) => {
                   const selected = values.ceremonies.some((c) => c.name === ceremony);
                   return (
                     <button
@@ -356,7 +405,7 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
                       className={styles.chip}
                       aria-pressed={selected}
                       disabled={!selected && values.ceremonies.length >= MAX_CEREMONIES}
-                      onClick={() => change(toggleCeremony(values, ceremony, ceremonyOrder), 'ceremonies')}
+                      onClick={() => change(toggleCeremony(values, ceremony, form?.ceremonies ?? []), 'ceremonies')}
                     >
                       {ceremony}
                     </button>
@@ -427,7 +476,7 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
                 Back
               </Button>
             )}
-            <Button type="submit" loading={submitting}>
+            <Button type="submit" loading={submitting} disabled={!form}>
               {step < 3 ? 'Next' : 'Show my demo'}
             </Button>
           </div>
