@@ -1,4 +1,11 @@
 .dialog {
+  /*
+   * A modal <dialog> is centred by the browser's own `margin: auto`. The reset
+   * in base.css sets `margin: 0` on everything, which quietly took that away and
+   * left every dialog pinned to the top-left corner. Putting it back here rather
+   * than exempting dialogs from the reset keeps the reset simple.
+   */
+  margin: auto;
   width: min(100% - 2 * var(--gutter), 560px);
   max-width: 100%;
   max-height: min(90dvh, 900px);

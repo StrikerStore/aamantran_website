@@ -3,7 +3,6 @@ import type { TemplateSummary } from '@/lib/api/types';
 import { PLANNING_TOOLS } from '@/lib/content/entitlements';
 import { pluralize } from '@/lib/format';
 import { priceTiers } from '@/lib/priceTiers';
-import { IS_INTL } from '@/lib/storefront';
 import styles from './PriceBoard.module.css';
 
 /**
@@ -32,19 +31,18 @@ export function PriceBoard({ templates }: { templates: readonly TemplateSummary[
           <li key={tier.minor} className={styles.tier}>
             <p className={styles.amount}>
               {tier.label}
-              {!IS_INTL && <span className={styles.tax}> + GST</span>}
             </p>
-            <p className={styles.count}>{pluralize(tier.count, 'design')}</p>
+            <p className={styles.count}>{pluralize(tier.count, 'invite')}</p>
           </li>
         ))}
       </ul>
       <p className={styles.same}>
-        The price is the design. Whichever you choose, you get the same invitation link, the same guest list, the
+        The price is for the look. Whichever invite you choose, you get the same invitation link, the same guest list, the
         same second link for selected ceremonies and the same {PLANNING_TOOLS.length} planning tools, for one
-        payment. What a particular design supports is listed on its own page.
+        payment. What a particular invite supports is listed on its own page.
       </p>
       <p className={styles.action}>
-        <LinkButton href="/templates">See every design</LinkButton>
+        <LinkButton href="/templates">See every invite</LinkButton>
       </p>
     </div>
   );

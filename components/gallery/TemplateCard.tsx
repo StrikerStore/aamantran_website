@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import { LinkButton } from '@/components/ui/Button';
 import type { TemplateSummary } from '@/lib/api/types';
 import { TRY_DEMO } from '@/lib/content/tryDemo';
-import { IS_INTL, formatMoney, originalPriceFor, priceFor } from '@/lib/storefront';
+import { formatMoney, originalPriceFor, priceFor } from '@/lib/storefront';
 import { pluralize } from '@/lib/format';
 import {
   cardBuyers,
@@ -27,7 +27,7 @@ export const CARD_IMAGE_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 5
  * One design in a list. Server-rendered, built only from links, so it works
  * before JavaScript loads.
  *
- * Price: the base price in this storefront's currency. India adds "+ GST",
+ * Price: the invite's own price in this storefront's currency; tax is shown at checkout only,
  * because checkout adds it; the product page shows the full breakdown.
  *
  * MERCHANDISING. The rating and the buyer count were in the API payload from the
@@ -69,7 +69,7 @@ export function TemplateCard({
   return (
     <article className={styles.card}>
       <div className={styles.media}>
-        {/* The image repeats the "View design" link, so it is skipped by keyboard and screen readers. */}
+        {/* The image repeats the card's own link, so it is skipped by keyboard and screen readers. */}
         <Link href={productHref} className={styles.mediaLink} tabIndex={-1} aria-hidden="true">
           <TemplateArt
             desktopSrc={t.desktopThumbnailUrl ?? t.thumbnailUrl}
@@ -84,7 +84,16 @@ export function TemplateCard({
       </div>
 
       <div className={styles.body}>
-        <Heading className={styles.name}>{t.name}</Heading>
+        {/*
+          * The name is the card's link, and it stretches over the whole card —
+          * so a tap anywhere opens the invite, while keyboard and screen-reader
+          * users meet one link with the invite's name rather than a dozen.
+          */}
+        <Heading className={styles.name}>
+          <Link href={productHref} className={styles.nameLink}>
+            {t.name}
+          </Link>
+        </Heading>
 
         {(rating || buyers) && (
           <p className={styles.proof}>
@@ -129,13 +138,16 @@ export function TemplateCard({
                 </s>
               )}
               <span className={styles.amount}>{formatMoney(price)}</span>
-              {!IS_INTL && <span className={styles.tax}> + GST</span>}
               {cheapest && <span className={styles.tier}>Lowest price</span>}
             </p>
           )}
           <div className={styles.actions}>
-            <LinkButton href={productHref} size="sm" aria-label={`View the ${t.name} design`}>
-              View design
+            {/*
+              * Buy, not "view": the whole card already opens the invite, so a
+              * second way in earned nothing. This goes straight to checkout.
+              */}
+            <LinkButton href={`/checkout/${t.slug}`} size="sm" aria-label={`Buy the ${t.name} invite`}>
+              Buy now
             </LinkButton>
             <DemoLink slug={t.slug} href={templateDemoUrl(t.slug)} name={t.name} source={source} className={styles.demo} />
           </div>
@@ -144,7 +156,7 @@ export function TemplateCard({
             <LinkButton href={`${productHref}?try=1`} variant="ghost" size="sm" fullWidth className={styles.try}>
               <span aria-hidden="true">✦ </span>
               {TRY_DEMO.cta}
-              <span className="visually-hidden"> on the {t.name} design</span>
+              <span className="visually-hidden"> on the {t.name} invite</span>
             </LinkButton>
           )}
         </div>

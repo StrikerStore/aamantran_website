@@ -49,7 +49,7 @@ export default async function AboutPage() {
   // Counted, not claimed. Anything that cannot be counted is left out unless
   // the business has confirmed it (lib/content/claims.ts).
   const figures = [
-    designCount > 0 ? { value: String(designCount), label: pluralize(designCount, 'design') } : null,
+    designCount > 0 ? { value: String(designCount), label: pluralize(designCount, 'invite') } : null,
     reviewCount > 0
       ? { value: averageRating > 0 ? averageRating.toFixed(1) : String(reviewCount), label: averageRating > 0 ? `average from ${pluralize(reviewCount, 'review')}` : pluralize(reviewCount, 'review') }
       : null,
@@ -150,7 +150,7 @@ export default async function AboutPage() {
             <li className={styles.card}>
               <h3 className={styles.cardTitle}>Priced to be affordable</h3>
               <p className={styles.cardText}>
-                Designs start at {startingPrice}, paid once. No subscription, no renewal, and no charge for the planning
+                Invites start at {startingPrice}, paid once. No subscription, no renewal, and no charge for the planning
                 tools that come with it.
               </p>
             </li>
@@ -193,7 +193,7 @@ export default async function AboutPage() {
       <section aria-labelledby="cta-heading" className={styles.cta}>
         <Container>
           <h2 id="cta-heading" className={styles.ctaTitle}>
-            Have a look at the designs
+            Have a look at the invites
           </h2>
           <p className={styles.ctaText}>
             Every one has a live demo you can open before you buy — no account, no payment.

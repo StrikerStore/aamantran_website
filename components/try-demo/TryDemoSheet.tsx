@@ -304,13 +304,13 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
             <div role="status" className={styles.hint}>
               {formFailed ? (
                 <>
-                  <p>We couldn’t load this design’s details just now.</p>
+                  <p>We couldn’t load this invite’s details just now.</p>
                   <Button variant="secondary" size="sm" onClick={loadForm}>
                     Try again
                   </Button>
                 </>
               ) : (
-                <p>Getting this design ready…</p>
+                <p>Getting this invite ready…</p>
               )}
             </div>
           )}

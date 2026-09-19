@@ -81,5 +81,5 @@ export function templateDemoUrl(slug: string): string {
 }
 
 export function templateArtAlt(name: string): string {
-  return `Preview of the ${name} invitation design`;
+  return `Preview of the ${name} invite`;
 }

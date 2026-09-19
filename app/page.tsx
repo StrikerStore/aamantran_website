@@ -16,6 +16,7 @@ import { LinkButton } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Reveal } from '@/components/ui/Reveal';
 import { getCatalogueStats, getFeaturedReviews, getTemplates } from '@/lib/api/templates';
+import { showcase } from '@/lib/showcase';
 import { ACCESS } from '@/lib/content/entitlements';
 import { PURCHASE_FAQ_IDS, faqsByIds } from '@/lib/content/faqs';
 import { HERO_REASSURANCE, SHOP_STEPS } from '@/lib/content/shopHome';
@@ -67,28 +68,34 @@ export const metadata: Metadata = {
   // `absolute` opts out of the layout's "%s — Aamantran" template.
   title: { absolute: 'Aamantran — Digital Invitations You Fill In Yourself' },
   description:
-    'Choose an invitation design, pay once, and fill in your own names, ceremonies, photos and music. Guests open a link, no app, and RSVP to each ceremony.',
+    'Choose an invite, pay once, and fill in your own names, ceremonies, photos and music. Guests open a link, no app, and RSVP to each ceremony.',
   alternates: { canonical: '/', languages: alternateLanguages('/') },
 };
 
 export default async function HomePage() {
   const [stats, featured, catalogue, reviews, startingPrice] = await Promise.all([
     getCatalogueStats(),
-    getTemplates({ limit: FEATURED_DESIGNS, sort: 'popular' }),
+    // The whole catalogue in popularity order — most opened and most bought
+    // first. The window and the grid below are both taken from it.
+    getTemplates({ limit: CATALOGUE_LIMIT, sort: 'popular' }),
     getTemplates({ limit: CATALOGUE_LIMIT, sort: 'new' }),
     getFeaturedReviews(STORIES),
     getStartingPrice(),
   ]);
 
-  const designs = featured?.templates ?? [];
+  const ranked = featured?.templates ?? [];
+  const designs = ranked.slice(0, FEATURED_DESIGNS);
   const templates = catalogue?.templates ?? [];
   // Only offered when a design on this page can take it: the hero links to these cards.
   const hasTryable = designs.some((design) => design.tryWithNames);
   const designCount = stats?.total ?? catalogue?.total ?? 0;
   const faqs = faqsByIds(PURCHASE_FAQ_IDS).slice(0, HOME_FAQS);
   const cheapest = lowestPrice(templates);
-  // The window shows the newest designs; the grid below shows the popular ones.
-  const windowDesigns = (templates.length > 0 ? templates : designs).slice(0, WINDOW_DESIGNS);
+  // The window shows the leading invite of each category (see lib/showcase.ts);
+  // if the popular list is unavailable it falls back to the newest.
+  const windowDesigns = ranked.length > 0
+    ? showcase(ranked, WINDOW_DESIGNS)
+    : templates.slice(0, WINDOW_DESIGNS);
 
   // The cheapest design's own price — ₹999, not ₹1,178.82. The headline is the
   // price of the thing, the way a shelf edge is; GST is added at checkout and
@@ -126,7 +133,7 @@ export default async function HomePage() {
             <div className={styles.heroText}>
               <h1 className={styles.title}>Invitations your guests open, fill out and reply to</h1>
               <p className={styles.lede}>
-                Choose a design, pay once, and fill in your own names, ceremonies, photos and music. One link, no
+                Choose an invite, pay once, and fill in your own names, ceremonies, photos and music. One link, no
                 app, and an RSVP for every ceremony.
               </p>
               <p className={styles.price}>{fromPrice}</p>
@@ -165,11 +172,11 @@ export default async function HomePage() {
             <Reveal as="section" id="designs" aria-labelledby="designs-heading" className={styles.section}>
               <p className={styles.eyebrow}>On display</p>
               <h2 id="designs-heading" className={styles.sectionTitle}>
-                Designs couples are choosing
+                Invites couples are choosing
               </h2>
               <p className={styles.sectionIntro}>
-                Every design has a live demo you can open before you buy.
-                {hasTryable && ` Designs marked “${TRY_DEMO.cta}” can show your own names and dates first, free.`}
+                Every invite has a live demo you can open before you buy.
+                {hasTryable && ` Invites marked “${TRY_DEMO.cta}” can show your own names and dates first, free.`}
               </p>
               <ul className={styles.grid}>
                 {designs.map((design, i) => (
@@ -180,7 +187,7 @@ export default async function HomePage() {
               </ul>
               <p className={styles.more}>
                 <LinkButton href="/templates" variant="secondary">
-                  See every design{designCount > 0 ? ` (${designCount})` : ''}
+                  See every invite{designCount > 0 ? ` (${designCount})` : ''}
                 </LinkButton>
               </p>
             </Reveal>
@@ -233,7 +240,7 @@ export default async function HomePage() {
 
           {/* ── 7. What comes with it ─────────────────────────────────── */}
           <Reveal as="section" id="features" aria-labelledby="proof-heading" className={styles.section}>
-            <p className={styles.eyebrow}>Included with every design</p>
+            <p className={styles.eyebrow}>Included with every invite</p>
             <h2 id="proof-heading" className={styles.sectionTitle}>
               An invitation that does the admin for you
             </h2>
@@ -253,7 +260,6 @@ export default async function HomePage() {
               reviews={reviews?.reviews ?? []}
               avgRating={reviews?.avgRating ?? 0}
               totalCount={reviews?.totalCount ?? 0}
-              curatedCount={reviews?.curatedCount ?? 0}
               showTemplate
               emptyMessage="No reviews yet. When couples who bought an invitation leave one, it appears here."
             />
@@ -307,10 +313,10 @@ export default async function HomePage() {
         <section aria-labelledby="cta-heading" className={`${styles.cta} ds-ink`}>
           <Container>
             <h2 id="cta-heading" className={styles.ctaTitle}>
-              Find the design, then make it yours
+              Find the invite, then make it yours
             </h2>
             <p className={styles.ctaText}>
-              {designCount > 0 ? `${pluralize(designCount, 'design')} to choose from. ` : ''}
+              {designCount > 0 ? `${pluralize(designCount, 'invite')} to choose from. ` : ''}
               {fromPrice}. You build the invitation yourself, and it stays live until {ACCESS.liveMonthsAfterLastCeremony}{' '}
               months after your last ceremony.
             </p>

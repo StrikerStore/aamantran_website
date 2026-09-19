@@ -33,7 +33,7 @@ function Group({ title, links, onChoose }: { title: string; links: ShopMenuLink[
               {link.count !== null && (
                 <span className={styles.count}>
                   {link.count}
-                  <span className="visually-hidden"> {link.count === 1 ? 'design' : 'designs'}</span>
+                  <span className="visually-hidden"> {link.count === 1 ? 'invite' : 'invites'}</span>
                 </span>
               )}
             </Link>
@@ -98,7 +98,7 @@ export function InvitationsMenu({ menu }: { menu: ShopMenu }) {
               {menu.all.count !== null && (
             <span className={styles.count}>
               {menu.all.count}
-              <span className="visually-hidden"> {menu.all.count === 1 ? 'design' : 'designs'}</span>
+              <span className="visually-hidden"> {menu.all.count === 1 ? 'invite' : 'invites'}</span>
             </span>
           )}
         </Link>

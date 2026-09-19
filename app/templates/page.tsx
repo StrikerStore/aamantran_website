@@ -55,9 +55,9 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const path = filtered ? '/templates' : state.page > 1 ? `/templates?page=${state.page}` : '/templates';
 
   const metadata = buildPageMetadata({
-    title: `Wedding Invitation Templates — Digital Designs from ${from}${state.page > 1 ? ` — Page ${state.page}` : ''}`,
+    title: `Wedding Invites — Digital Invites from ${from}${state.page > 1 ? ` — Page ${state.page}` : ''}`,
     description:
-      `Browse hand-crafted digital wedding invitation templates for Hindu, Muslim, Sikh and Christian weddings. WhatsApp-ready, with RSVP tracking, photo galleries and music — from ${from}, one-time payment.`,
+      `Browse hand-crafted digital wedding invites for Hindu, Muslim, Sikh and Christian weddings. WhatsApp-ready, with RSVP tracking, photo galleries and music — from ${from}, one-time payment.`,
     path,
   });
 
@@ -69,7 +69,7 @@ function itemListJsonLd(templates: TemplateSummary[], state: GalleryState) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: 'Digital wedding invitation designs',
+    name: 'Digital wedding invites',
     url: `${SITE_URL}/templates`,
     isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: `${SITE_URL}/` },
     mainEntity: {
@@ -114,9 +114,9 @@ export default async function TemplatesPage({ searchParams }: Props) {
   let summary = '';
   if (result && shown.length > 0) {
     const range = result.total > shown.length ? `${firstIndex}–${firstIndex + shown.length - 1} of ` : '';
-    summary = `Showing ${range}${pluralize(result.total, 'design')}${filters.length ? ` · ${filters.join(' · ')}` : ''}`;
+    summary = `Showing ${range}${pluralize(result.total, 'invite')}${filters.length ? ` · ${filters.join(' · ')}` : ''}`;
   } else if (result && !pastLastPage) {
-    summary = filtered ? `No designs match ${filters.join(' · ')}` : 'No designs are listed yet';
+    summary = filtered ? `No invites match ${filters.join(' · ')}` : 'No invites are listed yet';
   }
 
   return (
@@ -127,8 +127,8 @@ export default async function TemplatesPage({ searchParams }: Props) {
         <header className={styles.hero}>
           <Container>
             <p className={styles.eyebrow}>Invitations</p>
-            <h1 className={styles.title}>Find your invitation design</h1>
-            <p className={styles.intro}>Every design has a live demo you can open before you buy.</p>
+            <h1 className={styles.title}>Find your invite</h1>
+            <p className={styles.intro}>Every invite has a live demo you can open before you buy.</p>
             <AisleRail templates={sample} className={styles.rail} />
             <nav aria-label="Traditions" className={styles.collections}>
               <span className={styles.collectionsLabel}>By tradition:</span>
@@ -150,7 +150,7 @@ export default async function TemplatesPage({ searchParams }: Props) {
 
           <section id="results" aria-labelledby="results-heading" className={styles.results}>
             <h2 id="results-heading" className="visually-hidden">
-              Designs
+              Invites
             </h2>
             <p className={styles.summary} aria-live="polite">
               {summary}
@@ -159,7 +159,7 @@ export default async function TemplatesPage({ searchParams }: Props) {
             {!result ? (
               <Notice
                 tone="error"
-                title="We couldn't load the designs just now"
+                title="We couldn't load the invites just now"
                 action={
                   <LinkButton href={galleryHref(state)} variant="secondary" size="sm">
                     Try again
@@ -171,7 +171,7 @@ export default async function TemplatesPage({ searchParams }: Props) {
             ) : pastLastPage ? (
               <Notice
                 tone="info"
-                title={`There ${pages === 1 ? 'is only 1 page' : `are only ${pages} pages`} of designs`}
+                title={`There ${pages === 1 ? 'is only 1 page' : `are only ${pages} pages`} of invites`}
                 action={
                   <LinkButton href={galleryHref({ ...state, page: pages })} variant="secondary" size="sm">
                     Go to page {pages}
@@ -182,14 +182,14 @@ export default async function TemplatesPage({ searchParams }: Props) {
               </Notice>
             ) : shown.length === 0 ? (
               <div className={styles.empty}>
-                <p className={styles.emptyTitle}>{filtered ? 'No designs match those filters' : 'New designs are on the way'}</p>
+                <p className={styles.emptyTitle}>{filtered ? 'No invites match those filters' : 'New invites are on the way'}</p>
                 <p className={styles.emptyText}>
                   {filtered
                     ? 'Try removing a filter, or search for a different name.'
                     : 'The catalogue is being updated. Please check back shortly, or ask us what is coming.'}
                 </p>
                 <LinkButton href={filtered ? '/templates' : '/contact'} variant="secondary">
-                  {filtered ? 'Show all designs' : 'Contact us'}
+                  {filtered ? 'Show all invites' : 'Contact us'}
                 </LinkButton>
               </div>
             ) : (

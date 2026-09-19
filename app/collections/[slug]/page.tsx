@@ -138,7 +138,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
         <Container>
           <section id="designs" aria-labelledby="designs-heading" className={styles.section}>
             <h2 id="designs-heading" className={styles.sectionTitle}>
-              {templates.length > 0 ? `${pluralize(templates.length, 'design')} in this collection` : 'Designs in this collection'}
+              {templates.length > 0 ? `${pluralize(templates.length, 'invite')} in this collection` : 'Invites in this collection'}
             </h2>
             {templates.length > 0 ? (
               <>
@@ -151,7 +151,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
                 </ul>
                 <p className={styles.more}>
                   <LinkButton href="/templates" variant="secondary">
-                    See every design
+                    See every invite
                   </LinkButton>
                 </p>
               </>
@@ -161,7 +161,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
               // editorial copy below still answers the question that brought the
               // visitor here.
               <p className={styles.sectionIntro}>
-                New designs for this collection are on the way. <Link href="/templates">Browse every design</Link> in the
+                New invites for this collection are on the way. <Link href="/templates">Browse every invite</Link> in the
                 meantime — you can use any of them for this celebration.
               </p>
             )}
@@ -203,7 +203,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
                 </li>
               ))}
               <li>
-                <Link href="/templates">Every design</Link>
+                <Link href="/templates">Every invite</Link>
               </li>
             </ul>
           </section>

@@ -115,17 +115,16 @@
 }
 
 /*
- * Which preview shows before the browser has told the page what it is.
+ * Which artwork shows: the one that suits the screen.
  *
- * The component renders both layers with these classes until it knows the
- * viewport, so the first paint already matches the device instead of flipping
- * to it a moment later.
+ * Both layers are rendered and this hides one — no toggle, no JavaScript, and
+ * the right artwork from the first paint.
  */
-.autoDesktop {
+.desktopOnly {
   opacity: 1;
 }
 
-.autoPhone {
+.phoneOnly {
   position: absolute;
   inset: 0;
   opacity: 0;
@@ -133,14 +132,14 @@
 }
 
 @media (max-width: 767px) {
-  .autoDesktop {
+  .desktopOnly {
     position: absolute;
     inset: 0;
     opacity: 0;
     pointer-events: none;
   }
 
-  .autoPhone {
+  .phoneOnly {
     position: static;
     opacity: 1;
     pointer-events: auto;

@@ -49,17 +49,17 @@ export const OCCASION_PAGES: readonly OccasionPage[] = [
   {
     slug: 'engagement-invitations',
     occasionKeys: ['engagement'],
-    heading: 'Engagement Invitation Templates',
-    title: 'Engagement & Roka Invitation Templates Online',
+    heading: 'Engagement Invites',
+    title: 'Engagement & Roka Invites Online',
     description:
       'Digital engagement, roka and sagai invitations you can send the day the date is set, with live RSVP, venue directions and WhatsApp sharing.',
     intro:
-      'An engagement is usually the first evening both families sit together as one guest list, and it is often arranged in a fortnight: a date is fixed, a hall is held, and the invitation has to go out that week. A link is quicker than a card and easier to correct — send it the day you decide, and if the hall or the hour changes, everyone who has it sees the change. These designs are built for one evening rather than a week of ceremonies, so the three things a guest needs, where, when and who to tell, sit on a single screen.',
+      'An engagement is usually the first evening both families sit together as one guest list, and it is often arranged in a fortnight: a date is fixed, a hall is held, and the invitation has to go out that week. A link is quicker than a card and easier to correct — send it the day you decide, and if the hall or the hour changes, everyone who has it sees the change. These invites are built for one evening rather than a week of ceremonies, so the three things a guest needs, where, when and who to tell, sit on a single screen.',
     prepare: [
       'The names as they should appear on the invitation, including how the families are named. You confirm these at the first step and they lock afterwards.',
       'The date and the time guests should arrive, which is often earlier than the ring ceremony itself.',
       'The venue name and address, or a Google Maps link, which fills in the location for you.',
-      'Any photos you would like inside, if the design you choose has space for them.',
+      'Any photos you would like inside, if the invite you choose has space for them.',
     ],
     wording: [
       {
@@ -98,17 +98,17 @@ export const OCCASION_PAGES: readonly OccasionPage[] = [
   {
     slug: 'wedding-invitations',
     occasionKeys: ['wedding'],
-    heading: 'Wedding Invitation Templates',
-    title: 'Digital Wedding Invitation Templates Online',
+    heading: 'Wedding Invites',
+    title: 'Digital Wedding Invites Online',
     description:
       'Digital wedding invitations with every ceremony on one link, RSVP per ceremony, venue maps and WhatsApp sharing. One payment, no subscription.',
     intro:
-      'An Indian wedding is rarely one afternoon. Haldi, mehendi, sangeet, the ceremony and the reception each have their own hour, their own venue and often their own guest list, which is more than a printed card can carry without a second card and a flurry of corrections afterwards. These designs hold every function on one link, so a guest can see exactly which events they are invited to and reply to each one separately.',
+      'An Indian wedding is rarely one afternoon. Haldi, mehendi, sangeet, the ceremony and the reception each have their own hour, their own venue and often their own guest list, which is more than a printed card can carry without a second card and a flurry of corrections afterwards. These invites hold every function on one link, so a guest can see exactly which events they are invited to and reply to each one separately.',
     prepare: [
       'The names to appear on the invitation, including both families. They lock once you confirm them at the first step.',
       'Each ceremony with its date, start time and venue, including the ones on the same day.',
       'Addresses or Google Maps links for each venue, so guests get directions in one tap.',
-      'Photographs and, if the design supports it, the music you would like playing.',
+      'Photographs and, if the invite supports it, the music you would like playing.',
     ],
     wording: [
       {
@@ -143,8 +143,8 @@ export const OCCASION_PAGES: readonly OccasionPage[] = [
   {
     slug: 'anniversary-invitations',
     occasionKeys: ['anniversary'],
-    heading: 'Anniversary Invitation Templates',
-    title: 'Wedding Anniversary Invitation Templates',
+    heading: 'Anniversary Invites',
+    title: 'Wedding Anniversary Invites',
     description:
       'Digital anniversary invitations for 25th, 50th and every year in between — live RSVP, venue directions and one link to share on WhatsApp.',
     intro:
@@ -188,8 +188,8 @@ export const OCCASION_PAGES: readonly OccasionPage[] = [
   {
     slug: 'birthday-invitations',
     occasionKeys: ['birthday'],
-    heading: 'Birthday Invitation Templates',
-    title: 'Birthday & First Birthday Invitation Templates',
+    heading: 'Birthday Invites',
+    title: 'Birthday & First Birthday Invites',
     description:
       'Digital birthday invitations for first birthdays and milestone years, with live RSVP, venue directions and one WhatsApp-ready link.',
     intro:
@@ -198,7 +198,7 @@ export const OCCASION_PAGES: readonly OccasionPage[] = [
       'Whose birthday it is and how their name should appear.',
       'The date, the start time and the time it ends, which parents will look for.',
       'The venue with a Google Maps link, and a note if parking or entry needs explaining.',
-      'A photograph or two, if the design has space for them.',
+      'A photograph or two, if the invite has space for them.',
     ],
     wording: [
       {
@@ -233,8 +233,8 @@ export const OCCASION_PAGES: readonly OccasionPage[] = [
   {
     slug: 'griha-pravesh-invitations',
     occasionKeys: ['griha-pravesh', 'house-warming'],
-    heading: 'Griha Pravesh & House Warming Invitation Templates',
-    title: 'Griha Pravesh Invitation Templates Online',
+    heading: 'Griha Pravesh & House Warming Invites',
+    title: 'Griha Pravesh Invites Online',
     description:
       'Digital griha pravesh and house warming invitations with the puja muhurat, directions to a new address and live RSVP on one link.',
     intro:

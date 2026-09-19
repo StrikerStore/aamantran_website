@@ -28,7 +28,7 @@ export default function PrivacyPage() {
           <span className={prose.updated}>Last updated: 16 September 2026</span>
 
           <div className={prose.highlight}>
-            <p><strong>The short version:</strong> We collect only what we need to run your digital e-invitation. We never sell your data. Your guest list belongs to you, always. If you try a free preview of a design with your names, we ask for no email or phone number, and what you type is deleted automatically within about a day. <strong>We do not ship physical products</strong> — our service is online only. This policy is written to comply with the Digital Personal Data Protection Act, 2023 (DPDP Act) and the DPDP Rules, 2025.</p>
+            <p><strong>The short version:</strong> We collect only what we need to run your digital e-invitation. We never sell your data. Your guest list belongs to you, always. If you try a free preview of an invite with your names, we ask for no email or phone number, and what you type is deleted automatically within about a day. <strong>We do not ship physical products</strong> — our service is online only. This policy is written to comply with the Digital Personal Data Protection Act, 2023 (DPDP Act) and the DPDP Rules, 2025.</p>
           </div>
 
           <h2>1. Who we are</h2>
@@ -47,17 +47,17 @@ export default function PrivacyPage() {
           </ul>
 
           <h3>Information you give us for a free preview</h3>
-          <p>You can see a design filled in with your own details before buying, without an account and without paying. For this we ask for:</p>
+          <p>You can see an invite filled in with your own details before buying, without an account and without paying. For this we ask for:</p>
           <ul>
-            <li>the names to show on the invitation — the ones the design asks for, at most three;</li>
+            <li>the names to show on the invitation — the ones the invite asks for, at most three;</li>
             <li>the date of the celebration;</li>
             <li>the venue name and, if you choose to give it, the city;</li>
             <li>the ceremonies or events you want to see, with their dates and, if you choose, their times;</li>
-            <li>the design you are previewing.</li>
+            <li>the invite you are previewing.</li>
           </ul>
           <p>We do <strong>not</strong> ask for your email address, phone number or any other way to contact you, and a preview is not linked to any account. Please use only names you are entitled to share — normally your own, your partner&apos;s or your family&apos;s.</p>
           <p>We use these details <strong>only</strong> to show you the preview. The preview link works for <strong>15 minutes</strong>. Anyone you send the link to can see the names and dates on it during that time, so share it only with people you are happy to show them to. The page is marked so search engines do not index it.</p>
-          <p>If you buy the design from that preview, we use the same details to fill in your new invitation so you do not have to type them again; you can change them in the builder before you confirm them.</p>
+          <p>If you buy the invite from that preview, we use the same details to fill in your new invitation so you do not have to type them again; you can change them in the builder before you confirm them.</p>
           <p>To stop one connection creating an unreasonable number of previews, we also keep a <strong>one-way, salted hash of your IP address</strong> — a scrambled value that cannot practically be turned back into the address. We never store the address itself. The hash is deleted along with the preview.</p>
 
           <h3>Information collected automatically</h3>
@@ -72,13 +72,13 @@ export default function PrivacyPage() {
           <p>We use the information we collect only for the following specified purposes:</p>
           <ul>
             <li>Design, build, host, and deliver your digital invitation.</li>
-            <li>Show you a free, temporary preview of a design with the names and dates you enter, and — only if you then buy it — fill your new invitation in with them.</li>
+            <li>Show you a free, temporary preview of an invite with the names and dates you enter, and — only if you then buy it — fill your new invitation in with them.</li>
             <li>Send you your invitation link and important transactional updates related to your order (order confirmation, onboarding, RSVP milestones, event reminders).</li>
             <li>Provide you with your RSVP dashboard and guest management tools.</li>
             <li>Process payments and maintain records required under Indian tax law.</li>
             <li>Respond to your questions, grievances, and support requests.</li>
             <li>Keep the platform secure and prevent fraud and abuse.</li>
-            <li>Improve our templates, features, and overall service quality (using aggregated, de-identified data).</li>
+            <li>Improve our invites, features, and overall service quality (using aggregated, de-identified data).</li>
           </ul>
           <p>We do not send marketing emails without your consent, and we never sell your data.</p>
 

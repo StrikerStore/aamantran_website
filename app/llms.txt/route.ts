@@ -39,27 +39,27 @@ export async function GET(): Promise<Response> {
 
   const templates = catalogue?.templates ?? [];
   const designCount = stats?.total ?? templates.length;
-  const designs = designCount > 0 ? `${designCount} designs` : 'Every design';
+  const designs = designCount > 0 ? `${designCount} invites` : 'Every invite';
   const occasions = indexableOccasionPages(templates);
   const storiesWorthListing = (reviews?.totalCount ?? 0) >= MIN_REVIEWS_FOR_STORIES;
   const price = IS_INTL
-    ? `Prices start at ${startingPrice} per invitation, charged in US dollars with no GST added.`
-    : `Prices start at ${startingPrice} per invitation, plus GST, shown in full before payment.`;
+    ? `Prices start at ${startingPrice} per invite, charged in US dollars.`
+    : `Prices start at ${startingPrice} per invite.`;
 
   const lines: string[] = [
     '# Aamantran',
     '',
-    `> Aamantran is a digital wedding invitation service. Couples choose a design, pay once with no subscription, and fill in their own names, ceremonies, venues, photos and music in a guided builder. The finished invitation is a link they share on WhatsApp. Depending on the design it can include RSVP for each ceremony, a photo gallery, background music, Google Maps venue pins and a countdown. Guests need no app. ${price}`,
+    `> Aamantran is a digital wedding invitation service. Couples choose an invite, pay once with no subscription, and fill in their own names, ceremonies, venues, photos and music in a guided builder. The finished invitation is a link they share on WhatsApp. Depending on the design it can include RSVP for each ceremony, a photo gallery, background music, Google Maps venue pins and a countdown. Guests need no app. ${price}`,
     '',
     `Aamantran means "invitation" in Sanskrit. The service is digital only: no printed cards are produced or shipped. ${SELF_BUILD.long} ${NAME_FREEZE.long} ${ACCESS.long} ${ACCESS.dataRetention} ${PARTIAL_INVITE.long} Operated by PLEXZUU; support on WhatsApp ${SUPPORT.whatsappLabel} or ${SUPPORT.email} (${SUPPORT.hours}).`,
     '',
     '## Key pages',
     '',
-    `- [Home](${url('/')}): The designs on display, the occasions they are grouped by, the traditions they are written for, what a design costs and what comes with it.`,
+    `- [Home](${url('/')}): The invites on display, the occasions they are grouped by, the traditions they are written for, what an invite costs and what comes with it.`,
     `- [Invitations](${url('/templates')}): ${designs}, filterable by occasion, community and price, each with a live demo, its price and its reviews.`,
     `- [Pricing](${url('/pricing')}): One payment per invitation, how the total is made up, what it covers, and the terms.`,
-    `- [How it works](${url('/how-it-works')}): The steps from choosing a design to sharing the link, including the builder steps and the name lock.`,
-    `- [What's included](${url('/features')}): What comes with any design, what depends on the design, and what can be changed after the invitation is live.`,
+    `- [How it works](${url('/how-it-works')}): The steps from choosing an invite to sharing the link, including the builder steps and the name lock.`,
+    `- [What's included](${url('/features')}): What comes with any invite, what depends on the invite, and what can be changed after the invitation is live.`,
     `- [Planning tools](${url('/wedding-planning-tools')}): The ${PLANNING_TOOLS.length} tools in the dashboard — ${PLANNING_TOOLS.map((tool) => tool.name.toLowerCase()).join(', ')} — with what each does and does not do, and a working demo of the budget and tasks.`,
     `- [Help centre](${url('/faq')}): ${FAQ_COUNT} answered questions on ordering, building, RSVPs, WhatsApp sharing, pricing${IS_INTL ? '' : ', GST'} and data privacy.`,
   ];
@@ -76,7 +76,7 @@ export async function GET(): Promise<Response> {
     lines.push('', '## By occasion', '');
     for (const { page, templates: matching } of occasions) {
       const count = matching.length;
-      lines.push(`- [${page.heading}](${url(`/${page.slug}`)}): ${count} ${count === 1 ? 'design' : 'designs'}. ${page.intro}`);
+      lines.push(`- [${page.heading}](${url(`/${page.slug}`)}): ${count} ${count === 1 ? 'invite' : 'invites'}. ${page.intro}`);
     }
   }
 

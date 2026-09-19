@@ -1,0 +1,67 @@
+/*
+ * The price list: every invite, its price, one row each.
+ *
+ * A list rather than a table: on a phone a table's columns squeeze the names
+ * into two lines each, and there are only ever two things to say about a row.
+ */
+.priceList {
+  display: grid;
+  gap: 0;
+  max-width: 720px;
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-divider);
+}
+
+.priceRow {
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.priceLink {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 56px;
+  padding: var(--space-3) var(--space-2);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: background var(--dur-hover) var(--ease-standard);
+}
+
+.priceLink:hover {
+  background: var(--color-blush);
+}
+
+.priceName {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.priceAmounts {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-ui);
+}
+
+.priceWas {
+  color: var(--color-text-muted);
+  font-size: var(--type-small);
+}
+
+.priceNow {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.headline {
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 6vw, 3.2rem);
+  font-weight: 500;
+  line-height: 1.1;
+  margin: var(--space-3) 0 0;
+}

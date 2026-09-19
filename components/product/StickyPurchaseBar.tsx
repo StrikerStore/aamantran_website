@@ -6,7 +6,6 @@ import { TryDemoButton } from '@/components/try-demo/TryDemoButton';
 import { TRY_DEMO } from '@/lib/content/tryDemo';
 import { cx } from '@/lib/cx';
 import { formatMoney, priceFor } from '@/lib/storefront';
-import { IS_INTL } from '@/lib/storefront';
 import styles from './StickyPurchaseBar.module.css';
 
 /**
@@ -77,7 +76,6 @@ export function StickyPurchaseBar({
         <p className={styles.name}>{name}</p>
         <p className={styles.price}>
           {formatMoney(minor)}
-          {!IS_INTL && <span className={styles.tax}> + GST</span>}
         </p>
       </div>
       <div className={styles.buttons}>

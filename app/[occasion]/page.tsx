@@ -231,10 +231,10 @@ export default async function OccasionLandingPage({ params, searchParams }: Prop
           <section id="designs" aria-labelledby="designs-heading" className={styles.section}>
             <h2 id="designs-heading" className={styles.sectionTitle}>
               {catalogueFailed
-                ? 'Designs'
+                ? 'Invites'
                 : narrowedTo
-                  ? `${narrowedTo}: ${pluralize(shown.length, 'design')}`
-                  : `${pluralize(templates.length, 'design')} for this occasion`}
+                  ? `${narrowedTo}: ${pluralize(shown.length, 'invite')}`
+                  : `${pluralize(templates.length, 'invite')} for this occasion`}
             </h2>
 
             {!catalogueFailed && traditions.length > 0 && (
@@ -244,7 +244,7 @@ export default async function OccasionLandingPage({ params, searchParams }: Prop
             {catalogueFailed ? (
               <Notice
                 tone="error"
-                title="We couldn't load the designs just now"
+                title="We couldn't load the invites just now"
                 action={
                   <LinkButton href="/templates" variant="secondary" size="sm">
                     Try the full gallery
@@ -269,7 +269,7 @@ export default async function OccasionLandingPage({ params, searchParams }: Prop
                 </ul>
                 <p className={styles.more}>
                   <LinkButton href="/templates" variant="secondary">
-                    See every invitation design
+                    See every invite
                   </LinkButton>
                 </p>
               </>
@@ -281,7 +281,7 @@ export default async function OccasionLandingPage({ params, searchParams }: Prop
               What to have ready
             </h2>
             <p className={styles.sectionIntro}>
-              You fill these in yourself, in the builder, after you buy. Nothing is needed before you choose a design.
+              You fill these in yourself, in the builder, after you buy. Nothing is needed before you choose an invite.
             </p>
             <ol className={styles.prepare}>
               {page.prepare.map((item) => (
@@ -295,7 +295,7 @@ export default async function OccasionLandingPage({ params, searchParams }: Prop
               Wording you can borrow
             </h2>
             <p className={styles.sectionIntro}>
-              Every line of text on the invitation is yours to type, so nothing here is fixed by the design. Adapt these
+              Every line of text on the invitation is yours to type, so nothing here is fixed by the invite. Adapt these
               or write your own.
             </p>
             <ul className={styles.wording}>
@@ -382,7 +382,7 @@ export default async function OccasionLandingPage({ params, searchParams }: Prop
                 </li>
               ))}
               <li>
-                <Link href="/templates">Every invitation design</Link>
+                <Link href="/templates">Every invite</Link>
               </li>
             </ul>
           </section>

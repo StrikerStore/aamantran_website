@@ -41,7 +41,7 @@ export function AisleTiles({
             <Heading className={styles.label}>{aisle.label}</Heading>
             <p className={styles.blurb}>{aisle.blurb}</p>
             <p className={styles.count}>
-              {count > 0 ? pluralize(count, 'design') : 'Coming soon — tell us'}
+              {count > 0 ? pluralize(count, 'invite') : 'Coming soon — tell us'}
             </p>
           </>
         );

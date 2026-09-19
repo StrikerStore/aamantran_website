@@ -27,7 +27,7 @@ export interface ShopStep {
  * your account and the private preview — is PURCHASE_STEPS, on /how-it-works.
  */
 export const SHOP_STEPS: readonly ShopStep[] = [
-  { id: 'choose', title: 'Choose a design', text: 'Open its live demo, or try it with your own names first.' },
+  { id: 'choose', title: 'Choose an invite', text: 'Open its live demo, or try it with your own names first.' },
   { id: 'pay', title: 'Pay once', text: 'One payment, no subscription, full total shown before you pay.' },
   { id: 'build', title: 'Fill it in yourself', text: 'Names, ceremonies, venues, photos and music, in a guided builder.' },
   { id: 'share', title: 'Share one link', text: 'Send it on WhatsApp and watch the RSVPs arrive.' },
@@ -52,7 +52,7 @@ export const PROOF_TILES: readonly ProofTile[] = [
   {
     id: 'rsvp',
     title: 'RSVP for each ceremony',
-    text: "Guests tick the ceremonies they'll attend and you see a headcount for each, on the designs that support it.",
+    text: "Guests tick the ceremonies they'll attend and you see a headcount for each, on the invites that support it.",
     href: '/features',
   },
   {

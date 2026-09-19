@@ -16,9 +16,9 @@ export const TRY_DEMO = {
   ctaShort: 'Try free',
   bandTitle: 'See it with your names in about a minute',
   bandText:
-    'Enter the names, the date, the venue and the events, and see this design filled in with them. Free, with no account and no email address.',
-  watermarkNote: 'The preview is watermarked, and RSVPs and wishes on it don’t send anything. Buy the design to keep these details and remove the watermark.',
-  buyWithDetails: 'Buy this design, keep these details',
+    'Enter the names, the date, the venue and the events, and see this invite filled in with them. Free, with no account and no email address.',
+  watermarkNote: 'The preview is watermarked, and RSVPs and wishes on it don’t send anything. Buy the invite to keep these details and remove the watermark.',
+  buyWithDetails: 'Buy this invite, keep these details',
   buyNote: 'After you pay and create your account, your invitation starts with these names, dates, venue and events. You can change any of them before you confirm the names.',
   checkoutNote:
     'Details from your demo — the names, date, venue and events — will be added to your new invitation if you buy within a day of making the demo. You can change them in the builder.',
@@ -28,5 +28,5 @@ export const TRY_DEMO = {
 
 /** Shown under the form, before anything is sent. */
 export function tryDemoPrivacyNote(linkMinutes: number): string {
-  return `We use these details only to show your preview. The link works for ${linkMinutes} minutes, and anyone you send it to can see the names on it. Everything you type is deleted about a day later, unless you buy this design and it becomes part of your invitation.`;
+  return `We use these details only to show your preview. The link works for ${linkMinutes} minutes, and anyone you send it to can see the names on it. Everything you type is deleted about a day later, unless you buy this invite and it becomes part of your invitation.`;
 }

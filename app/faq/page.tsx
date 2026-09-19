@@ -81,9 +81,9 @@ export default function FaqPage() {
         <section aria-labelledby="cta-heading" className={styles.cta}>
           <Container>
             <h2 id="cta-heading" className={styles.ctaTitle}>
-              Ready to look at designs?
+              Ready to look at invites?
             </h2>
-            <p className={styles.ctaText}>Open any design&rsquo;s live demo to see it the way your guests will.</p>
+            <p className={styles.ctaText}>Open any invite&rsquo;s live demo to see it the way your guests will.</p>
             <LinkButton href="/templates">Browse invitations</LinkButton>
           </Container>
         </section>

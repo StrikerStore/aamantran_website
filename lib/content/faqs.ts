@@ -36,7 +36,7 @@ const ALL_CATEGORIES: FaqCategory[] = [
       {
         id: 'how-to-order',
         q: 'How do I place an order?',
-        a: 'Choose a design on the invitations page and pay once. After payment you create your account and build the invitation yourself in your dashboard, adding names, venues, ceremonies, photos and music step by step. Publish it and your link is live. Aamantran is digital only: nothing is printed or shipped.',
+        a: 'Choose an invite on the invitations page and pay once. After payment you create your account and build the invitation yourself in your dashboard, adding names, venues, ceremonies, photos and music step by step. Publish it and your link is live. Aamantran is digital only: nothing is printed or shipped.',
         link: { href: '/templates', label: 'Browse invitations' },
       },
       {
@@ -57,41 +57,41 @@ const ALL_CATEGORIES: FaqCategory[] = [
       },
       {
         id: 'sample',
-        q: 'Can I see a design before I buy?',
-        a: 'Yes. Every design has a live demo on its page, so you can open it the way your guests will before you buy.',
-        link: { href: '/templates', label: 'See the designs' },
+        q: 'Can I see an invite before I buy?',
+        a: 'Yes. Every invite has a live demo on its page, so you can open it the way your guests will before you buy.',
+        link: { href: '/templates', label: 'See the invites' },
       },
       {
         id: 'try-with-names',
-        q: 'Can I see a design with our own names before buying?',
-        a: `Yes, on any design with a "${TRY_DEMO.cta}" button, whatever the occasion. Enter the names the design asks for, the date, the venue and the events, and you see that design filled in with them — free, with no account and no email address. The preview is watermarked, RSVPs and wishes on it don't send anything, and the link works for ${TRY_DEMO.linkMinutes} minutes. If you buy that design within a day, your new invitation starts with those details for you to check, without the watermark; otherwise what you typed is deleted about a day later.`,
+        q: 'Can I see an invite with our own names before buying?',
+        a: `Yes, on any invite with a "${TRY_DEMO.cta}" button, whatever the occasion. Enter the names the invite asks for, the date, the venue and the events, and you see that invite filled in with them — free, with no account and no email address. The preview is watermarked, RSVPs and wishes on it don't send anything, and the link works for ${TRY_DEMO.linkMinutes} minutes. If you buy that invite within a day, your new invitation starts with those details for you to check, without the watermark; otherwise what you typed is deleted about a day later.`,
         link: { href: '/privacy', label: 'How we handle preview details' },
       },
     ],
   },
   {
     id: 'design',
-    title: 'Design & customisation',
+    title: 'Invite & customisation',
     faqs: [
       {
         id: 'choose-design',
-        q: 'Can I choose any design?',
-        a: "Yes. Browse the gallery, open any design's live demo, and buy the one you like. You then add your own names, dates, venues and ceremonies to it.",
+        q: 'Can I choose any invite?',
+        a: "Yes. Browse the gallery, open any invite's live demo, and buy the one you like. You then add your own names, dates, venues and ceremonies to it.",
       },
       {
         id: 'own-fonts',
         q: 'Can I use my own fonts or colours?',
-        a: "No. Each design's layout, fonts and colours are fixed, and you fill in the content. If you want a different look, pick the design that has it; every one has a live demo.",
+        a: "No. Each invite's layout, fonts and colours are fixed, and you fill in the content. If you want a different look, pick the invite that has it; every one has a live demo.",
       },
       {
         id: 'photos',
         q: 'Can I add my own photos?',
-        a: 'Yes, in the designs that have space for them. You upload photos yourself in the Photos & Music step, and designs differ in how many they take.',
+        a: 'Yes, in the invites that have space for them. You upload photos yourself in the Photos & Music step, and invites differ in how many they take.',
       },
       {
         id: 'music',
         q: 'Can I add background music?',
-        a: 'Yes, if the design includes music. Upload your own track in the Photos & Music step, or pick one from our library of licensed tracks.',
+        a: 'Yes, if the invite includes music. Upload your own track in the Photos & Music step, or pick one from our library of licensed tracks.',
       },
       {
         id: 'can-i-edit',
@@ -101,7 +101,7 @@ const ALL_CATEGORIES: FaqCategory[] = [
       {
         id: 'languages',
         q: 'Can the invitation be in Hindi or another language?',
-        a: "Each design supports particular languages, listed on its page, and you choose one in the Language step. Your own text, such as names, venues and messages, appears exactly as you type it; Aamantran doesn't translate it.",
+        a: "Each invite supports particular languages, listed on its page, and you choose one in the Language step. Your own text, such as names, venues and messages, appears exactly as you type it; Aamantran doesn't translate it.",
       },
     ],
   },
@@ -148,7 +148,7 @@ const ALL_CATEGORIES: FaqCategory[] = [
       {
         id: 'gst',
         q: 'Is GST included in the price?',
-        a: 'GST is added to the design price at checkout, and you see the full total, GST included, before you pay.',
+        a: 'GST is added to the invite price at checkout, and you see the full total, GST included, before you pay.',
         storefront: 'IN',
       },
       {
@@ -171,8 +171,8 @@ const ALL_CATEGORIES: FaqCategory[] = [
       },
       {
         id: 'switch-design',
-        q: 'Can I switch to a different design after buying?',
-        a: 'Contact support and our team can move your invitation to another design. If the new design costs more, you pay the difference.',
+        q: 'Can I switch to a different invite after buying?',
+        a: 'Contact support and our team can move your invitation to another invite. If the new invite costs more, you pay the difference.',
         link: { href: '/contact', label: 'Contact support' },
       },
       {

@@ -106,7 +106,7 @@ export default function ContactClient() {
           <p className={page.eyebrow}>Get in touch</p>
           <h1 className={page.title}>Ask us anything</h1>
           <p className={page.intro}>
-            Before you buy or after — a question about a design, a detail you cannot find, or something that has gone
+            Before you buy or after — a question about an invite, a detail you cannot find, or something that has gone
             wrong. We answer {SUPPORT.hours}, {SUPPORT_RESPONSE_TIME.value}.
           </p>
         </Container>
@@ -201,7 +201,7 @@ export default function ContactClient() {
                     <TextArea
                       {...control}
                       name="message"
-                      placeholder="Tell us what you need — the design you are looking at, your ceremonies, or what has gone wrong."
+                      placeholder="Tell us what you need — the invite you are looking at, your ceremonies, or what has gone wrong."
                     />
                   )}
                 </Field>

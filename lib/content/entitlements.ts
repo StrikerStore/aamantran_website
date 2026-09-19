@@ -55,7 +55,7 @@ export interface Inclusion {
 }
 
 export const INCLUDED: readonly Inclusion[] = [
-  { id: 'design', title: 'Your chosen design, with your details', detail: 'One event, with every ceremony on one link.', templateDependent: false },
+  { id: 'design', title: 'Your chosen invite, with your details', detail: 'One event, with every ceremony on one link.', templateDependent: false },
   { id: 'link', title: 'Your own invitation link', detail: 'Opens in any browser, with no app for guests, and shows a preview card in WhatsApp.', templateDependent: false },
   { id: 'partial', title: PARTIAL_INVITE.short, detail: 'For guests invited to only some ceremonies.', templateDependent: false },
   { id: 'rsvp', title: 'RSVP for each ceremony', detail: "Guests tick the ceremonies they'll attend, with plus-ones, meal preference and a message. You see the headcount for each.", templateDependent: true },
@@ -97,14 +97,14 @@ export const CHANGEABLE = {
     'Special details such as your story and contact person',
     'Whether RSVP and wishes are shown',
     'Instagram and YouTube links',
-    "The invitation's language, from those the design supports",
+    "The invitation's language, from those the invite supports",
     'Whether the invitation is published',
   ],
   fixed: [
     'Confirmed names: corrections go through support',
-    "The design's layout, fonts and colours",
-    'Which languages a design supports',
-    'The design itself: to move to another, contact support, and if it costs more you pay the difference',
+    "The invite's layout, fonts and colours",
+    'Which languages an invite supports',
+    'The invite itself: to move to another, contact support, and if it costs more you pay the difference',
   ],
 } as const;
 

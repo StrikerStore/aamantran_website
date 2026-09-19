@@ -11,6 +11,7 @@ import { RemoteImage } from '@/components/ui/RemoteImage';
 import { apiRequest } from '@/lib/api/client';
 import { createOrder, getOffers, isDummyOrder, isRazorpayOrder, previewCoupon, verifyRazorpayPayment } from '@/lib/api/checkout';
 import { openRazorpayCheckout } from '@/lib/razorpay';
+import { rankOffers } from '@/lib/offers';
 import type { OfferCoupon, PriceBreakup } from '@/lib/api/types';
 import {
   contactError,
@@ -481,7 +482,7 @@ function CheckoutForm({
 
             <dl className={styles.price} aria-live="polite" aria-busy={!priceConfirmed || coupon.kind === 'checking'}>
               <div>
-                <dt>Design price</dt>
+                <dt>Invite price</dt>
                 <dd>{money(breakup.baseAmount)}</dd>
               </div>
               {breakup.discountAmount > 0 && (
@@ -603,7 +604,8 @@ function CheckoutForm({
 
               {offers.length > 0 && (
                 <ul className={styles.offers}>
-                  {offers.map((offer) => {
+                  {/* The ones this buyer can use first, biggest saving first. */}
+                  {rankOffers(offers).map((offer) => {
                     const locked = !offer.eligible;
                     const applied = appliedCode === offer.code;
                     return (
@@ -611,6 +613,9 @@ function CheckoutForm({
                         <div className={styles.offerText}>
                           <p className={styles.offerLabel}>
                             <span className={styles.offerCode}>{offer.code}</span> {offer.label}
+                          </p>
+                          <p className={locked ? styles.offerIneligible : styles.offerEligible}>
+                            {locked ? 'Not eligible yet' : 'You are eligible'}
                           </p>
                           {offer.condition && <p className={ui.small}>{offer.condition}</p>}
                           {locked && offer.unlockMessage && <p className={ui.small}>{offer.unlockMessage}</p>}

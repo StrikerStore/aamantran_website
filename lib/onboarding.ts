@@ -24,7 +24,7 @@ export function parseOnboardingAddress(search: string): OnboardingAddress {
   return {
     paymentId: params.get('paymentId') || '',
     slug: params.get('slug') || '',
-    templateName: params.get('template') || 'your selected template',
+    templateName: params.get('template') || 'your selected invite',
     orderId: params.get('orderId') || '',
     amountMinor: Number(params.get('amount') || 0),
     // PayU's success redirect appends the order's currency; this deployment's

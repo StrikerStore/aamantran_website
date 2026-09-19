@@ -38,7 +38,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function StoriesPage() {
   const reviews = await getFeaturedReviews(50);
   const genuine = reviews?.totalCount ?? 0;
-  const curated = reviews?.curatedCount ?? 0;
 
   return (
     <div className={styles.page}>
@@ -64,7 +63,6 @@ export default async function StoriesPage() {
             reviews={reviews?.reviews ?? []}
             avgRating={reviews?.avgRating ?? 0}
             totalCount={genuine}
-            curatedCount={curated}
             showTemplate
             emptyMessage="No reviews have been left yet. When couples who bought an invitation write one, it appears here — and until then this page stays out of search results."
           />
@@ -81,12 +79,12 @@ export default async function StoriesPage() {
             Where these come from
           </h2>
           <p className={styles.prose}>
-            After the event, couples can leave a review from their dashboard. Each one is attached to the design they
-            bought, so you can read what people said about the design you are considering on its own page.
+            After the event, couples can leave a review from their dashboard. Each one is attached to the invite they
+            bought, so you can read what people said about the invite you are considering on its own page.
           </p>
           <ul className={styles.linkRow}>
             <li>
-              <Link href="/templates">Browse the designs</Link>
+              <Link href="/templates">Browse the invites</Link>
             </li>
             <li>
               <Link href="/how-it-works">How it works</Link>
@@ -101,9 +99,9 @@ export default async function StoriesPage() {
       <section aria-labelledby="cta-heading" className={styles.cta}>
         <Container>
           <h2 id="cta-heading" className={styles.ctaTitle}>
-            See the designs for yourself
+            See the invites for yourself
           </h2>
-          <p className={styles.ctaText}>Every design has a live demo you can open before you buy.</p>
+          <p className={styles.ctaText}>Every invite has a live demo you can open before you buy.</p>
           <LinkButton href="/templates">Browse invitations</LinkButton>
         </Container>
       </section>

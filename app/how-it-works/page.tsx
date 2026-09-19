@@ -19,7 +19,7 @@ import styles from '../content-page.module.css';
  */
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'How Aamantran Works — From Choosing a Design to Sharing',
+  title: 'How Aamantran Works — From Choosing an Invite to Sharing',
   description:
     'What happens after you buy: create your account, fill in names, venues, ceremonies, photos and music in a guided builder, preview privately, publish and share.',
   path: '/how-it-works',
@@ -37,7 +37,7 @@ export default function HowItWorksPage() {
       <header className={styles.hero}>
         <Container>
           <p className={styles.eyebrow}>How it works</p>
-          <h1 className={styles.title}>You choose the design. You fill in the details.</h1>
+          <h1 className={styles.title}>You choose the invite. You fill in the details.</h1>
           <p className={styles.intro}>{SELF_BUILD.long}</p>
           <div className={styles.heroActions}>
             <LinkButton href="/templates">Browse invitations</LinkButton>
@@ -51,7 +51,7 @@ export default function HowItWorksPage() {
       <Container>
         <section aria-labelledby="journey-heading" className={styles.section}>
           <h2 id="journey-heading" className={styles.sectionTitle}>
-            From choosing a design to sharing your link
+            From choosing an invite to sharing your link
           </h2>
           <ol className={styles.steps}>
             {PURCHASE_STEPS.map((step, i) => (
@@ -168,7 +168,7 @@ export default function HowItWorksPage() {
             Ready when you are
           </h2>
           <p className={styles.ctaText}>
-            Open any design&rsquo;s live demo to see it the way your guests will, then make it yours.
+            Open any invite&rsquo;s live demo to see it the way your guests will, then make it yours.
           </p>
           <LinkButton href="/templates">Browse invitations</LinkButton>
         </Container>

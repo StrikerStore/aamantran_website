@@ -17,10 +17,10 @@ export const BUILDER_STEPS: readonly BuilderStep[] = [
   { id: 'people', label: 'People & Names', youEnter: 'The names on your invitation. You confirm them at the end of this step, and they lock after that.' },
   { id: 'venues', label: 'Venues', youEnter: "Each venue's name and address. Paste a Google Maps link and the location fills in." },
   { id: 'functions', label: 'Ceremonies', youEnter: "Each ceremony's date, time, venue, dress code and notes." },
-  { id: 'media', label: 'Photos & Music', youEnter: 'Photos, video and background music for the spaces your design has.' },
-  { id: 'custom', label: 'Special Details', youEnter: 'Anything else your design asks for, such as your story or a contact person.' },
+  { id: 'media', label: 'Photos & Music', youEnter: 'Photos, video and background music for the spaces your invite has.' },
+  { id: 'custom', label: 'Special Details', youEnter: 'Anything else your invite asks for, such as your story or a contact person.' },
   { id: 'social', label: 'Guest Options', youEnter: 'Instagram and YouTube links, and whether RSVP and wishes are shown.' },
-  { id: 'language', label: 'Language', youEnter: "Which of your design's languages the invitation uses." },
+  { id: 'language', label: 'Language', youEnter: "Which of your invite's languages the invitation uses." },
   { id: 'publish', label: 'Preview & Publish', youEnter: 'Check a private preview, choose your link, add an optional second link for selected ceremonies, and publish.' },
 ];
 
@@ -40,7 +40,7 @@ export interface PurchaseStep {
 
 /** From first visit to RSVPs, for "How it works". The customer builds at step 4. */
 export const PURCHASE_STEPS: readonly PurchaseStep[] = [
-  { id: 'choose', title: 'Choose your design', text: 'Browse the invitations and open any live demo to see it the way your guests will.' },
+  { id: 'choose', title: 'Choose your invite', text: 'Browse the invitations and open any live demo to see it the way your guests will.' },
   { id: 'pay', title: 'Pay once', text: 'One payment, no subscription. You see the full total before you pay.' },
   { id: 'account', title: 'Create your account', text: 'Set up your dashboard login straight after payment.' },
   { id: 'build', title: 'Build it yourself', text: 'Add your names, venues, ceremonies, photos and music in the guided builder.' },

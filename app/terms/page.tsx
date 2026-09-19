@@ -37,7 +37,7 @@ export default function TermsPage() {
           <p>Aamantran is a digital wedding invitation platform that allows couples to create, customise, and share digital invitations and manage RSVPs from their guests. <strong>All purchases are for digital e-invitations only.</strong> We do not print, ship, or deliver any physical products (including printed cards, paper invitations, or merchandise).</p>
           <p>Our service includes:</p>
           <ul>
-            <li>Access to a library of invitation templates</li>
+            <li>Access to a library of invites</li>
             <li>A couple dashboard to personalise and manage your invitation</li>
             <li>A guest-facing invitation microsite with RSVP functionality</li>
             <li>Analytics and guest management tools</li>
@@ -61,11 +61,11 @@ export default function TermsPage() {
             <li>Distribute spam or unsolicited messages to guests</li>
             <li>Infringe on any intellectual property rights</li>
             <li>Attempt to gain unauthorised access to our systems</li>
-            <li>Resell, sublicense, or commercially exploit our templates or platform</li>
+            <li>Resell, sublicense, or commercially exploit our invites or platform</li>
           </ul>
 
           <h2>7. Intellectual property</h2>
-          <p>All templates, designs, UI elements, and code are owned by Aamantran and protected by copyright. You may use your purchased invitation for personal use only. You may not copy, modify, resell, or create derivative works from our templates.</p>
+          <p>All invites, UI elements, and code are owned by Aamantran and protected by copyright. You may use your purchased invitation for personal use only. You may not copy, modify, resell, or create derivative works from our invites.</p>
 
           <h2>8. Limitation of liability</h2>
           <p>Aamantran is not liable for any indirect, incidental, or consequential damages arising from your use of our service. Our maximum liability is limited to the amount you paid for the service in the 3 months prior to the claim.</p>

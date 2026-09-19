@@ -72,11 +72,11 @@ export function PaymentFailedRedirect() {
         live="polite"
         action={
           <LinkButton href="/templates" variant="secondary" size="sm">
-            Choose your design again
+            Choose your invite again
           </LinkButton>
         }
       >
-        Nothing was charged. Open the design you wanted and try again — your card is not held in the meantime.
+        Nothing was charged. Open the invite you wanted and try again — your card is not held in the meantime.
       </Notice>
     </div>
   );

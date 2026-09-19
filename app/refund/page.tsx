@@ -43,7 +43,7 @@ export default function RefundPage() {
           <p>Refunds are not issued in the following cases:</p>
           <ul>
             <li>Your invitation has been delivered and is live (the link has been sent to you).</li>
-            <li>You have changed your mind about the design after the invitation is live.</li>
+            <li>You have changed your mind about the invite after the invitation is live.</li>
             <li>The details are wrong because of what was entered in the builder. You fill the invitation in yourself, and you can correct most details at any time — names are the exception, and support can change a confirmed name for you.</li>
             <li>You no longer need the invitation (e.g., event cancelled or postponed) — we can update dates and details for free.</li>
             <li>More than 48 hours have passed since the invitation was delivered.</li>

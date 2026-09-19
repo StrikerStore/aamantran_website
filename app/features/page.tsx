@@ -35,8 +35,8 @@ export default function FeaturesPage() {
           <p className={styles.eyebrow}>What&rsquo;s included</p>
           <h1 className={styles.title}>Everything that comes with your invitation</h1>
           <p className={styles.intro}>
-            One payment covers the design, the invitation itself and the tools around it. Some parts depend on the
-            design you choose — those are marked, and each design&rsquo;s page lists exactly what it supports.
+            One payment covers the invite and the tools around it. Some parts depend on the
+            invite you choose — those are marked, and each invite&rsquo;s page lists exactly what it supports.
           </p>
           <div className={styles.heroActions}>
             <LinkButton href="/templates">Browse invitations</LinkButton>
@@ -47,14 +47,14 @@ export default function FeaturesPage() {
       <Container>
         <section aria-labelledby="included-heading" className={styles.section}>
           <h2 id="included-heading" className={styles.sectionTitle}>
-            Included with any design
+            Included with any invite
           </h2>
           <ul className={`${styles.cards} ${styles.cardsThree}`}>
             {INCLUDED.map((item) => (
               <li key={item.id} className={styles.card}>
                 <h3 className={styles.cardTitle}>{item.title}</h3>
                 <p className={styles.cardText}>{item.detail}</p>
-                {item.templateDependent && <p className={styles.cardLimit}>Where the design supports it.</p>}
+                {item.templateDependent && <p className={styles.cardLimit}>Where the invite supports it.</p>}
               </li>
             ))}
           </ul>
@@ -120,10 +120,10 @@ export default function FeaturesPage() {
       <section aria-labelledby="cta-heading" className={styles.cta}>
         <Container>
           <h2 id="cta-heading" className={styles.ctaTitle}>
-            Start with a design you love
+            Start with an invite you love
           </h2>
           <p className={styles.ctaText}>
-            Every design has a live demo. Open a few, then pick the one that feels like your celebration.
+            Every invite has a live demo. Open a few, then pick the one that feels like your celebration.
           </p>
           <LinkButton href="/templates">Browse invitations</LinkButton>
         </Container>

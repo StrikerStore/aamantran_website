@@ -46,13 +46,13 @@ export const COLLECTIONS: Collection[] = [
   {
     slug: 'hindu-wedding-invitations',
     community: 'hindu',
-    heading: 'Hindu Wedding Invitation Templates',
+    heading: 'Hindu Wedding Invites',
     short: 'Hindu weddings',
-    title: 'Hindu Wedding Invitation Templates Online',
+    title: 'Hindu Wedding Invites Online',
     description:
       'Digital Hindu wedding invitations with every ceremony on one link — mehendi, haldi, sangeet and the wedding — plus live RSVP and WhatsApp sharing.',
     intro:
-      'A Hindu wedding is rarely a single afternoon. It unfolds over days — mehendi, haldi, sangeet, the ceremony itself, then the reception — each with its own guests, its own venue and often its own dress code. A printed card struggles with that, which is why so many families end up sending a second card and then a flurry of corrections on WhatsApp. These designs carry every function on one link, so a guest can see exactly which events they are invited to and reply to each one separately.',
+      'A Hindu wedding is rarely a single afternoon. It unfolds over days — mehendi, haldi, sangeet, the ceremony itself, then the reception — each with its own guests, its own venue and often its own dress code. A printed card struggles with that, which is why so many families end up sending a second card and then a flurry of corrections on WhatsApp. These invites carry every function on one link, so a guest can see exactly which events they are invited to and reply to each one separately.',
     notes: [
       {
         heading: 'Every function on one link',
@@ -60,7 +60,7 @@ export const COLLECTIONS: Collection[] = [
       },
       {
         heading: 'Traditional invocations, kept intact',
-        body: 'Invitations in many families open with an invocation to Ganesha, and elders are named before the couple. Every text block is yours to write, so the wording your family uses is the wording that appears — nothing is fixed by the template.',
+        body: 'Invitations in many families open with an invocation to Ganesha, and elders are named before the couple. Every text block is yours to write, so the wording your family uses is the wording that appears — nothing is fixed by the invite.',
       },
       {
         heading: 'Changes after you have sent it',
@@ -71,13 +71,13 @@ export const COLLECTIONS: Collection[] = [
   {
     slug: 'muslim-wedding-invitations',
     community: 'muslim',
-    heading: 'Muslim Wedding & Nikah Invitation Templates',
+    heading: 'Muslim Wedding & Nikah Invites',
     short: 'Muslim weddings & nikah',
-    title: 'Muslim Nikah & Walima Invitation Templates',
+    title: 'Muslim Nikah & Walima Invites',
     description:
       'Digital Nikah and Walima invitations with separate guest lists per event, live RSVP tracking and one WhatsApp-ready link for the whole celebration.',
     intro:
-      'A Nikah and a Walima are two occasions, and they are frequently two guest lists — the Nikah more intimate, the Walima broader. Sending one card for both makes that awkward to express; sending two doubles the cost and the confusion. These designs let both sit on one link while each keeps its own guest list, so a guest invited to the Walima alone sees the Walima, and nobody has to be told which parts of the card apply to them.',
+      'A Nikah and a Walima are two occasions, and they are frequently two guest lists — the Nikah more intimate, the Walima broader. Sending one card for both makes that awkward to express; sending two doubles the cost and the confusion. These invites let both sit on one link while each keeps its own guest list, so a guest invited to the Walima alone sees the Walima, and nobody has to be told which parts of the card apply to them.',
     notes: [
       {
         heading: 'Nikah and Walima, separately invited',
@@ -85,7 +85,7 @@ export const COLLECTIONS: Collection[] = [
       },
       {
         heading: 'Your wording, including the Arabic',
-        body: 'Invitations commonly open with the Bismillah and may name both families in a set order. All of that is free text, so the phrasing and the script are yours — the design does not impose a formula.',
+        body: 'Invitations commonly open with the Bismillah and may name both families in a set order. All of that is free text, so the phrasing and the script are yours — the invite does not impose a formula.',
       },
       {
         heading: 'Shared the way families actually share',
@@ -96,13 +96,13 @@ export const COLLECTIONS: Collection[] = [
   {
     slug: 'sikh-wedding-invitations',
     community: 'sikh',
-    heading: 'Sikh Wedding Invitation Templates',
+    heading: 'Sikh Wedding Invites',
     short: 'Sikh weddings',
-    title: 'Sikh & Anand Karaj Invitation Templates',
+    title: 'Sikh & Anand Karaj Invites',
     description:
       'Digital Sikh wedding invitations covering the Anand Karaj, the functions around it and the reception on one link, with per-event RSVP and WhatsApp sharing.',
     intro:
-      'An Anand Karaj takes place in the morning, in a gurdwara, and the celebration around it usually spans several days — a mehendi or ladies sangeet before, langar after, a reception later. Guests need to know not only where to be but when, because a ceremony that begins early leaves no room for a late arrival. These designs put each function on its own card within a single link, with the timing and venue attached to each.',
+      'An Anand Karaj takes place in the morning, in a gurdwara, and the celebration around it usually spans several days — a mehendi or ladies sangeet before, langar after, a reception later. Guests need to know not only where to be but when, because a ceremony that begins early leaves no room for a late arrival. These invites put each function on its own card within a single link, with the timing and venue attached to each.',
     notes: [
       {
         heading: 'Morning timings guests actually read',
@@ -123,11 +123,11 @@ export const COLLECTIONS: Collection[] = [
     community: 'universal',
     heading: 'Modern & Non-Religious Wedding Invitations',
     short: 'Modern & non-religious',
-    title: 'Modern Digital Wedding Invitation Templates',
+    title: 'Modern Digital Wedding Invites',
     description:
       'Minimal, non-religious digital wedding invitations — clean typography, live RSVP, a photo gallery and one WhatsApp-ready link for every event.',
     intro:
-      'Not every wedding wants ritual imagery on the invitation. Interfaith couples, civil ceremonies, destination weddings and couples who simply prefer restraint all need a card that carries the same information without committing to the iconography of one tradition. These designs lean on typography, space and photography instead — and because nothing in them is tradition-specific, they adapt to a ceremony of any shape.',
+      'Not every wedding wants ritual imagery on the invitation. Interfaith couples, civil ceremonies, destination weddings and couples who simply prefer restraint all need a card that carries the same information without committing to the iconography of one tradition. These invites lean on typography, space and photography instead — and because nothing in them is tradition-specific, they adapt to a ceremony of any shape.',
     notes: [
       {
         heading: 'Nothing assumed about your ceremony',
@@ -138,7 +138,7 @@ export const COLLECTIONS: Collection[] = [
         body: 'Destination and interfaith weddings usually mean guests arriving from several places. Each event carries a map pin and its own RSVP, so travel plans and headcounts stay legible.',
       },
       {
-        heading: 'Photography as the design',
+        heading: 'Invites built around a photograph',
         body: 'With less ornament doing the work, your own photographs carry the invitation — a gallery inside it, and a preview image that appears when the link is shared.',
       },
     ],

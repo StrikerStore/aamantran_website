@@ -162,7 +162,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <aside className={styles.ctaBand}>
             <h2 className={styles.ctaTitle}>Ready to make your own invitation?</h2>
             <p className={styles.ctaText}>
-              Every design has a live demo you can open before you buy. From {startingPrice}, paid once, and you fill in
+              Every invite has a live demo you can open before you buy. From {startingPrice}, paid once, and you fill in
               your own details.
             </p>
             <LinkButton href="/templates">Browse invitations</LinkButton>

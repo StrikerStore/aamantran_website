@@ -53,7 +53,7 @@ export function Capabilities({ capabilities }: { capabilities: TemplateCapabilit
           </div>
         ))}
       </dl>
-      <p className={styles.note}>Read from this design itself, so it matches what you receive.</p>
+      <p className={styles.note}>Read from this invite itself, so it matches what you receive.</p>
     </div>
   );
 }

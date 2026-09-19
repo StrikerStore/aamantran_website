@@ -15,14 +15,12 @@ export function ReviewList({
   reviews,
   avgRating,
   totalCount,
-  curatedCount,
-  emptyMessage = 'No reviews for this design yet. Reviews come from couples who bought it and finished their event.',
+  emptyMessage = 'No reviews for this invite yet. Reviews come from couples who bought it and finished their event.',
   showTemplate = false,
 }: {
   reviews: Review[];
   avgRating: number;
   totalCount: number;
-  curatedCount: number;
   /** Shown instead of the list when there is nothing to show. */
   emptyMessage?: string;
   /** Names the design each review is about — for lists that span designs. */

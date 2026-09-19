@@ -225,3 +225,20 @@
   text-align: center;
   color: var(--color-text-muted);
 }
+
+/* Whether an offer applies, said in words as well as by its button. */
+.offerEligible,
+.offerIneligible {
+  margin: 2px 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 600;
+}
+
+.offerEligible {
+  color: var(--color-success-text);
+}
+
+.offerIneligible {
+  color: var(--color-text-muted);
+}

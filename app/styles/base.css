@@ -18,14 +18,26 @@ html {
   scroll-behavior: smooth;
 }
 
+/*
+ * One stray wide child must never turn the page into a sideways scroller.
+ *
+ * `overflow-x: hidden` on body alone does not hold: when the html element is
+ * the scrolling box — which it is — the overflow propagates up to it and the
+ * page scrolls anyway. Both elements are clipped, and `clip` rather than
+ * `hidden` so neither becomes a scroll container, which would break
+ * `position: sticky` inside them.
+ */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   background: var(--color-canvas);
   color: var(--color-text);
   font-family: var(--font-ui);
   line-height: var(--leading-body);
-  /* One stray wide child must never turn the whole page into a sideways
-     scroller; sections that need to bleed do it deliberately. */
-  overflow-x: hidden;
 }
 
 /*

@@ -41,7 +41,7 @@ export function TraditionTiles({ templates }: { templates: readonly TemplateSumm
             />
             <span className={styles.body}>
               <span className={styles.label}>{collection.short}</span>
-              <span className={styles.count}>{pluralize(count, 'design')}</span>
+              <span className={styles.count}>{pluralize(count, 'invite')}</span>
             </span>
           </Link>
         </li>

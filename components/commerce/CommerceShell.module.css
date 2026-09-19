@@ -12,6 +12,14 @@
   background: var(--color-surface);
 }
 
+/* Below this width the full site header is shown instead (see HideOnCommerce),
+   so this one steps aside and there is only ever one header. */
+@media (max-width: 1023px) {
+  .header {
+    display: none;
+  }
+}
+
 .headerInner {
   display: flex;
   align-items: center;

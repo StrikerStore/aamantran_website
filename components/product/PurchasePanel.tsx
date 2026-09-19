@@ -6,6 +6,7 @@ import { TryDemoButton } from '@/components/try-demo/TryDemoButton';
 import { PriceBreakdown } from '@/components/ui/PriceBreakdown';
 import { getOffers } from '@/lib/api/checkout';
 import type { OfferCoupon } from '@/lib/api/types';
+import { bestOffer } from '@/lib/offers';
 import { ACCESS, SELF_BUILD } from '@/lib/content/entitlements';
 import { TRY_DEMO } from '@/lib/content/tryDemo';
 import { getFbq } from '@/lib/metaPixel';
@@ -15,10 +16,11 @@ import styles from './PurchasePanel.module.css';
 /**
  * Price, what the price covers, and the way to buy.
  *
- * Offers come from the checkout API so the strip can never promise a discount
- * checkout will not honour, and an offer that has not been unlocked says what
- * unlocks it instead of being hidden. A failed or slow offers call leaves the
- * panel exactly as it is: nothing here depends on it.
+ * One offer, at most: the biggest discount this buyer can use right now, from
+ * the checkout API so it can never be one checkout will not honour. Every offer,
+ * with whether it applies, is listed at checkout — a stack of discounts here
+ * only asks the buyer to work out which one is theirs. A failed or slow offers
+ * call leaves the panel exactly as it is: nothing here depends on it.
  */
 export function PurchasePanel({
   slug,
@@ -27,7 +29,6 @@ export function PurchasePanel({
   priceUsd,
   originalPrice,
   originalPriceUsd,
-  gstPercent,
   tryWithNames = false,
 }: {
   slug: string;
@@ -36,11 +37,11 @@ export function PurchasePanel({
   priceUsd: number | null;
   originalPrice: number | null;
   originalPriceUsd: number | null;
-  gstPercent: number;
   /** Shows "Try it with your names"; the page must also render TryDemoSheet. */
   tryWithNames?: boolean;
 }) {
   const [offers, setOffers] = useState<OfferCoupon[]>([]);
+  const offer = bestOffer(offers);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -70,26 +71,24 @@ export function PurchasePanel({
         priceUsd={priceUsd}
         originalPrice={originalPrice}
         originalPriceUsd={originalPriceUsd}
-        gstPercent={gstPercent}
         layout="stacked"
         className={styles.price}
       />
       <p className={styles.once}>One payment. No subscription, no renewal.</p>
 
-      {offers.length > 0 && (
-        <ul className={styles.offers} aria-label="Offers">
-          {offers.map((offer) => (
-            <li key={offer.code} className={offer.eligible ? styles.offer : styles.offerLocked}>
-              <span className={styles.offerLabel}>{offer.label}</span>
-              {!offer.eligible && offer.unlockMessage && <span className={styles.offerNote}>{offer.unlockMessage}</span>}
-            </li>
-          ))}
-          <li className={styles.offerNote}>Apply your code at checkout.</li>
+      {offer && (
+        <ul className={styles.offers} aria-label="Offer">
+          <li className={styles.offer}>
+            <span className={styles.offerLabel}>{offer.label}</span>
+          </li>
+          <li className={styles.offerNote}>
+            Use code <strong>{offer.code}</strong> at checkout, where every running offer is listed.
+          </li>
         </ul>
       )}
 
       <Link href={`/checkout/${slug}`} className={styles.buy} onClick={handleBuy}>
-        Buy this design
+        Buy this invite
       </Link>
 
       {tryWithNames && (

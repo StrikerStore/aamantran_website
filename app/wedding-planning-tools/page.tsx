@@ -38,7 +38,7 @@ export default function PlanningToolsPage() {
           <h1 className={styles.title}>Eight planning tools, included with your invitation</h1>
           <p className={styles.intro}>
             An invitation is the part your guests see. These are the parts you use for the months before it: what you
-            are spending, what is left to do, who you have booked, and how the day runs. They come with any design, at
+            are spending, what is left to do, who you have booked, and how the day runs. They come with any invite, at
             no extra cost, and they outlast the invitation itself.
           </p>
           <div className={styles.heroActions}>
@@ -83,7 +83,7 @@ export default function PlanningToolsPage() {
             Where to find them
           </h2>
           <p className={styles.prose}>
-            The tools live in your couple dashboard, beside the invitation itself. You reach them after you buy a design
+            The tools live in your couple dashboard, beside the invitation itself. You reach them after you buy an invite
             and create your account, and they stay available for as long as your invitation does.
           </p>
           <ul className={styles.linkRow}>
@@ -106,7 +106,7 @@ export default function PlanningToolsPage() {
             The tools come with the invitation
           </h2>
           <p className={styles.ctaText}>
-            Pick a design you like and the whole workspace comes with it. One payment, no subscription.
+            Pick an invite you like and the whole workspace comes with it. One payment, no subscription.
           </p>
           <LinkButton href="/templates">Browse invitations</LinkButton>
         </Container>

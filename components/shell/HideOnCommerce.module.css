@@ -1,0 +1,11 @@
+/*
+ * On checkout and onboarding, the site header still appears wherever it is in
+ * its phone form — the Browse button and the menu — and only a computer gets
+ * the pared-down commerce header instead. 1024px is where the header itself
+ * swaps the menu button for the full navigation.
+ */
+@media (min-width: 1024px) {
+  .phoneOnly {
+    display: none;
+  }
+}

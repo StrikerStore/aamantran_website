@@ -121,8 +121,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <JsonLd data={webSiteJsonLd} />
         <PixelTracker />
         <AnalyticsTracker />
-        {/* Checkout and onboarding draw their own minimal header and footer. */}
-        <HideOnCommerce>
+        {/* Checkout and onboarding draw their own slim header and footer on a
+            computer; on a phone the site header stays on every page. */}
+        <HideOnCommerce keepOnPhone>
           <SiteHeader />
         </HideOnCommerce>
         {/* Skip-link target. A div, not <main>: several pages render their own <main>. */}

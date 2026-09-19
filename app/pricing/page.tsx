@@ -8,17 +8,18 @@ import { Notice } from '@/components/ui/Notice';
 import { getTemplates } from '@/lib/api/templates';
 import { ACCESS, INCLUDED, SELF_BUILD } from '@/lib/content/entitlements';
 import { faqsByIds } from '@/lib/content/faqs';
-import { computePriceBreakdown } from '@/lib/priceMath';
 import { buildPageMetadata, breadcrumbList } from '@/lib/seo';
-import { formatMoney, IS_INTL, priceFor } from '@/lib/storefront';
+import { formatMoney, IS_INTL, originalPriceFor, priceFor } from '@/lib/storefront';
 import styles from '../content-page.module.css';
+import pricing from './pricing.module.css';
 
 /**
- * What it costs, read from the catalogue rather than written down.
+ * What an invite costs, read from the catalogue rather than written down.
  *
- * Every figure on this page is computed from live prices with the same
- * arithmetic checkout uses, so a price here can never disagree with the amount
- * charged, and nothing goes stale when a design is repriced.
+ * The page leads with the price list itself — every invite and its price — so
+ * the answer to "how much" is on the first screen and never goes stale when an
+ * invite is repriced. Prices are the invites' own; tax is worked out and shown
+ * line by line at checkout, before anyone pays, and nowhere else.
  */
 
 export const revalidate = 300;
@@ -26,59 +27,51 @@ export const revalidate = 300;
 export const metadata: Metadata = buildPageMetadata({
   title: 'Pricing — One Payment, No Subscription',
   description:
-    'What an Aamantran invitation costs: one payment per invitation, the full total shown before you pay, and every design including RSVP, guest list and the planning tools.',
+    'What an Aamantran invite costs: one payment per invite, no subscription, and every invite including RSVP, guest list and the planning tools.',
   path: '/pricing',
 });
 
-const FAQ_IDS = ['recurring', 'gst', 'currency', 'payment-methods', 'payment-methods-intl', 'switch-design', 'refunds'];
+const FAQ_IDS = ['recurring', 'currency', 'payment-methods', 'payment-methods-intl', 'switch-design', 'refunds'];
 
 export default async function PricingPage() {
   const catalogue = await getTemplates({ limit: 100, sort: 'price-asc' });
   const faqs = faqsByIds(FAQ_IDS);
 
-  // Payable totals, computed the way checkout computes them.
-  const totals = (catalogue?.templates ?? [])
-    .map((template) => {
-      const base = priceFor(template);
-      return base == null ? null : computePriceBreakdown({ base, gstPercent: template.gstPercent, intl: IS_INTL });
-    })
-    .filter((breakdown): breakdown is NonNullable<typeof breakdown> => breakdown !== null)
-    .sort((a, b) => a.total - b.total);
+  // Every invite with a price on this storefront, cheapest first.
+  const invites = (catalogue?.templates ?? [])
+    .map((template) => ({
+      slug: template.slug,
+      name: template.name,
+      price: priceFor(template),
+      original: originalPriceFor(template),
+    }))
+    .filter((invite): invite is typeof invite & { price: number } => invite.price != null)
+    .sort((a, b) => a.price - b.price || a.name.localeCompare(b.name));
 
-  const lowest = totals[0] ?? null;
-  const highest = totals[totals.length - 1] ?? null;
-  const oneBand = lowest && highest && lowest.total === highest.total;
+  const lowest = invites[0]?.price ?? null;
+  const highest = invites[invites.length - 1]?.price ?? null;
+  const oneBand = lowest != null && lowest === highest;
 
   return (
     <div className={styles.page}>
-      <JsonLd data={breadcrumbList([{ name: "Pricing", path: "/pricing" }])} />
+      <JsonLd data={breadcrumbList([{ name: 'Pricing', path: '/pricing' }])} />
 
       <header className={styles.hero}>
         <Container>
           <p className={styles.eyebrow}>Pricing</p>
-          <h1 className={styles.title}>One payment per invitation</h1>
-          {lowest && highest ? (
-            <p className={styles.intro}>
-              {oneBand ? (
-                <>Every design is {formatMoney(lowest.total)}.</>
-              ) : (
-                <>
-                  Designs run from {formatMoney(lowest.total)} to {formatMoney(highest.total)}.
-                </>
-              )}{' '}
-              {IS_INTL
-                ? 'Prices are in US dollars, and no GST is added to international orders.'
-                : 'That is the payable total with GST included — the design price plus GST, which is what checkout charges.'}{' '}
-              No subscription and no renewal.
-            </p>
-          ) : (
-            <p className={styles.intro}>
-              One payment per invitation, with no subscription and no renewal. Prices are shown on each design, and the
-              full total appears before you pay.
+          <h1 className={styles.title}>One payment per invite</h1>
+          {lowest != null && (
+            <p className={pricing.headline}>
+              {oneBand ? formatMoney(lowest) : <>From {formatMoney(lowest)}</>}
             </p>
           )}
+          <p className={styles.intro}>
+            {lowest != null && highest != null && !oneBand && <>Invites run from {formatMoney(lowest)} to {formatMoney(highest)}. </>}
+            {IS_INTL && 'Prices are in US dollars. '}
+            One payment, no subscription and no renewal.
+          </p>
           <div className={styles.heroActions}>
-            <LinkButton href="/templates">See the designs and their prices</LinkButton>
+            <LinkButton href="/templates">Browse invites</LinkButton>
           </div>
         </Container>
       </header>
@@ -95,33 +88,37 @@ export default async function PricingPage() {
                 </LinkButton>
               }
             >
-              This is our side, not yours. Every design shows its own price, and the total is confirmed at checkout.
+              This is our side, not yours. Every invite shows its own price on its page.
             </Notice>
           </div>
         )}
 
-        {lowest && !IS_INTL && (
-          <section aria-labelledby="breakdown-heading" className={styles.section}>
-            <h2 id="breakdown-heading" className={styles.sectionTitle}>
-              How the total is made up
+        {invites.length > 0 && (
+          <section aria-labelledby="prices-heading" className={styles.section}>
+            <h2 id="prices-heading" className={styles.sectionTitle}>
+              Every invite, and its price
             </h2>
             <p className={styles.sectionIntro}>
-              Taking the least expensive design as an example, with GST at {lowest.gstPercent}%:
+              The same price you see on each invite&rsquo;s page. Tap one to open it and its live demo.
             </p>
-            <ul className={styles.list}>
-              <li>Design price: {formatMoney(lowest.base)}</li>
-              <li>
-                GST ({lowest.gstPercent}%): {formatMoney(lowest.gst)}
-              </li>
-              <li>
-                <strong>Total charged: {formatMoney(lowest.total)}</strong>
-              </li>
+            <ul className={pricing.priceList}>
+              {invites.map((invite) => (
+                <li key={invite.slug} className={pricing.priceRow}>
+                  <Link href={`/templates/${invite.slug}`} className={pricing.priceLink}>
+                    <span className={pricing.priceName}>{invite.name}</span>
+                    <span className={pricing.priceAmounts}>
+                      {invite.original != null && invite.original > invite.price && (
+                        <s className={pricing.priceWas}>
+                          <span className="visually-hidden">Was </span>
+                          {formatMoney(invite.original)}
+                        </s>
+                      )}
+                      <span className={pricing.priceNow}>{formatMoney(invite.price)}</span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
             </ul>
-            <p className={styles.note}>
-              Gallery cards show the design price with &ldquo;+ GST&rdquo;; each design&rsquo;s own page and checkout
-              show the full total. If an offer is running, the discount is applied before GST and the new total is shown
-              before you pay.
-            </p>
           </section>
         )}
 
@@ -160,22 +157,22 @@ export default async function PricingPage() {
             <li className={styles.card}>
               <h3 className={styles.cardTitle}>Digital only</h3>
               <p className={styles.cardText}>
-                You receive an invitation to share as a link. Nothing is printed or posted, and there is no physical
+                You receive an invite to share as a link. Nothing is printed or posted, and there is no physical
                 product.
               </p>
             </li>
             <li className={styles.card}>
               <h3 className={styles.cardTitle}>Offers</h3>
               <p className={styles.cardText}>
-                When a discount is running it appears on the design&rsquo;s page and at checkout, with the code applied
-                before you pay. There is no offer hidden behind a request.
+                The best offer running appears on each invite&rsquo;s page. Every offer, and whether it applies to your
+                order, is listed at checkout. There is no offer hidden behind a request.
               </p>
             </li>
             <li className={styles.card}>
-              <h3 className={styles.cardTitle}>Changing design later</h3>
+              <h3 className={styles.cardTitle}>Changing invite later</h3>
               <p className={styles.cardText}>
-                Contact support and the team can move your invitation to another design. If the new one costs more, you
-                pay the difference.
+                Contact support and the team can move you to another invite. If the new one costs more, you pay the
+                difference.
               </p>
             </li>
             <li className={styles.card}>
@@ -218,10 +215,10 @@ export default async function PricingPage() {
       <section aria-labelledby="cta-heading" className={styles.cta}>
         <Container>
           <h2 id="cta-heading" className={styles.ctaTitle}>
-            Every design shows its own price
+            Find the one that feels like yours
           </h2>
-          <p className={styles.ctaText}>Open the gallery, compare the designs, and see the total before you pay.</p>
-          <LinkButton href="/templates">Browse invitations</LinkButton>
+          <p className={styles.ctaText}>Open any invite&rsquo;s live demo before you buy.</p>
+          <LinkButton href="/templates">Browse invites</LinkButton>
         </Container>
       </section>
     </div>

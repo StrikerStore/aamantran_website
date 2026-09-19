@@ -23,8 +23,7 @@ import { CHANGEABLE, NAME_FREEZE, productInclusions } from '@/lib/content/entitl
 import { PURCHASE_FAQ_IDS, faqsByIds } from '@/lib/content/faqs';
 import { TRY_DEMO } from '@/lib/content/tryDemo';
 import { languageLabel, pluralize, truncateWords } from '@/lib/format';
-import { computePriceBreakdown } from '@/lib/priceMath';
-import { CURRENCY, IS_INTL, priceFor } from '@/lib/storefront';
+import { CURRENCY, priceFor } from '@/lib/storefront';
 import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
 import { cardOccasionLabels, templateDemoUrl } from '@/lib/templateCard';
 import styles from './product.module.css';
@@ -55,16 +54,16 @@ const JSON_LD_REVIEW_LIMIT = 5;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const template = await getTemplate(slug);
-  if (!template) return { title: 'Design not found' };
+  if (!template) return { title: 'Invite not found' };
 
   const description = template.shortDescription
     ?? (template.aboutText
       ? truncateWords(template.aboutText, 28)
-      : `${template.name} — a digital invitation design you fill in yourself, with RSVP, guest list and WhatsApp sharing.`);
+      : `${template.name} — a digital invite you fill in yourself, with RSVP, guest list and WhatsApp sharing.`);
   const image = resolveBackendPublicUrl(template.desktopThumbnailUrl ?? template.thumbnailUrl ?? template.mobileThumbnailUrl);
 
   return buildPageMetadata({
-    title: `${template.name} — Digital Invitation Design`,
+    title: `${template.name} — Digital Invite`,
     description,
     path: `/templates/${template.slug}`,
     ...(image ? { ogImage: image } : {}),
@@ -75,9 +74,10 @@ function productSchema(template: TemplateDetail, reviews: Review[], total: numbe
   const base = priceFor(template);
   const pageUrl = `${SITE_URL}/templates/${template.slug}`;
   const image = resolveBackendPublicUrl(template.desktopThumbnailUrl ?? template.thumbnailUrl);
-  // The price a buyer is charged, GST included, not the pre-tax figure: the
-  // amount in search results has to match the amount at checkout.
-  const payable = base == null ? null : computePriceBreakdown({ base, gstPercent: template.gstPercent, intl: IS_INTL }).total;
+  // The price this page shows. Search engines check that the price in the
+  // markup is one a visitor can see on the page, and the page shows the
+  // invite's own price; tax is itemised at checkout.
+  const payable = base;
   // Every published review is a customer's; some were submitted here and some
   // transcribed by the owner from a message. Both are evidence.
   const customerReviews = reviews.filter((review) => review.reviewText);
@@ -90,7 +90,7 @@ function productSchema(template: TemplateDetail, reviews: Review[], total: numbe
     // its URL — so it is what a shopping result should key on.
     sku: template.slug,
     ...(template.languages.length > 0 ? { inLanguage: template.languages } : {}),
-    description: template.shortDescription ?? template.aboutText ?? `${template.name} — digital invitation design by ${SITE_NAME}.`,
+    description: template.shortDescription ?? template.aboutText ?? `${template.name} — digital invite by ${SITE_NAME}.`,
     ...(image ? { image: [image] } : {}),
     brand: { '@type': 'Brand', name: SITE_NAME },
     ...(payable != null
@@ -134,7 +134,6 @@ export default async function ProductPage({ params }: Props) {
   ]);
   const reviews = reviewsResponse?.reviews ?? [];
   const genuineTotal = reviewsResponse?.totalCount ?? template.reviewCount;
-  const curatedTotal = reviewsResponse?.curatedCount ?? template.curatedReviewCount;
 
   const occasions = cardOccasionLabels(template.bestFor, 4);
   const summary = template.shortDescription ?? (template.aboutText ? truncateWords(template.aboutText, 32) : null);
@@ -221,7 +220,6 @@ export default async function ProductPage({ params }: Props) {
                 priceUsd={template.priceUsd}
                 originalPrice={template.originalPrice}
                 originalPriceUsd={template.originalPriceUsd}
-                gstPercent={template.gstPercent}
                 tryWithNames={template.tryWithNames}
               />
             </div>
@@ -244,7 +242,7 @@ export default async function ProductPage({ params }: Props) {
           {template.aboutText && (
             <section aria-labelledby="about-heading" className={styles.section}>
               <h2 id="about-heading" className={styles.sectionTitle}>
-                About this design
+                About this invite
               </h2>
               <p className={styles.prose}>{template.aboutText}</p>
               {attributes.length > 0 && (
@@ -263,7 +261,7 @@ export default async function ProductPage({ params }: Props) {
           {template.capabilities && (
             <section aria-labelledby="fill-heading" className={styles.section}>
               <h2 id="fill-heading" className={styles.sectionTitle}>
-                What you fill in on this design
+                What you fill in on this invite
               </h2>
               <Capabilities capabilities={template.capabilities} />
             </section>
@@ -281,7 +279,7 @@ export default async function ProductPage({ params }: Props) {
                   <span className={styles.includedTitle}>{item.title}</span>
                   <span className={styles.includedDetail}>
                     {item.detail}
-                    {item.templateDependent && ' Where this design supports it.'}
+                    {item.templateDependent && ' Where this invite supports it.'}
                   </span>
                 </li>
               ))}
@@ -293,15 +291,15 @@ export default async function ProductPage({ params }: Props) {
 
           <section id="reviews" aria-labelledby="reviews-heading" className={styles.section}>
             <h2 id="reviews-heading" className={styles.sectionTitle}>
-              Reviews of this design
+              Reviews of this invite
             </h2>
-            <ReviewList reviews={reviews} avgRating={reviewsResponse?.avgRating ?? 0} totalCount={genuineTotal} curatedCount={curatedTotal} />
+            <ReviewList reviews={reviews} avgRating={reviewsResponse?.avgRating ?? 0} totalCount={genuineTotal} />
           </section>
 
           {related.length > 0 && (
             <section aria-labelledby="related-heading" className={styles.section}>
               <h2 id="related-heading" className={styles.sectionTitle}>
-                Other designs like this one
+                Other invites like this one
               </h2>
               <ul className={styles.related}>
                 {related.map((item) => (
@@ -312,7 +310,7 @@ export default async function ProductPage({ params }: Props) {
               </ul>
               <p className={styles.more}>
                 <LinkButton href="/templates" variant="secondary">
-                  See every design
+                  See every invite
                 </LinkButton>
               </p>
             </section>

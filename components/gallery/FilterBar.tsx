@@ -120,7 +120,7 @@ export function FilterBar({
       onSubmit={onSubmit}
       className={styles.bar}
       role="search"
-      aria-label="Filter designs"
+      aria-label="Filter invites"
       data-pending={isPending || undefined}
     >
       <div className={styles.searchField}>
@@ -256,7 +256,7 @@ export function FilterBar({
 
       <div className={styles.meta}>
         <p className={styles.status} role="status">
-          {isPending ? 'Updating designs…' : ''}
+          {isPending ? 'Updating invites…' : ''}
         </p>
         {isFilteredGallery(state) && (
           <Link href="/templates" scroll={false} className={styles.clear} onClick={() => clearTimeout(timer.current)}>

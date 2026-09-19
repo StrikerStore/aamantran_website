@@ -21,7 +21,7 @@ export function ShopWindow({ designs }: { designs: readonly TemplateSummary[] })
   if (shown.length === 0) return null;
 
   return (
-    <ul className={styles.window} aria-label="Designs on display">
+    <ul className={styles.window} aria-label="Invites on display">
       {shown.map((design, i) => (
         <li key={design.id || design.slug} className={styles.pane} data-position={i}>
           <Link href={`/templates/${design.slug}`} className={styles.frame}>
