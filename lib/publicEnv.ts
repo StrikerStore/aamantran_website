@@ -44,7 +44,16 @@ export function getMetaPixelId(): string {
  * costs more than a dead footer icon.
  */
 export function getInstagramHandle(): string {
-  return process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE?.trim() ?? 'aamantran_online';
+  // `||`, not `??`: an env var set but left empty must fall back too, or every
+  // Instagram link on the site becomes instagram.com/ with no account. The
+  // handle is also tolerated as "@name" or a full profile URL, since that is
+  // how it tends to get pasted into a host's settings.
+  const raw = process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE?.trim() || '';
+  const handle = raw
+    .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
+    .replace(/^@/, '')
+    .replace(/[/?#].*$/, '');
+  return handle || 'aamantran_online';
 }
 
 export function getYouTubeHandle(): string {

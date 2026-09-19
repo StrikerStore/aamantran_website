@@ -59,7 +59,7 @@ export default async function AboutPage() {
           <p className={styles.eyebrow}>Our story</p>
           <h1 className={styles.title}>Invitations built for the way Indian celebrations actually run</h1>
           <p className={styles.intro}>
-            A wedding here is rarely one afternoon. It is haldi at home, mehendi the next evening, a sangeet that runs
+            An Indian wedding is rarely one afternoon, wherever it is held. It is haldi at home, mehendi the next evening, a sangeet that runs
             late, the ceremony itself and a reception — each with its own hour, its own venue and often its own guest
             list. Aamantran is built around that, rather than around a single printed card.
           </p>
