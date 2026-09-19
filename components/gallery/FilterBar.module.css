@@ -109,3 +109,69 @@ select.control {
     grid-column: 1 / -1;
   }
 }
+
+/*
+ * The phone layout.
+ *
+ * Four labelled dropdowns, a search box and a status line filled a phone screen
+ * before a single design showed — so on a phone the dropdowns fold away behind
+ * one button, and searching by name, which is what most people do, stays in the
+ * open. None of this applies at the width where the whole bar fits on one line.
+ */
+.filtersToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: var(--type-control);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.filtersToggle > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* How many are on, so folding them away never hides that something is. */
+.activeCount {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: var(--type-small);
+  font-weight: 600;
+}
+
+.chevron {
+  transition: transform 160ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 959px) {
+  .selectsCollapsed {
+    display: none;
+  }
+}
+
+@media (min-width: 960px) {
+  .filtersToggle {
+    display: none;
+  }
+}

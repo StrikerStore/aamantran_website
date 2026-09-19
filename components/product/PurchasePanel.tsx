@@ -93,7 +93,7 @@ export function PurchasePanel({
       </Link>
 
       {tryWithNames && (
-        <TryDemoButton source="purchase-panel" fullWidth>
+        <TryDemoButton source="purchase-panel" fullWidth className={styles.tryInPanel}>
           {TRY_DEMO.cta}
           <span className={styles.free}> · free</span>
         </TryDemoButton>

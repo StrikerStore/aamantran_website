@@ -92,7 +92,7 @@ export function TemplateCard({
               <span className={styles.rating}>
                 <span aria-hidden="true">★ </span>
                 {rating}
-                <span className="visually-hidden"> out of 5, average of customer reviews</span>
+                <span className="visually-hidden"> out of 5, average of its reviews</span>
               </span>
             )}
             {buyers && <span className={styles.buyers}>Bought {pluralize(buyers, 'time')}</span>}

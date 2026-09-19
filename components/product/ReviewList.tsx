@@ -6,9 +6,10 @@ import styles from './ReviewList.module.css';
 /**
  * Reviews for one design.
  *
- * Team-written reviews are shown, labelled, and never counted: the rating and
- * the count describe customer reviews only. With no reviews at all the section
- * says so — the page it replaces invented three.
+ * Every review shown is a customer's, whether they submitted it through the
+ * site or the owner transcribed it from a message, so the rating and the count
+ * cover all of them. With no reviews at all the section says so — the page it
+ * replaces invented three.
  */
 export function ReviewList({
   reviews,
@@ -39,15 +40,7 @@ export function ReviewList({
           <span className={styles.outOf}> out of 5</span>
           <span className={styles.count}>
             {' '}
-            from {pluralize(totalCount, 'customer review')}
-            {curatedCount > 0 && `, plus ${pluralize(curatedCount, 'review')} written by our team`}
-          </span>
-        </p>
-      )}
-      {totalCount === 0 && curatedCount > 0 && (
-        <p className={styles.summary}>
-          <span className={styles.count}>
-            No customer reviews yet. The {curatedCount === 1 ? 'review' : 'reviews'} below {curatedCount === 1 ? 'was' : 'were'} written by our team and {curatedCount === 1 ? 'is' : 'are'} not counted in any rating.
+            from {pluralize(totalCount, 'review')}
           </span>
         </p>
       )}
@@ -70,7 +63,6 @@ export function ReviewList({
                 <Link href={`/templates/${review.template.slug}`}>{review.template.name}</Link>
               </p>
             )}
-            {review.source === 'curated' && <p className={styles.curated}>Added by the Aamantran team</p>}
           </li>
         ))}
       </ul>

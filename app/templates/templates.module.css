@@ -26,9 +26,22 @@
   pointer-events: none;
 }
 
-.rail ul,
 .rail {
   justify-content: center;
+}
+
+/*
+ * Centring is only safe once the row has stopped scrolling.
+ *
+ * A flex row that overflows AND is centred pushes its first items past the
+ * start edge, where no amount of scrolling reaches them — which is why the
+ * leading occasion capsules were sliced in half on a phone. Below the rail's
+ * own wrap breakpoint the row scrolls, so it starts at the start.
+ */
+@media (min-width: 900px) {
+  .rail ul {
+    justify-content: center;
+  }
 }
 
 .eyebrow {

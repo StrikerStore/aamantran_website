@@ -90,13 +90,16 @@ export default async function HomePage() {
   // The window shows the newest designs; the grid below shows the popular ones.
   const windowDesigns = (templates.length > 0 ? templates : designs).slice(0, WINDOW_DESIGNS);
 
-  // The India figure is the payable total from /api/templates/stats, so the
-  // headline price matches what checkout charges. That endpoint is part of a
-  // backend that may not be deployed yet, and it is INR-only, so both other
-  // cases fall back to the cheapest base price for this storefront.
+  // The cheapest design's own price — ₹999, not ₹1,178.82. The headline is the
+  // price of the thing, the way a shelf edge is; GST is added at checkout and
+  // shown there in full, and the pricing page explains it.
+  //
+  // `stats.lowest.price` is that figure straight from the catalogue, so it moves
+  // when the catalogue does. The fallback is the same number derived on the
+  // storefront, for when the stats endpoint is unavailable.
   const fromPrice = !IS_INTL && stats?.lowest
-    ? `From ${formatMoney(stats.lowest.total)}, GST included`
-    : `From ${startingPrice}${IS_INTL ? '' : ' + GST'}`;
+    ? `From ${formatMoney(stats.lowest.price)}`
+    : `From ${startingPrice}`;
 
   const faqSchema = {
     '@context': 'https://schema.org',

@@ -50,7 +50,7 @@ export interface TemplateSummary {
   originalPriceUsd: number | null;
   gstPercent: number;
   buyerCount: number;
-  /** Average of genuine customer reviews; null when there are none. */
+  /** Average of every published review; null when there are none. */
   avgRating: number | null;
   releasedAt: string | null;
   /** Can show a visitor's own names ("Try it with your names"). False from older backends. */
@@ -98,7 +98,7 @@ export interface TemplateDetail extends TemplateSummary {
   colourPalette: string | null;
   animations: string | null;
   aboutText: string | null;
-  /** Genuine customer reviews only. */
+  /** Every published review. */
   reviewCount: number;
   /** Team-written reviews, shown labelled and never counted. */
   curatedReviewCount: number;
@@ -129,7 +129,7 @@ export interface Review {
 
 export interface ReviewsResponse {
   reviews: Review[];
-  /** Genuine customer reviews only. */
+  /** Every published review. */
   avgRating: number;
   totalCount: number;
   curatedCount: number;

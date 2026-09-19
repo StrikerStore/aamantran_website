@@ -78,7 +78,9 @@ function productSchema(template: TemplateDetail, reviews: Review[], total: numbe
   // The price a buyer is charged, GST included, not the pre-tax figure: the
   // amount in search results has to match the amount at checkout.
   const payable = base == null ? null : computePriceBreakdown({ base, gstPercent: template.gstPercent, intl: IS_INTL }).total;
-  const customerReviews = reviews.filter((review) => review.source === 'customer' && review.reviewText);
+  // Every published review is a customer's; some were submitted here and some
+  // transcribed by the owner from a message. Both are evidence.
+  const customerReviews = reviews.filter((review) => review.reviewText);
 
   return {
     '@context': 'https://schema.org',
@@ -102,8 +104,8 @@ function productSchema(template: TemplateDetail, reviews: Review[], total: numbe
           },
         }
       : {}),
-    // Genuine customer reviews only; team-written ones are shown on the page but
-    // never counted, so they cannot inflate a rating in search results.
+    // The same rating and count the page shows, so the markup and the page can
+    // never disagree.
     ...(total > 0 && template.avgRating
       ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: template.avgRating.toFixed(1), reviewCount: total } }
       : {}),
@@ -180,6 +182,7 @@ export default async function ProductPage({ params }: Props) {
           <div className={styles.top}>
             <div className={styles.visual}>
               <ProductGallery
+                tryWithNames={Boolean(template.tryWithNames)}
                 name={template.name}
                 slug={template.slug}
                 demoUrl={templateDemoUrl(template.slug)}
@@ -206,7 +209,7 @@ export default async function ProductPage({ params }: Props) {
                     {'★'.repeat(Math.round(template.avgRating))}
                   </span>
                   <span>
-                    {template.avgRating.toFixed(1)} from <a href="#reviews">{pluralize(genuineTotal, 'customer review')}</a>
+                    {template.avgRating.toFixed(1)} from <a href="#reviews">{pluralize(genuineTotal, 'review')}</a>
                   </span>
                 </p>
               )}

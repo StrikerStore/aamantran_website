@@ -113,3 +113,90 @@
   line-height: var(--leading-body);
   color: var(--color-text-muted);
 }
+
+/*
+ * Which preview shows before the browser has told the page what it is.
+ *
+ * The component renders both layers with these classes until it knows the
+ * viewport, so the first paint already matches the device instead of flipping
+ * to it a moment later.
+ */
+.autoDesktop {
+  opacity: 1;
+}
+
+.autoPhone {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .autoDesktop {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .autoPhone {
+    position: static;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* The portrait frame, for the same reason .phoneStage exists. */
+  .autoStage {
+    max-width: 360px;
+    margin-inline: auto;
+  }
+}
+
+/*
+ * "Try it with your names", next to the live demo — on a phone only.
+ *
+ * On a wider screen the purchase panel sits beside the artwork and already
+ * carries this button; two of them on one screen is a choice the reader has to
+ * make twice.
+ */
+.tryOnPhone {
+  flex: 1 1 auto;
+}
+
+@media (min-width: 900px) {
+  .tryOnPhone {
+    display: none;
+  }
+}
+
+/*
+ * The button costs a row, and that row pushed Buy off a phone's first screen —
+ * which is a thing the product page is supposed to guarantee. The row is paid
+ * for here: the two buttons share a line, and the spacing around them and the
+ * note below tightens. Nothing is removed, and nothing changes on a computer.
+ */
+@media (max-width: 899px) {
+  .actions {
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+
+  /* The toggle takes its own line; the demo link and the try button share the next. */
+  .toggle {
+    flex: 1 0 100%;
+    justify-content: center;
+  }
+
+  .demo,
+  .tryOnPhone {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: var(--space-3);
+    text-align: center;
+  }
+
+  .demoNote {
+    margin-top: var(--space-2);
+  }
+}

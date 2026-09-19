@@ -90,3 +90,14 @@
 .facts strong {
   color: var(--color-text);
 }
+
+/*
+ * On a phone the same button now sits with the live demo, directly under the
+ * artwork, so this one would be the second of two. It comes back at the width
+ * where the panel moves alongside the artwork.
+ */
+@media (max-width: 899px) {
+  .tryInPanel {
+    display: none;
+  }
+}

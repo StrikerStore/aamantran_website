@@ -57,5 +57,13 @@ export function getInstagramHandle(): string {
 }
 
 export function getYouTubeHandle(): string {
-  return process.env.NEXT_PUBLIC_YOUTUBE_HANDLE?.trim() ?? 'aamatran_4u';
+  // Same treatment as the Instagram handle above: `||` so an env var set but
+  // left empty still falls back, and a pasted "@name" or full channel URL is
+  // tolerated. The old default was a misspelt channel that did not exist.
+  const raw = process.env.NEXT_PUBLIC_YOUTUBE_HANDLE?.trim() || '';
+  const handle = raw
+    .replace(/^https?:\/\/(www\.)?youtube\.com\/?/i, '')
+    .replace(/^@/, '')
+    .replace(/[/?#].*$/, '');
+  return handle || 'aamantran_online-h2t';
 }

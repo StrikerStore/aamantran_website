@@ -18,6 +18,7 @@ import {
   type GalleryState,
 } from '@/lib/gallerySearch';
 import { OCCASIONS } from '@/lib/occasions';
+import { cx } from '@/lib/cx';
 import styles from './FilterBar.module.css';
 
 export const SEARCH_DEBOUNCE_MS = 300;
@@ -58,6 +59,10 @@ export function FilterBar({
   // The search box is typed into ahead of the URL. `pushed` is the value this
   // component last sent, so its own navigation landing never overwrites newer
   // typing, while Back, Forward or "Clear all" still reset the box.
+  // Closed to begin with on a phone; on a wider screen the stylesheet ignores
+  // this entirely and the fields are always shown.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   const [search, setSearch] = useState({ value: state.q, basis: state.q, pushed: null as string | null });
   if (search.basis !== state.q) {
     setSearch({ value: search.pushed === state.q ? search.value : state.q, basis: state.q, pushed: null });
@@ -101,6 +106,10 @@ export function FilterBar({
     apply({});
   }
 
+  // Counted for the phone button's label, so a filter that is on is never
+  // hidden without a word. The search box is not counted: it is always visible.
+  const activeCount = [shown.occasion, shown.community, shown.price].filter(Boolean).length;
+
   const priceOptions: FacetOption[] = priceBands.map((band) => ({ value: band.key, label: band.label }));
   const occasionOptions = withSelected(occasions, shown.occasion, ALL_OCCASIONS);
   const communityOptions = withSelected(communities, shown.community, GALLERY_COMMUNITIES);
@@ -136,7 +145,35 @@ export function FilterBar({
         </div>
       </div>
 
-      <div className={styles.selects}>
+      {/*
+        * The phone control. Hidden on a wide screen, where every field fits
+        * beside the others and folding them away would only add a step.
+        *
+        * aria-expanded and aria-controls are on the button rather than a
+        * <details>, because the fields have to stay in the DOM and visible at
+        * desktop width whatever this state says — a media query decides that,
+        * and a <details> would have to be opened by script to match.
+        */}
+      <button
+        type="button"
+        className={styles.filtersToggle}
+        aria-expanded={filtersOpen}
+        aria-controls="gallery-filters"
+        onClick={() => setFiltersOpen((open) => !open)}
+      >
+        <span>
+          {filtersOpen ? 'Hide filters' : 'Filters'}
+          {activeCount > 0 && <span className={styles.activeCount}>{activeCount}</span>}
+        </span>
+        <span aria-hidden="true" className={cx(styles.chevron, filtersOpen && styles.chevronOpen)}>
+          ⌄
+        </span>
+      </button>
+
+      <div
+        id="gallery-filters"
+        className={cx(styles.selects, !filtersOpen && styles.selectsCollapsed)}
+      >
         <div>
           <label htmlFor="gallery-occasion" className={styles.label}>
             Occasion
