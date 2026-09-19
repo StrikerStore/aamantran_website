@@ -252,7 +252,7 @@ export function PlanningDemo() {
   );
 
   return (
-    // data-demo is a stable hook for the browser tests; see GuestExperienceDemo.
+    // data-demo is a stable hook for the browser tests.
     <div className={styles.wrap} data-demo="planning">
       <Tabs
         label="Planning tools"
@@ -265,7 +265,7 @@ export function PlanningDemo() {
           { id: 'timeline', label: 'Day-of timeline', content: timelinePanel },
         ]}
       />
-      {/* A sentence, not a label — see GuestExperienceDemo. */}
+      {/* A sentence, not a label: it reads as guidance, not as a form field. */}
       <p className={styles.sampleNote}>{SAMPLE_WORKSPACE_NOTICE}</p>
 
       <h3 className={styles.previewTitle}>Also in your dashboard</h3>

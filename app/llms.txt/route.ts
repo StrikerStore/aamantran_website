@@ -59,7 +59,7 @@ export async function GET(): Promise<Response> {
     `- [Invitations](${url('/templates')}): ${designs}, filterable by occasion, community and price, each with a live demo, its price and its reviews.`,
     `- [Pricing](${url('/pricing')}): One payment per invitation, how the total is made up, what it covers, and the terms.`,
     `- [How it works](${url('/how-it-works')}): The steps from choosing a design to sharing the link, including the builder steps and the name lock.`,
-    `- [What's included](${url('/features')}): What comes with any design, what depends on the design, what can be changed later, and a working demo of what guests see — the ceremonies, directions, RSVP and wishes wall.`,
+    `- [What's included](${url('/features')}): What comes with any design, what depends on the design, and what can be changed after the invitation is live.`,
     `- [Planning tools](${url('/wedding-planning-tools')}): The ${PLANNING_TOOLS.length} tools in the dashboard — ${PLANNING_TOOLS.map((tool) => tool.name.toLowerCase()).join(', ')} — with what each does and does not do, and a working demo of the budget and tasks.`,
     `- [Help centre](${url('/faq')}): ${FAQ_COUNT} answered questions on ordering, building, RSVPs, WhatsApp sharing, pricing${IS_INTL ? '' : ', GST'} and data privacy.`,
   ];
