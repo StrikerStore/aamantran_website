@@ -1,5 +1,6 @@
 import { COLLECTIONS } from '@/lib/collections';
 import { getCoupleDashboardUrl } from '@/lib/publicEnv';
+import { TRADITION_LABELS } from '@/lib/shopMenu';
 
 /**
  * Site navigation — one definition shared by the header, the mobile menu, the
@@ -12,22 +13,18 @@ export interface NavLink {
 }
 
 /**
- * Short menu labels for the community collection pages. A slug missing here
- * (a new collection) still appears, labelled with its page heading.
+ * The footer's invitation column: the full catalogue, then each collection page.
+ *
+ * The header's menu is no longer built from this. It is the shop menu now
+ * (lib/shopMenu.ts), counted from the live catalogue so it can list the aisles
+ * in stock — something a static list cannot do. The footer stays static because
+ * it is a site map: every page that exists, whether or not it has stock today.
  */
-const COLLECTION_LABELS: Record<string, string> = {
-  'hindu-wedding-invitations': 'Hindu weddings',
-  'muslim-wedding-invitations': 'Muslim weddings & Nikah',
-  'sikh-wedding-invitations': 'Sikh weddings',
-  'modern-wedding-invitations': 'Modern weddings',
-};
-
-/** The "Invitations" menu: the full catalogue, then each existing collection page. */
 export const INVITATION_LINKS: NavLink[] = [
   { href: '/templates', label: 'All invitations' },
   ...COLLECTIONS.map((collection) => ({
     href: `/collections/${collection.slug}`,
-    label: COLLECTION_LABELS[collection.slug] ?? collection.heading,
+    label: TRADITION_LABELS[collection.slug] ?? collection.heading,
   })),
 ];
 

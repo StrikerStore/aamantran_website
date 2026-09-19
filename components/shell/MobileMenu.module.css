@@ -58,6 +58,26 @@
   text-decoration: none;
 }
 
+/* The same small-caps label the desktop menu uses over each group. */
+.groupTitle {
+  margin: var(--space-3) 0 var(--space-1) var(--space-4);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.count {
+  margin-left: auto;
+  padding-left: var(--space-3);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
 .subList {
   display: grid;
   margin: 0;

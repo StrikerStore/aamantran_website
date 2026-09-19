@@ -39,11 +39,38 @@
   position: absolute;
   top: calc(100% + var(--space-2));
   left: calc(-1 * var(--space-4));
-  min-width: 260px;
-  padding: var(--space-2);
+  min-width: 380px;
+  padding: var(--space-3);
   border-radius: var(--radius-card);
-  background: var(--color-surface);
-  box-shadow: var(--elevation-2);
+  background: var(--surface-raised);
+  box-shadow: var(--elevation-3);
+  overflow: hidden;
+}
+
+/* Decoration, as everywhere else gold is used. */
+.panel::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--edge-gold);
+  pointer-events: none;
+}
+
+.groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.groupTitle {
+  margin: var(--space-2) var(--space-4) var(--space-1);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 /* .panel sets no display, but keep [hidden] authoritative if it ever does. */
@@ -70,5 +97,34 @@
 }
 
 .link:hover {
-  background: var(--color-sage);
+  background: var(--color-blush);
+}
+
+.count {
+  margin-left: auto;
+  padding-left: var(--space-3);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+/* The way out of the aisles: everything, on one shelf. */
+.all {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: var(--space-2);
+  padding: 0 var(--space-4);
+  border-top: 1px solid var(--color-divider);
+  border-radius: 0 0 var(--radius-control) var(--radius-control);
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.all:hover {
+  background: var(--color-blush);
 }

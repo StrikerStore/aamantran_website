@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import JsonLd from '@/components/JsonLd';
 import { TemplateCard } from '@/components/gallery/TemplateCard';
+import { InstagramStrip } from '@/components/home/InstagramStrip';
 import { PaymentFailedRedirect } from '@/components/home/PaymentFailedRedirect';
 import { ReviewList } from '@/components/product/ReviewList';
 import { AisleTiles } from '@/components/shop/AisleTiles';
@@ -260,7 +261,16 @@ export default async function HomePage() {
             )}
           </Reveal>
 
-          {/* ── 9. Questions before buying ────────────────────────────── */}
+          {/* ── 9. Instagram ──────────────────────────────────────────── */}
+          <Reveal as="section" aria-labelledby="instagram-heading" className={styles.section}>
+            <p className={`${styles.eyebrow} ${styles.eyebrowCenter}`}>Elsewhere</p>
+            <h2 id="instagram-heading" className={`${styles.sectionTitle} ${styles.centered}`}>
+              Find us on Instagram
+            </h2>
+            <InstagramStrip />
+          </Reveal>
+
+          {/* ── 10. Questions before buying ───────────────────────────── */}
           <Reveal as="section" aria-labelledby="faq-heading" className={styles.section}>
             <p className={styles.eyebrow}>Before you buy</p>
             <h2 id="faq-heading" className={styles.sectionTitle}>
@@ -290,7 +300,7 @@ export default async function HomePage() {
           </Reveal>
         </Container>
 
-        {/* ── 10. Closing call to action ───────────────────────────────── */}
+        {/* ── 11. Closing call to action ───────────────────────────────── */}
         <section aria-labelledby="cta-heading" className={`${styles.cta} ds-ink`}>
           <Container>
             <h2 id="cta-heading" className={styles.ctaTitle}>
