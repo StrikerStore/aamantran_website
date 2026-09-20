@@ -2,6 +2,7 @@
  * Public env helpers for the marketing site.
  * Set NEXT_PUBLIC_* on Railway; production fallbacks match aamantran.online layout.
  */
+import { IS_INTL } from './storefront';
 
 const PROD_API = 'https://api.aamantran.online';
 const PROD_APP = 'https://app.aamantran.online';
@@ -19,14 +20,31 @@ export function getCoupleDashboardUrl(): string {
 }
 
 /**
- * Meta (Facebook) Pixel ID. Set NEXT_PUBLIC_META_PIXEL_ID on Railway so the
- * pixel can be swapped without a code change (e.g. when moving ad accounts).
- * Returns '' when unconfigured — CookieConsent then skips loading the pixel
- * entirely rather than initialising a dead ID.
+ * Meta (Facebook) Pixel ID — one per storefront.
+ *
+ * The two sites are separate ad accounts with separate audiences, so they must
+ * not report into the same pixel: a dollar Purchase landing in the India pixel
+ * corrupts that account's optimisation and its reported revenue, and neither
+ * side's numbers can be untangled afterwards.
+ *
+ * The default is keyed on STOREFRONT rather than being a single constant for
+ * the same reason the Instagram handle below is careful: a build that does not
+ * set the env var must still be right. A single fallback was invisible on
+ * aamantran.online, which sets the var, and silently wrong on the global build,
+ * which would have fired India's pixel on every page.
+ *
+ * NEXT_PUBLIC_META_PIXEL_ID still overrides, per deployment, so a pixel can be
+ * swapped when an ad account moves without touching this file.
  */
-const PROD_META_PIXEL_ID = '1106272148422147';
+// A ternary on the build-time flag, not a lookup table keyed by storefront: a
+// table is read at runtime, so both ids survive minification and each site
+// ships the other's pixel as dead weight. This folds to one string literal, and
+// the id a build does not use is not in it at all.
+const PROD_META_PIXEL_ID = IS_INTL ? '1403963484478935' : '1106272148422147';
 
 export function getMetaPixelId(): string {
+  // `||`, not `??`: an env var set but left empty must fall back to this
+  // storefront's own pixel, never to nothing and never to the other site's.
   return process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim() || PROD_META_PIXEL_ID;
 }
 
