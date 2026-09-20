@@ -1,3 +1,10 @@
+/*
+ * Three tiers, in the order the decision is made: what it costs, how to buy it,
+ * and the terms that come with it. Before this the panel set every block at the
+ * same size and the same distance apart, so the price, an offer, two buttons and
+ * three paragraphs of terms all asked for attention equally — the price is the
+ * number being decided on, and the terms are there to be checked, not read.
+ */
 .panel {
   display: grid;
   gap: var(--space-4);
@@ -7,48 +14,59 @@
   box-shadow: var(--elevation-1);
 }
 
+.head {
+  display: grid;
+  gap: var(--space-1);
+}
+
 .price {
   margin: 0;
 }
 
-.once,
-.offerNote {
+.once {
   margin: 0;
   font-family: var(--font-ui);
-  font-size: var(--type-small);
+  font-size: var(--type-fine);
+  line-height: var(--leading-body);
   color: var(--color-text-muted);
 }
 
-.offers {
-  display: grid;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-family: var(--font-ui);
-  font-size: var(--type-small);
-}
-
-.offer,
-.offerLocked {
+/*
+ * The coupon and its instructions on one strip. They were two blocks before —
+ * a filled green box holding only "10% off", then a separate line of small text
+ * explaining it — which read as two pieces of news about the same discount.
+ */
+.offer {
   display: grid;
   gap: 2px;
+  margin: 0;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-control);
+  background: var(--color-success-bg);
+  font-family: var(--font-ui);
+  font-size: var(--type-fine);
+  line-height: var(--leading-body);
 }
 
-.offer {
-  background: var(--color-success-bg);
+/* The offer itself, in one line a buyer can act on: what it is and what to type. */
+.offerLabel {
+  font-size: var(--type-small);
+  font-weight: 600;
   color: var(--color-success-text);
 }
 
-.offerLocked {
-  background: var(--color-sage);
-  color: var(--color-text);
+.offerNote {
+  color: var(--color-text-muted);
 }
 
-.offerLabel {
-  font-weight: 600;
+.offerCode {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.actions {
+  display: grid;
+  gap: var(--space-3);
 }
 
 .buy {
@@ -75,19 +93,22 @@
   font-weight: 400;
 }
 
+/* Fine print, ruled off: checked before buying, not read on the way in. */
 .facts {
   display: grid;
   gap: var(--space-3);
   margin: 0;
-  padding: 0;
+  padding: var(--space-4) 0 0;
+  border-top: 1px solid var(--color-divider);
   list-style: none;
   font-family: var(--font-ui);
-  font-size: var(--type-small);
-  line-height: var(--leading-body);
+  font-size: var(--type-fine);
+  line-height: 1.55;
   color: var(--color-text-muted);
 }
 
 .facts strong {
+  font-weight: 600;
   color: var(--color-text);
 }
 

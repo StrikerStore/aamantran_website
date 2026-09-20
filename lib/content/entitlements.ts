@@ -20,8 +20,14 @@ export const ACCESS = {
   liveMonthsAfterLastCeremony: 6,
   guestDataDeletedDaysAfterExpiry: 90,
   deletionWarningDaysBefore: 2,
-  short: 'Live until 6 months after your last ceremony',
-  long: 'Your invitation stays live until 6 months after the date of your last ceremony. If you move a ceremony date, that end date moves with it.',
+  /*
+   * Said as "event", not "ceremony": the backend measures from the last
+   * function on the invitation whatever the occasion is, and a birthday or an
+   * anniversary has no ceremony. The dashboard still calls the whole invitation
+   * an Event — this is the buyer's word for the day itself, not that entity.
+   */
+  short: 'Live until 6 months after your last event',
+  long: 'Your invitation stays live until 6 months after the date of your last event. If you move an event date, that end date moves with it.',
   dataRetention:
     "Guest lists, RSVPs and wishes are deleted 90 days after your invitation's live period ends. We email you about two days before, so you can export your guest list and RSVPs first.",
 } as const;

@@ -44,6 +44,7 @@
   --type-body:     clamp(1rem, 0.95rem + 0.25vw, 1.125rem);   /* 16 → 18px */
   --type-control:  1rem;                                      /* 16px; also stops iOS zoom on focus */
   --type-small:    0.875rem;                                  /* 14px */
+  --type-fine:     0.8125rem;                                 /* 13px; terms and fine print sitting under a decision */
   --leading-tight: 1.15;
   --leading-body:  1.6;
 

@@ -318,7 +318,7 @@ export default async function HomePage() {
             <p className={styles.ctaText}>
               {designCount > 0 ? `${pluralize(designCount, 'invite')} to choose from. ` : ''}
               {fromPrice}. You build the invitation yourself, and it stays live until {ACCESS.liveMonthsAfterLastCeremony}{' '}
-              months after your last ceremony.
+              months after your last event.
             </p>
             <LinkButton href="/templates" className={styles.ctaButton}>
               Browse invitations

@@ -143,7 +143,7 @@ const ALL_CATEGORIES: FaqCategory[] = [
       {
         id: 'recurring',
         q: 'Are there any recurring charges?',
-        a: `No. You pay once per invitation, with no subscription or renewal. Your invitation stays live until ${ACCESS.liveMonthsAfterLastCeremony} months after your last ceremony.`,
+        a: `No. You pay once per invitation, with no subscription or renewal. Your invitation stays live until ${ACCESS.liveMonthsAfterLastCeremony} months after your last event.`,
       },
       {
         id: 'gst',

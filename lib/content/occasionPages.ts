@@ -135,7 +135,7 @@ export const OCCASION_PAGES: readonly OccasionPage[] = [
       },
       {
         heading: 'Dates move; the link does not',
-        body: 'If a muhurat shifts or a venue changes, edit it in your dashboard and every guest holding the link sees the new details. Your invitation stays live until six months after your last ceremony.',
+        body: 'If a muhurat shifts or a venue changes, edit it in your dashboard and every guest holding the link sees the new details. Your invitation stays live until six months after your last event.',
       },
     ],
     faqIds: ['partial-invite', 'how-rsvp', 'can-i-edit', 'postponed'],

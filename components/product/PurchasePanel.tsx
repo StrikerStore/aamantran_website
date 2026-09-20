@@ -66,38 +66,43 @@ export function PurchasePanel({
 
   return (
     <div className={styles.panel} id="purchase-panel">
-      <PriceBreakdown
-        price={price}
-        priceUsd={priceUsd}
-        originalPrice={originalPrice}
-        originalPriceUsd={originalPriceUsd}
-        layout="stacked"
-        className={styles.price}
-      />
-      <p className={styles.once}>One payment. No subscription, no renewal.</p>
+      <div className={styles.head}>
+        <PriceBreakdown
+          price={price}
+          priceUsd={priceUsd}
+          originalPrice={originalPrice}
+          originalPriceUsd={originalPriceUsd}
+          layout="stacked"
+          className={styles.price}
+        />
+        <p className={styles.once}>One payment. No subscription, no renewal.</p>
+      </div>
 
       {offer && (
-        <ul className={styles.offers} aria-label="Offer">
-          <li className={styles.offer}>
-            <span className={styles.offerLabel}>{offer.label}</span>
-          </li>
-          <li className={styles.offerNote}>
-            Use code <strong>{offer.code}</strong> at checkout, where every running offer is listed.
-          </li>
-        </ul>
+        <p className={styles.offer} aria-label="Offer">
+          <span className={styles.offerLabel}>
+            {offer.label} with code <strong className={styles.offerCode}>{offer.code}</strong>
+          </span>
+          <span className={styles.offerNote}>
+            Enter it at checkout, where every running offer is listed.
+          </span>
+        </p>
       )}
 
-      <Link href={`/checkout/${slug}`} className={styles.buy} onClick={handleBuy}>
-        Buy this invite
-      </Link>
+      <div className={styles.actions}>
+        <Link href={`/checkout/${slug}`} className={styles.buy} onClick={handleBuy}>
+          Buy this invite
+        </Link>
 
-      {tryWithNames && (
-        <TryDemoButton source="purchase-panel" fullWidth className={styles.tryInPanel}>
-          {TRY_DEMO.cta}
-          <span className={styles.free}> · free</span>
-        </TryDemoButton>
-      )}
+        {tryWithNames && (
+          <TryDemoButton source="purchase-panel" fullWidth className={styles.tryInPanel}>
+            {TRY_DEMO.cta}
+            <span className={styles.free}> · free</span>
+          </TryDemoButton>
+        )}
+      </div>
 
+      {/* The terms of the purchase, not the pitch for it: below the button, and quieter. */}
       <ul className={styles.facts}>
         <li>
           <strong>You build it yourself.</strong> {SELF_BUILD.long}

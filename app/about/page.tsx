@@ -54,7 +54,7 @@ export default async function AboutPage() {
       ? { value: averageRating > 0 ? averageRating.toFixed(1) : String(reviewCount), label: averageRating > 0 ? `average from ${pluralize(reviewCount, 'review')}` : pluralize(reviewCount, 'review') }
       : null,
     { value: 'One', label: 'payment, no subscription' },
-    { value: '6', label: 'months live after your last ceremony' },
+    { value: '6', label: 'months live after your last event' },
     ...publishableStats().map((stat) => ({ value: stat.figure, label: stat.label })),
   ].filter((figure): figure is { value: string; label: string } => figure !== null);
 

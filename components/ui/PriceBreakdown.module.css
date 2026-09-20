@@ -13,18 +13,39 @@
   font-size: 0.9em;
 }
 
+/*
+ * One line: the price, what it was, and the cut. They wrap together rather than
+ * one at a time, so a narrow phone never leaves "41% off" stranded on its own
+ * line under the price.
+ */
 .stacked {
-  display: inline-grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-3);
   row-gap: var(--space-1);
   font-family: var(--font-ui);
 }
 
 .stackedTotal {
   font-family: var(--font-heading);
-  font-size: 2rem;
+  font-size: 2.375rem;
   font-weight: 500;
   line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
   color: var(--color-text);
+}
+
+.stacked .was {
+  font-size: var(--type-control);
+  text-decoration-thickness: 1px;
+}
+
+/* Green carries no meaning on its own here: the struck price says the same thing. */
+.save {
+  font-size: var(--type-small);
+  font-weight: 600;
+  color: var(--color-success-text);
 }
 
 .stackedDetail {
