@@ -153,6 +153,26 @@ export function parseDateInput(value: string): Date | null {
   return date;
 }
 
+/** Lead-time buckets for analytics — keep in sync with the backend's TRIAL_LEAD_BUCKETS. */
+export type LeadBucket = 'under_1m' | '1_3m' | '3_6m' | '6_12m' | 'over_12m';
+
+/**
+ * How far away the celebration is, as a coarse bucket, for campaign timing.
+ * Deliberately coarse: analytics never carries the date itself. Null for a date
+ * that does not parse.
+ */
+export function leadBucket(eventDate: string, now: Date = new Date()): LeadBucket | null {
+  const date = parseDateInput(eventDate);
+  if (!date) return null;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const days = Math.round((date.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+  if (days < 30) return 'under_1m';
+  if (days < 91) return '1_3m';
+  if (days < 182) return '3_6m';
+  if (days < 365) return '6_12m';
+  return 'over_12m';
+}
+
 export function addDays(value: string, days: number): string {
   const date = parseDateInput(value);
   if (!date) return '';

@@ -18,6 +18,7 @@ import {
   firstInvalidStep,
   fitValuesToForm,
   formatCountdown,
+  leadBucket,
   loadStoredTryDemo,
   nameField,
   saveStoredTryDemo,
@@ -239,7 +240,14 @@ export function TryDemoSheet({ slug, name }: { slug: string; name: string }) {
     setNow(Date.now());
     setCopied(false);
     setView('result');
-    track('try_demo_created', { slug, ceremonyCount: values.ceremonies.length });
+    // A coarse lead-time bucket and the design's own ceremony names, for campaign
+    // timing. Never the date itself, a name, the venue or the city.
+    track('try_demo_created', {
+      slug,
+      ceremonyCount: values.ceremonies.length,
+      lead: leadBucket(values.eventDate),
+      ceremonies: values.ceremonies.map((c) => c.name).slice(0, 10),
+    });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
