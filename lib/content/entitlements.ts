@@ -125,7 +125,7 @@ export interface PlanningTool {
 /** Source: aamantran_user/src/pages/{Budget,Tasks,Vendors,Timeline,Inventory,Gifts,MoodBoard,PhotoWall}.jsx. */
 export const PLANNING_TOOLS: readonly PlanningTool[] = [
   { key: 'budget', name: 'Budget', does: 'Set a total budget and log expenses by category, vendor and due date, marking each one paid.', limit: "A record for you: it doesn't make or take payments." },
-  { key: 'tasks', name: 'Tasks', does: "A to-do board with categories, due dates, priorities and who's responsible.", limit: 'Who is responsible is a label (bride, groom, family or vendor), not a separate login.' },
+  { key: 'tasks', name: 'Tasks', does: "A to-do board with categories, due dates, priorities and who's responsible.", limit: 'Who is responsible is a label (either of the couple, family or vendor), not a separate login.' },
   { key: 'vendors', name: 'Vendors', does: "Every vendor in one place: contact, package, cost, deposit and what's been paid.", limit: "Your own records: Aamantran doesn't find or book vendors." },
   { key: 'timeline', name: 'Day-of timeline', does: 'A run sheet for each ceremony: time, place, who is responsible and how long each part takes.', limit: 'Kept in your dashboard, separate from the invitation guests see.' },
   { key: 'inventory', name: 'Inventory', does: 'Outfits, jewellery, decor and return gifts, tracked from to-buy to done with quantities and costs.', limit: "A checklist: it doesn't order anything." },

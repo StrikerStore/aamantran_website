@@ -11,7 +11,7 @@
  *
  * WHAT THE FORM ASKS COMES FROM THE DESIGN. `TryDemoForm` is what the API says
  * this design takes — which names, which events, what to call the date — so a
- * wedding asks for the bride and groom and a birthday for the person whose
+ * wedding asks for the couple (person1 and person2) and a birthday for the person whose
  * birthday it is. Nothing here names an occasion.
  */
 
@@ -368,9 +368,10 @@ export interface StoredTryDemo {
  * sessionStorage, not localStorage: the details stay in this tab and are gone
  * when it closes, instead of sitting in the browser for the next person.
  */
-// v2: names are keyed by role. A v1 entry (bride, groom, weddingDate) is simply
-// not read, rather than being replayed into a form that no longer has those fields.
-const STORAGE_KEY = 'aam_try_demo_v2';
+// v3: the couple's roles are person1/person2. A v2 entry (roles bride, groom) or
+// a v1 entry (bride, groom, weddingDate) is simply not read, rather than being
+// replayed into a form that no longer has those fields.
+const STORAGE_KEY = 'aam_try_demo_v3';
 
 function isValues(value: unknown): value is TryDemoValues {
   if (!value || typeof value !== 'object') return false;
