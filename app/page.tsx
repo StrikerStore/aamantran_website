@@ -10,6 +10,7 @@ import { AisleTiles } from '@/components/shop/AisleTiles';
 import { DisplayShelf, type DisplayShelfOption } from '@/components/shop/DisplayShelf';
 import { ProofStrip } from '@/components/shop/ProofStrip';
 import { ShopWindow } from '@/components/shop/ShopWindow';
+import { TraditionTiles } from '@/components/shop/TraditionTiles';
 import { Accordion } from '@/components/ui/Accordion';
 import { LinkButton } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
@@ -40,8 +41,8 @@ import styles from './home.module.css';
  * the aisles, then the prices; they ask how it works once they want one.
  *
  * So the order here is: what we sell (in the window), where to find yours (the
- * aisles), what we have (the designs, sortable by tradition, each with its
- * price) — and only then how it works, what it comes with, and what other
+ * aisles), what we have (the designs, each with its price), who it's for (the
+ * traditions) — and only then how it works, what it comes with, and what other
  * people thought.
  *
  * Both interactive demos moved off this page rather than being deleted: the
@@ -214,11 +215,19 @@ export default async function HomePage() {
             </Reveal>
           )}
 
-          {/* The tradition tiles and the price board that followed here were
-              removed: the capsules above already sort by tradition, and every
-              card carries its price. */}
+          {/* ── 4. Shop by tradition ──────────────────────────────────── */}
+          <Reveal as="section" aria-labelledby="tradition-heading" className={styles.section}>
+            <p className={styles.eyebrow}>Shop by tradition</p>
+            <h2 id="tradition-heading" className={styles.sectionTitle}>
+              Written the way your family writes it
+            </h2>
+            <TraditionTiles templates={templates} />
+          </Reveal>
 
-          {/* ── 4. How it works ───────────────────────────────────────── */}
+          {/* The price board that followed here was removed: every card
+              carries its price. */}
+
+          {/* ── 5. How it works ───────────────────────────────────────── */}
           <Reveal as="section" id="how" aria-labelledby="how-heading" className={styles.section}>
             <p className={styles.eyebrow}>How it works</p>
             <h2 id="how-heading" className={styles.sectionTitle}>
@@ -240,7 +249,7 @@ export default async function HomePage() {
             </p>
           </Reveal>
 
-          {/* ── 5. What comes with it ─────────────────────────────────── */}
+          {/* ── 6. What comes with it ─────────────────────────────────── */}
           <Reveal as="section" id="features" aria-labelledby="proof-heading" className={styles.section}>
             <p className={styles.eyebrow}>Included with every invite</p>
             <h2 id="proof-heading" className={styles.sectionTitle}>
@@ -252,7 +261,7 @@ export default async function HomePage() {
             </p>
           </Reveal>
 
-          {/* ── 6. What couples say ───────────────────────────────────── */}
+          {/* ── 7. What couples say ───────────────────────────────────── */}
           <Reveal as="section" id="reviews" aria-labelledby="stories-heading" className={styles.section}>
             <p className={styles.eyebrow}>In their words</p>
             <h2 id="stories-heading" className={styles.sectionTitle}>
@@ -272,7 +281,7 @@ export default async function HomePage() {
             )}
           </Reveal>
 
-          {/* ── 7. Instagram ──────────────────────────────────────────── */}
+          {/* ── 8. Instagram ──────────────────────────────────────────── */}
           <Reveal as="section" aria-labelledby="instagram-heading" className={styles.section}>
             <p className={`${styles.eyebrow} ${styles.eyebrowCenter}`}>Elsewhere</p>
             <h2 id="instagram-heading" className={`${styles.sectionTitle} ${styles.centered}`}>
@@ -281,7 +290,7 @@ export default async function HomePage() {
             <InstagramStrip />
           </Reveal>
 
-          {/* ── 8. Questions before buying ───────────────────────────── */}
+          {/* ── 9. Questions before buying ───────────────────────────── */}
           <Reveal as="section" aria-labelledby="faq-heading" className={styles.section}>
             <p className={styles.eyebrow}>Before you buy</p>
             <h2 id="faq-heading" className={styles.sectionTitle}>
@@ -311,7 +320,7 @@ export default async function HomePage() {
           </Reveal>
         </Container>
 
-        {/* ── 9. Closing call to action ───────────────────────────────── */}
+        {/* ── 10. Closing call to action ───────────────────────────────── */}
         <section aria-labelledby="cta-heading" className={`${styles.cta} ds-ink`}>
           <Container>
             <h2 id="cta-heading" className={styles.ctaTitle}>
