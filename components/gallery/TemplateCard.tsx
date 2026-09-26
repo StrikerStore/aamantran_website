@@ -8,7 +8,6 @@ import { formatMoney, originalPriceFor, priceFor } from '@/lib/storefront';
 import { pluralize } from '@/lib/format';
 import {
   cardBuyers,
-  cardDescription,
   cardHighlights,
   cardOccasionLabels,
   cardRating,
@@ -58,7 +57,6 @@ export function TemplateCard({
   const Heading = headingLevel === 2 ? 'h2' : 'h3';
   const productHref = `/templates/${t.slug}`;
   const occasions = cardOccasionLabels(t.bestFor);
-  const description = cardDescription(t);
   const highlights = cardHighlights(t.highlights);
   const price = priceFor(t);
   const original = originalPriceFor(t);
@@ -117,8 +115,6 @@ export function TemplateCard({
             ))}
           </ul>
         )}
-
-        {description && <p className={styles.description}>{description}</p>}
 
         {highlights.length > 0 && (
           <ul className={styles.highlights} aria-label="Highlights">

@@ -11,8 +11,6 @@ import { AISLES } from '@/lib/content/shopTaxonomy';
 import { occasionPagesInShop } from '@/lib/occasionPages';
 import type { TemplateSummary } from '@/lib/api/types';
 import { COLLECTIONS, collectionBySlug, type Collection } from '@/lib/collections';
-import { SELF_BUILD } from '@/lib/content/entitlements';
-import { pluralize } from '@/lib/format';
 import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
 
 /**
@@ -116,30 +114,14 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
       ))}
 
       <div className={styles.page}>
-        <header className={styles.hero}>
-          <Container>
-            <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
-              <ol>
-                <li>
-                  <Link href="/">Home</Link>
-                </li>
-                <li>
-                  <Link href="/templates">Invitations</Link>
-                </li>
-                <li aria-current="page">{c.heading}</li>
-              </ol>
-            </nav>
-            <h1 className={styles.title}>{c.heading}</h1>
-            <p className={styles.intro}>{c.intro}</p>
-            <p className={styles.selfBuild}>{SELF_BUILD.short}</p>
-          </Container>
-        </header>
-
         <Container>
-          <section id="designs" aria-labelledby="designs-heading" className={styles.section}>
-            <h2 id="designs-heading" className={styles.sectionTitle}>
-              {templates.length > 0 ? `${pluralize(templates.length, 'invite')} in this collection` : 'Invites in this collection'}
-            </h2>
+          {/* The invites come first; the words about the tradition follow them,
+              so a shopper reaches a design on the first screen and search
+              engines still read the copy. */}
+          <section id="designs" aria-labelledby="designs-heading" className={styles.shelf}>
+            <h1 id="designs-heading" className={styles.title}>
+              {c.heading}
+            </h1>
             {templates.length > 0 ? (
               <>
                 <ul className={styles.grid}>
@@ -165,6 +147,13 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
                 meantime — you can use any of them for this celebration.
               </p>
             )}
+          </section>
+
+          <section aria-labelledby="about-heading" className={styles.section}>
+            <h2 id="about-heading" className={styles.sectionTitle}>
+              About these invites
+            </h2>
+            <p className={styles.intro}>{c.intro}</p>
           </section>
 
           <section aria-labelledby="notes-heading" className={styles.section}>

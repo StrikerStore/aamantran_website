@@ -9,7 +9,6 @@ import { ProductGallery } from '@/components/product/ProductGallery';
 import { PurchasePanel } from '@/components/product/PurchasePanel';
 import { ReviewList } from '@/components/product/ReviewList';
 import { StickyPurchaseBar } from '@/components/product/StickyPurchaseBar';
-import { TryDemoButton } from '@/components/try-demo/TryDemoButton';
 import { TryDemoSheet } from '@/components/try-demo/TryDemoSheet';
 import { Accordion } from '@/components/ui/Accordion';
 import { Badge } from '@/components/ui/Badge';
@@ -21,7 +20,7 @@ import { resolveBackendPublicUrl } from '@/lib/assetUrl';
 import { BUILDER_STEPS } from '@/lib/content/builderSteps';
 import { CHANGEABLE, NAME_FREEZE, productInclusions } from '@/lib/content/entitlements';
 import { PURCHASE_FAQ_IDS, faqsByIds } from '@/lib/content/faqs';
-import { TRY_DEMO } from '@/lib/content/tryDemo';
+import { AISLES, templateInAisle } from '@/lib/content/shopTaxonomy';
 import { languageLabel, pluralize, truncateWords } from '@/lib/format';
 import { CURRENCY, priceFor } from '@/lib/storefront';
 import { buildPageMetadata, SITE_NAME, SITE_URL } from '@/lib/seo';
@@ -37,19 +36,41 @@ import styles from './product.module.css';
  * price without the GST checkout adds. Both are now honest — no reviews means
  * the page says so, and the price shows the total that will be charged.
  *
- * THE ORDER IS A BUYING ORDER. One purchase panel used to be followed by six
- * explanation sections before a shopper reached another design. What is left
- * open is what a buyer is deciding on — what this design looks like, what it
- * costs, what you fill in on it, what the price covers, what other people
- * thought, and what else the shop has. How the builder works and what locks
- * after publishing are real and still here, folded into the accordion at the
- * bottom with the questions, where somebody who wants them will look.
+ * THE ORDER IS A BUYING ORDER. What is left open is the design, its price,
+ * what other buyers thought (only when there are reviews) and other invites.
+ * Everything else — about the design, what you fill in, what the price
+ * covers, how the builder works and what locks after publishing — is folded
+ * into "Before you buy" at the bottom, where somebody who wants it will look,
+ * rather than stacked between the purchase panel and the next design.
  */
 
 type Props = { params: Promise<{ slug: string }> };
 
 /** Reviews quoted inside Product structured data. */
 const JSON_LD_REVIEW_LIMIT = 5;
+
+/** Traditions named in a wedding invite's title; "universal" designs get none. */
+const TRADITION_WORD: Record<string, string> = {
+  hindu: 'Hindu',
+  muslim: 'Muslim',
+  sikh: 'Sikh',
+  christian: 'Christian',
+};
+
+/**
+ * The <title> a search result shows: the design's name, then what people
+ * search for — "Sohna — Sikh Digital Wedding Invitation", "Vaada — Digital
+ * Engagement Invitation". The occasion is the first shop aisle the design
+ * belongs to (alias-aware, so a list that starts with "Haldi" is still a
+ * wedding), and the tradition is named only for weddings, where people search
+ * by it. The layout appends " — Aamantran".
+ */
+function productTitle(template: TemplateDetail): string {
+  const aisle = AISLES.find((entry) => templateInAisle(template, entry));
+  const occasion = aisle?.label ?? 'Wedding';
+  const tradition = occasion === 'Wedding' ? TRADITION_WORD[template.community?.toLowerCase() ?? ''] : undefined;
+  return `${template.name} — ${tradition ? `${tradition} ` : ''}Digital ${occasion} Invitation`;
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -59,11 +80,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = template.shortDescription
     ?? (template.aboutText
       ? truncateWords(template.aboutText, 28)
-      : `${template.name} — a digital invite you fill in yourself, with RSVP, guest list and WhatsApp sharing.`);
+      : `${template.name} — a digital invitation with RSVP, guest list and WhatsApp sharing.`);
   const image = resolveBackendPublicUrl(template.desktopThumbnailUrl ?? template.thumbnailUrl ?? template.mobileThumbnailUrl);
 
   return buildPageMetadata({
-    title: `${template.name} — Digital Invite`,
+    title: productTitle(template),
     description,
     path: `/templates/${template.slug}`,
     ...(image ? { ogImage: image } : {}),
@@ -225,76 +246,19 @@ export default async function ProductPage({ params }: Props) {
             </div>
           </div>
 
-          {template.tryWithNames && (
-            <section aria-labelledby="try-heading" className={styles.tryBand}>
-              <div className={styles.tryText}>
-                <h2 id="try-heading" className={styles.tryTitle}>
-                  {TRY_DEMO.bandTitle}
-                </h2>
-                <p className={styles.tryIntro}>{TRY_DEMO.bandText}</p>
-              </div>
-              <TryDemoButton source="product-band" variant="primary">
-                {TRY_DEMO.cta}
-              </TryDemoButton>
-            </section>
-          )}
-
-          {template.aboutText && (
-            <section aria-labelledby="about-heading" className={styles.section}>
-              <h2 id="about-heading" className={styles.sectionTitle}>
-                About this invite
+          {/* Straight from the purchase panel to what other buyers thought and
+              to other invites. The details a buyer may still want — about the
+              design, what they fill in, what the price includes — are folded
+              into "Before you buy" below, not stacked in between. Try-it is
+              already offered in the panel and the phone's sticky bar. */}
+          {genuineTotal > 0 && (
+            <section id="reviews" aria-labelledby="reviews-heading" className={styles.section}>
+              <h2 id="reviews-heading" className={styles.sectionTitle}>
+                Reviews of this invite
               </h2>
-              <p className={styles.prose}>{template.aboutText}</p>
-              {attributes.length > 0 && (
-                <dl className={styles.attributes}>
-                  {attributes.map((attribute) => (
-                    <div key={attribute.label}>
-                      <dt>{attribute.label}</dt>
-                      <dd>{attribute.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
+              <ReviewList reviews={reviews} avgRating={reviewsResponse?.avgRating ?? 0} totalCount={genuineTotal} />
             </section>
           )}
-
-          {template.capabilities && (
-            <section aria-labelledby="fill-heading" className={styles.section}>
-              <h2 id="fill-heading" className={styles.sectionTitle}>
-                What you fill in on this invite
-              </h2>
-              <Capabilities capabilities={template.capabilities} />
-            </section>
-          )}
-
-          {/* Six, not twelve: what a buyer is choosing between designs on. The
-              rest is one link away. */}
-          <section aria-labelledby="included-heading" className={styles.section}>
-            <h2 id="included-heading" className={styles.sectionTitle}>
-              What the price includes
-            </h2>
-            <ul className={styles.included}>
-              {included.map((item) => (
-                <li key={item.id}>
-                  <span className={styles.includedTitle}>{item.title}</span>
-                  <span className={styles.includedDetail}>
-                    {item.detail}
-                    {item.templateDependent && ' Where this invite supports it.'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className={styles.more}>
-              <Link href="/features">Everything that comes with an invitation</Link>
-            </p>
-          </section>
-
-          <section id="reviews" aria-labelledby="reviews-heading" className={styles.section}>
-            <h2 id="reviews-heading" className={styles.sectionTitle}>
-              Reviews of this invite
-            </h2>
-            <ReviewList reviews={reviews} avgRating={reviewsResponse?.avgRating ?? 0} totalCount={genuineTotal} />
-          </section>
 
           {related.length > 0 && (
             <section aria-labelledby="related-heading" className={styles.section}>
@@ -316,10 +280,8 @@ export default async function ProductPage({ params }: Props) {
             </section>
           )}
 
-          {/* How the builder works, what locks, and the questions — folded away
-              rather than dropped. Nothing here is new: it is the same copy the
-              page used to spend two thousand pixels on before a buyer saw
-              another design. */}
+          {/* The details, folded away rather than dropped: the same copy the
+              page used to stack between the purchase panel and other invites. */}
           <section aria-labelledby="details-heading" className={styles.section}>
             <h2 id="details-heading" className={styles.sectionTitle}>
               Before you buy
@@ -327,6 +289,60 @@ export default async function ProductPage({ params }: Props) {
             <Accordion
               headingLevel={3}
               items={[
+                ...(template.aboutText
+                  ? [
+                      {
+                        id: 'about',
+                        title: 'About this invite',
+                        content: (
+                          <>
+                            <p className={styles.prose}>{template.aboutText}</p>
+                            {attributes.length > 0 && (
+                              <dl className={styles.attributes}>
+                                {attributes.map((attribute) => (
+                                  <div key={attribute.label}>
+                                    <dt>{attribute.label}</dt>
+                                    <dd>{attribute.value}</dd>
+                                  </div>
+                                ))}
+                              </dl>
+                            )}
+                          </>
+                        ),
+                      },
+                    ]
+                  : []),
+                ...(template.capabilities
+                  ? [
+                      {
+                        id: 'fill',
+                        title: 'What you fill in on this invite',
+                        content: <Capabilities capabilities={template.capabilities} />,
+                      },
+                    ]
+                  : []),
+                {
+                  id: 'included',
+                  title: 'What the price includes',
+                  content: (
+                    <>
+                      <ul className={styles.included}>
+                        {included.map((item) => (
+                          <li key={item.id}>
+                            <span className={styles.includedTitle}>{item.title}</span>
+                            <span className={styles.includedDetail}>
+                              {item.detail}
+                              {item.templateDependent && ' Where this invite supports it.'}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className={styles.more}>
+                        <Link href="/features">Everything that comes with an invitation</Link>
+                      </p>
+                    </>
+                  ),
+                },
                 {
                   id: 'setup',
                   title: 'How you set it up',

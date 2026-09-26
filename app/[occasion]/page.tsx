@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import JsonLd from '@/components/JsonLd';
 import { TemplateCard } from '@/components/gallery/TemplateCard';
-import { AisleRail } from '@/components/shop/AisleRail';
 import { SubAisleBar } from '@/components/shop/SubAisleBar';
 import { Accordion } from '@/components/ui/Accordion';
 import { LinkButton } from '@/components/ui/Button';
@@ -14,7 +13,6 @@ import { getTemplates } from '@/lib/api/templates';
 import { lowestPrice } from '@/lib/galleryPrice';
 import type { TemplateSummary } from '@/lib/api/types';
 import { COLLECTIONS } from '@/lib/collections';
-import { SELF_BUILD } from '@/lib/content/entitlements';
 import { faqsByIds } from '@/lib/content/faqs';
 import type { OccasionPage } from '@/lib/content/occasionPages';
 import { pluralize } from '@/lib/format';
@@ -207,35 +205,20 @@ export default async function OccasionLandingPage({ params, searchParams }: Prop
       {!catalogueFailed && !tradition && schemaFor(page, templates, faqs).map((data, i) => <JsonLd key={i} data={data} />)}
 
       <div className={styles.page}>
-        <header className={styles.hero}>
-          <Container>
-            <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
-              <ol>
-                <li>
-                  <Link href="/">Home</Link>
-                </li>
-                <li>
-                  <Link href="/templates">Invitations</Link>
-                </li>
-                <li aria-current="page">{page.heading}</li>
-              </ol>
-            </nav>
-            <h1 className={styles.title}>{page.heading}</h1>
-            <p className={styles.intro}>{page.intro}</p>
-            <p className={styles.selfBuild}>{SELF_BUILD.short}</p>
-            <AisleRail templates={catalogue} currentKey={aisle?.key} />
-          </Container>
-        </header>
-
         <Container>
-          <section id="designs" aria-labelledby="designs-heading" className={styles.section}>
-            <h2 id="designs-heading" className={styles.sectionTitle}>
-              {catalogueFailed
-                ? 'Invites'
-                : narrowedTo
-                  ? `${narrowedTo}: ${pluralize(shown.length, 'invite')}`
-                  : `${pluralize(templates.length, 'invite')} for this occasion`}
-            </h2>
+          {/* The invites come first: the title, the tradition filter, then the
+              shelf. The words about the occasion follow the invites, so a
+              shopper reaches a design on the first screen and search engines
+              still read the copy. */}
+          <section id="designs" aria-labelledby="designs-heading" className={styles.shelf}>
+            <h1 id="designs-heading" className={styles.title}>
+              {page.heading}
+            </h1>
+            {narrowedTo && !catalogueFailed && (
+              <p className={styles.count}>
+                {narrowedTo}: {pluralize(shown.length, 'invite')}
+              </p>
+            )}
 
             {!catalogueFailed && traditions.length > 0 && (
               <SubAisleBar slug={page.slug} options={traditions} selected={tradition} />
@@ -274,6 +257,13 @@ export default async function OccasionLandingPage({ params, searchParams }: Prop
                 </p>
               </>
             )}
+          </section>
+
+          <section aria-labelledby="about-heading" className={styles.section}>
+            <h2 id="about-heading" className={styles.sectionTitle}>
+              About these invites
+            </h2>
+            <p className={styles.intro}>{page.intro}</p>
           </section>
 
           <section aria-labelledby="prepare-heading" className={styles.section}>

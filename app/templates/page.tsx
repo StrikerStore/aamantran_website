@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import JsonLd from '@/components/JsonLd';
 import { FilterBar } from '@/components/gallery/FilterBar';
 import { AisleRail } from '@/components/shop/AisleRail';
@@ -10,7 +9,6 @@ import { Container } from '@/components/ui/Container';
 import { Notice } from '@/components/ui/Notice';
 import { getTemplates } from '@/lib/api/templates';
 import type { TemplateSummary } from '@/lib/api/types';
-import { COLLECTIONS } from '@/lib/collections';
 import { pluralize } from '@/lib/format';
 import { activeFilterLabels, galleryFacets } from '@/lib/galleryFacets';
 import { lowestPrice, priceBands } from '@/lib/galleryPrice';
@@ -126,20 +124,10 @@ export default async function TemplatesPage({ searchParams }: Props) {
       <div className={styles.page}>
         <header className={styles.hero}>
           <Container>
-            <p className={styles.eyebrow}>Invitations</p>
             <h1 className={styles.title}>Find your invite</h1>
-            <p className={styles.intro}>Every invite has a live demo you can open before you buy.</p>
+            {/* Traditions are in the Filters below (Community), so they are not
+                repeated here as a second row of links. */}
             <AisleRail templates={sample} className={styles.rail} />
-            <nav aria-label="Traditions" className={styles.collections}>
-              <span className={styles.collectionsLabel}>By tradition:</span>
-              <ul>
-                {COLLECTIONS.map((c) => (
-                  <li key={c.slug}>
-                    <Link href={`/collections/${c.slug}`}>{c.short}</Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
           </Container>
         </header>
 

@@ -17,9 +17,6 @@ export const TRY_DEMO = {
   /** For the pair under the artwork, where two buttons share one line. */
   ctaCompact: 'Use your names',
   demoCompact: 'Live demo',
-  bandTitle: 'See it with your names in about a minute',
-  bandText:
-    'Enter the names, the date, the venue and the events, and see this invite filled in with them. Free, with no account and no email address.',
   watermarkNote: 'The preview is watermarked, and RSVPs and wishes on it don’t send anything. Buy the invite to keep these details and remove the watermark.',
   buyWithDetails: 'Buy this invite, keep these details',
   buyNote: 'After you pay and create your account, your invitation starts with these names, dates, venue and events. You can change any of them before you confirm the names.',

@@ -201,8 +201,19 @@ export async function getCatalogueStats(): Promise<CatalogueStats | null> {
   return normalizeCatalogueStats(data);
 }
 
-/** Alternatives for a product page. Supplementary, so a failure is simply none. */
+/**
+ * Alternatives for a product page: the same tradition first, topped up with the
+ * shop's most popular invites when that tradition has too few, so no product
+ * page ends without somewhere to go next. Supplementary, so a failure is
+ * simply none.
+ */
 export async function getRelatedTemplates(community: string, excludeSlug: string, limit = 6): Promise<TemplateSummary[]> {
   const result = await getTemplates({ community: community || undefined, exclude: excludeSlug, limit, sort: 'popular' });
-  return result?.templates ?? [];
+  const related = result?.templates ?? [];
+  if (related.length >= limit || !community) return related;
+
+  const popular = await getTemplates({ exclude: excludeSlug, limit: limit * 2, sort: 'popular' });
+  const seen = new Set(related.map((t) => t.slug));
+  const extra = (popular?.templates ?? []).filter((t) => t.slug !== excludeSlug && !seen.has(t.slug));
+  return [...related, ...extra].slice(0, limit);
 }

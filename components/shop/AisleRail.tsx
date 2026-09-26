@@ -13,8 +13,9 @@ import styles from './AisleRail.module.css';
  * fifth of the height, because what has to be on the first screen here is the
  * designs.
  *
- * An unstocked aisle stays visible and stays inert: a chip that says the label
- * and "soon", not a link to an empty shelf.
+ * Only stocked aisles are shown, as on the homepage tiles: an occasion appears
+ * by itself when its first design goes live. A row of "soon" chips pushed the
+ * designs down without offering anything to open.
  */
 export function AisleRail({
   templates,
@@ -26,8 +27,8 @@ export function AisleRail({
   currentKey?: string;
   className?: string;
 }) {
-  const aisles = shopAisles(templates);
-  if (aisles.every((entry) => entry.count === 0)) return null;
+  const aisles = shopAisles(templates).filter((entry) => entry.count > 0);
+  if (aisles.length === 0) return null;
 
   return (
     <nav aria-label="Occasions" className={cx(styles.rail, className)}>
@@ -44,11 +45,7 @@ export function AisleRail({
               ) : (
                 <span className={cx(styles.chip, current ? styles.current : styles.empty)} aria-current={current || undefined}>
                   {aisle.label}
-                  {count > 0 ? (
-                    <span className={styles.count}>{count}</span>
-                  ) : (
-                    <span className={styles.soon}>soon</span>
-                  )}
+                  <span className={styles.count}>{count}</span>
                 </span>
               )}
             </li>

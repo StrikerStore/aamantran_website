@@ -68,6 +68,18 @@
   display: block;
 }
 
+/*
+ * On phones the whole preview shows. The phone artwork is a ~9:16 screenshot and
+ * the frame is 3:4, so cropping to fill it cut off the lower quarter of the
+ * design; fitting it inside leaves soft bands at the sides instead.
+ */
+@media (max-width: 639px) {
+  .media :global(img) {
+    object-fit: contain;
+    object-position: center;
+  }
+}
+
 .body {
   display: flex;
   flex: 1;
@@ -147,14 +159,6 @@
 
 .occasions {
   gap: var(--space-2);
-}
-
-.description {
-  margin: 0;
-  font-family: var(--font-ui);
-  font-size: var(--type-small);
-  line-height: var(--leading-body);
-  color: var(--color-text-muted);
 }
 
 .highlights {
