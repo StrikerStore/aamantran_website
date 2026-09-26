@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { getPublicApiUrl } from '@/lib/publicEnv';
 import { SITE_URL, STATIC_PAGE_UPDATED, alternateLanguages } from '@/lib/seo';
 import { COLLECTIONS } from '@/lib/collections';
+import { BLOG_CACHE_TAG } from '@/lib/api/blog';
 import { getFeaturedReviews, getTemplates } from '@/lib/api/templates';
 import { indexableOccasionPages } from '@/lib/occasionPages';
 
@@ -16,7 +17,7 @@ interface BlogListItem {
 async function getBlogSlugs(): Promise<BlogListItem[]> {
   try {
     const res = await fetch(`${getPublicApiUrl()}/api/blog?limit=100`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 3600, tags: [BLOG_CACHE_TAG] },
     });
     if (!res.ok) return [];
     const data = await res.json();

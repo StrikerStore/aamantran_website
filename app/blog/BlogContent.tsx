@@ -17,6 +17,21 @@ function safeUrl(url: string): string {
   return /^(https?:\/\/|\/|#|mailto:)/i.test(u) ? u : '#';
 }
 
+/** "|---|:---:|---:|": the line under a table's header row. */
+const TABLE_SEPARATOR = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/;
+
+function isTableRow(line: string): boolean {
+  return line.trim().startsWith('|');
+}
+
+/** "| a | b |" → ["a", "b"]. The outer pipes are optional. */
+function tableCells(line: string): string[] {
+  let s = line.trim();
+  if (s.startsWith('|')) s = s.slice(1);
+  if (s.endsWith('|')) s = s.slice(0, -1);
+  return s.split('|').map((c) => c.trim());
+}
+
 function markdownToHtml(md: string): string {
   if (!md) return '';
   // Normalise line endings first. Browsers submit <textarea> content with CRLF,
@@ -44,6 +59,31 @@ function markdownToHtml(md: string): string {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+
+    // Table: a "| a | b |" header row followed by a "|---|---|" separator.
+    // Rows run until the first line that does not start with "|".
+    if (!inPre && isTableRow(line) && i + 1 < lines.length && TABLE_SEPARATOR.test(lines[i + 1])) {
+      if (inParagraph) { result.push('</p>'); inParagraph = false; }
+      closeList();
+      const head = tableCells(line);
+      const rows: string[][] = [];
+      i += 2;
+      while (i < lines.length && isTableRow(lines[i])) {
+        rows.push(tableCells(lines[i]));
+        i++;
+      }
+      i--; // the for loop's i++ moves on to the first line after the table
+      result.push(
+        '<div class="blog-table-scroll"><table><thead><tr>' +
+          head.map((c) => `<th>${processInline(c)}</th>`).join('') +
+          '</tr></thead><tbody>' +
+          rows
+            .map((r) => '<tr>' + head.map((_h, k) => `<td>${processInline(r[k] ?? '')}</td>`).join('') + '</tr>')
+            .join('') +
+          '</tbody></table></div>',
+      );
+      continue;
+    }
 
     // Track pre blocks (already processed above, but still in the string)
     if (line.includes('<pre>')) { inPre = true; }

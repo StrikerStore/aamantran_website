@@ -118,6 +118,25 @@
   font-size: var(--type-small);
 }
 
+/*
+ * Blog tables (app/blog/BlogContent.tsx) sit in their own sideways scroller,
+ * so a wide table scrolls inside the article on a phone instead of widening
+ * the page. `contain: paint` keeps its overflow out of the document's width,
+ * which is what otherwise makes a phone zoom the whole page out.
+ */
+.prose :global(.blog-table-scroll) {
+  max-width: 100%;
+  margin-block: var(--space-4);
+  overflow-x: auto;
+  contain: paint;
+  overscroll-behavior-x: contain;
+}
+
+.prose th {
+  background: var(--color-sage);
+  font-weight: 600;
+}
+
 .prose th,
 .prose td {
   padding: var(--space-2) var(--space-3);

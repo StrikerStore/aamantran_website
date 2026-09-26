@@ -51,6 +51,8 @@ export interface GetOptions {
   revalidate?: number;
   /** Always fetch fresh. Takes precedence over revalidate. */
   noStore?: boolean;
+  /** Cache tags, so app/api/revalidate can expire this read on demand. */
+  tags?: string[];
   headers?: Record<string, string>;
   signal?: AbortSignal;
 }
@@ -64,7 +66,9 @@ export async function apiGet<T>(
   try {
     const init: RequestInit = { headers: options.headers, signal: options.signal };
     if (options.noStore) init.cache = 'no-store';
-    else if (options.revalidate !== undefined) init.next = { revalidate: options.revalidate };
+    else if (options.revalidate !== undefined || options.tags) {
+      init.next = { revalidate: options.revalidate, tags: options.tags };
+    }
     const res = await fetch(apiUrl(path, query), init);
     if (!res.ok) return null;
     const { parsed, value } = await readJson(res);

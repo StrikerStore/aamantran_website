@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { LinkButton } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { RemoteImage } from '@/components/ui/RemoteImage';
+import { BLOG_CACHE_TAG } from '@/lib/api/blog';
 import { resolveBackendPublicUrl } from '@/lib/assetUrl';
 import { formatDate, parseList, pluralize } from '@/lib/format';
 import { getPublicApiUrl } from '@/lib/publicEnv';
@@ -53,7 +54,7 @@ interface BlogListItem {
 
 async function getPost(slug: string): Promise<BlogPost | null> {
   try {
-    const res = await fetch(`${API}/api/blog/${encodeURIComponent(slug)}`, { next: { revalidate: 300 } });
+    const res = await fetch(`${API}/api/blog/${encodeURIComponent(slug)}`, { next: { revalidate: 300, tags: [BLOG_CACHE_TAG] } });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -63,7 +64,7 @@ async function getPost(slug: string): Promise<BlogPost | null> {
 
 async function getRelatedPosts(excludeSlug: string): Promise<BlogListItem[]> {
   try {
-    const res = await fetch(`${API}/api/blog?limit=4`, { next: { revalidate: 300 } });
+    const res = await fetch(`${API}/api/blog?limit=4`, { next: { revalidate: 300, tags: [BLOG_CACHE_TAG] } });
     if (!res.ok) return [];
     const data = await res.json();
     return (data.posts || []).filter((p: BlogListItem) => p.slug !== excludeSlug).slice(0, 3);

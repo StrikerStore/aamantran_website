@@ -16,9 +16,17 @@ export function normalizePostSummary(raw: unknown): BlogPostSummary | null {
   };
 }
 
+/**
+ * Every blog read carries this tag. Publishing, editing, unpublishing or
+ * deleting a post in the admin makes the backend call app/api/revalidate,
+ * which expires the tag, so the change shows on the next page load instead of
+ * after the time-based revalidate below.
+ */
+export const BLOG_CACHE_TAG = 'blog';
+
 /** Newest published posts, or null when the blog API cannot be read. */
 export async function getRecentPosts(limit = 3): Promise<BlogPostSummary[] | null> {
-  const data = await apiGet<unknown>('/api/blog', { limit }, { revalidate: REVALIDATE.blog });
+  const data = await apiGet<unknown>('/api/blog', { limit }, { revalidate: REVALIDATE.blog, tags: [BLOG_CACHE_TAG] });
   if (!isRecord(data) || !Array.isArray(data.posts)) return null;
   return data.posts.map(normalizePostSummary).filter((p): p is BlogPostSummary => p !== null);
 }
