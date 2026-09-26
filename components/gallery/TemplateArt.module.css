@@ -29,8 +29,10 @@
   color: var(--color-primary);
 }
 
+/* The phone artwork is a ~9:16 screenshot; a frame of the same shape shows all
+   of it and fills the frame edge to edge. */
 @media (max-width: 639px) {
   .hasPhoneArt {
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 9 / 16;
   }
 }

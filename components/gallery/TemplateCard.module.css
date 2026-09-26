@@ -68,17 +68,6 @@
   display: block;
 }
 
-/*
- * On phones the whole preview shows. The phone artwork is a ~9:16 screenshot and
- * the frame is 3:4, so cropping to fill it cut off the lower quarter of the
- * design; fitting it inside leaves soft bands at the sides instead.
- */
-@media (max-width: 639px) {
-  .media :global(img) {
-    object-fit: contain;
-    object-position: center;
-  }
-}
 
 .body {
   display: flex;
@@ -264,4 +253,47 @@
 
 .try:hover {
   border-color: var(--color-primary);
+}
+
+/*
+ * Phones. The preview is a full-width 9:16 screenshot (TemplateArt), so the
+ * card is capped narrower than the screen to keep it from running to a whole
+ * screen height, and the details under it are set tighter: smaller name and
+ * price, less padding and spacing, and no feature ticks — they read the same on
+ * nearly every card, and the product page lists them.
+ */
+@media (max-width: 639px) {
+  .card {
+    width: 100%;
+    max-width: 300px;
+    margin-inline: auto;
+  }
+
+  .body {
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+
+  .name {
+    font-size: 1.3rem;
+  }
+
+  .highlights {
+    display: none;
+  }
+
+  .footer {
+    gap: var(--space-2);
+    padding-top: 0;
+  }
+
+  .amount {
+    font-size: 1.1rem;
+  }
+
+  /* Buy, Live demo and Try: 38px, still a comfortable tap. */
+  .actions :global(a),
+  .footer .try {
+    min-height: 38px;
+  }
 }
