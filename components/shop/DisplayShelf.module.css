@@ -116,28 +116,34 @@
 .viewAll {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   gap: var(--space-2);
   min-height: 240px;
   padding: var(--space-5);
-  border: 1px solid var(--color-divider);
+  /* Stands out from the cards beside it: the way on to the rest of the shop. */
+  border: 1.5px solid var(--color-primary);
   border-radius: var(--radius-card);
-  background: var(--surface-sunken);
+  background: var(--color-blush);
   color: var(--color-text);
   font-family: var(--font-ui);
+  text-align: center;
   text-decoration: none;
+  transition: transform var(--dur-press) var(--ease-standard);
 }
 
-.viewAll:hover,
+.viewAll:active {
+  transform: scale(0.98);
+}
+
 .viewAll:focus-visible {
-  border-color: var(--color-primary);
-  background: var(--surface-raised);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
 }
 
 .viewAllTitle {
   font-family: var(--font-heading);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 600;
   line-height: var(--leading-tight);
   color: var(--color-primary);
@@ -149,8 +155,24 @@
 }
 
 .viewAllArrow {
-  font-size: 1.5rem;
-  color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-top: var(--space-2);
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 1.4rem;
+  line-height: 1;
+  box-shadow: var(--elevation-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewAll:active {
+    transform: none;
+  }
 }
 
 .more {
