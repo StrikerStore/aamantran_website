@@ -6,7 +6,7 @@ const WHATSAPP_URL =
   'https://wa.me/919174773644?text=' +
   encodeURIComponent("Hi! I'm interested in a digital wedding invitation from Aamantran.");
 
-/** Floating WhatsApp chat button — bottom-left, marketing pages only. */
+/** Floating WhatsApp chat button — bottom-right, marketing pages only. */
 export default function WhatsAppButton() {
   const pathname = usePathname();
   // Keep the payment/registration flows distraction-free (mirrors ScrollToTopButton).
@@ -20,7 +20,7 @@ export default function WhatsAppButton() {
       aria-label="Chat with us on WhatsApp"
       style={{
         position: 'fixed',
-        left: 18,
+        right: 18,
         // Clears the product page's sticky Buy bar, however tall the safe area makes it.
         bottom: 'max(84px, calc(var(--sticky-bar-height, 0px) + 12px))',
         zIndex: 95,

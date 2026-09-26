@@ -1,0 +1,192 @@
+/* ── Tradition capsules ─────────────────────────────────────────────────── */
+
+/* One row on a phone, scrolled rather than wrapped (as SubAisleBar does). */
+.capsules {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+  /* Runs to the screen edges through the gutter, like the carousel below. */
+  margin: var(--space-4) calc(-1 * var(--gutter)) 0;
+  padding: 2px var(--gutter) var(--space-2);
+  overflow-x: auto;
+  /* The row's overflow stays its own: the page never gets wider than the screen. */
+  contain: paint;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.capsules::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .capsules {
+    flex-wrap: wrap;
+    margin-inline: 0;
+    padding: 2px 0 0;
+    overflow-x: visible;
+  }
+}
+
+.capsule {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-full);
+  background: var(--surface-raised);
+  color: var(--color-primary);
+  font-family: var(--font-ui);
+  font-size: var(--type-small);
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-press) var(--ease-standard),
+    color var(--dur-press) var(--ease-standard);
+}
+
+.capsule:hover {
+  background: var(--color-blush);
+}
+
+/* The shelf being shown. aria-pressed says so too: colour is never the only signal. */
+.current {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.current:hover {
+  background: var(--color-primary-hover);
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+/* ── The shelf ──────────────────────────────────────────────────────────── */
+
+/*
+ * Phone: a swipe carousel. Five cards, then "View all". Each card is 80% of the
+ * screen so the next one peeks in — the cue that there is more to swipe. The
+ * track runs to the screen edges through the container's gutter and snaps each
+ * card to the gutter line.
+ */
+.track {
+  display: flex;
+  gap: var(--space-3);
+  margin: var(--space-4) calc(-1 * var(--gutter)) 0;
+  padding: 0 var(--gutter) var(--space-3);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  contain: paint;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  display: flex;
+  flex: 0 0 80%;
+  scroll-snap-align: start;
+}
+
+.item > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.track > .item:nth-child(n + 6):not(.viewAllItem) {
+  display: none;
+}
+
+.viewAll {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 240px;
+  padding: var(--space-5);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-card);
+  background: var(--surface-sunken);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  text-decoration: none;
+}
+
+.viewAll:hover,
+.viewAll:focus-visible {
+  border-color: var(--color-primary);
+  background: var(--surface-raised);
+}
+
+.viewAllTitle {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  color: var(--color-primary);
+}
+
+.viewAllSub {
+  font-size: var(--type-small);
+  color: var(--color-text-muted);
+}
+
+.viewAllArrow {
+  font-size: 1.5rem;
+  color: var(--color-primary);
+}
+
+.more {
+  display: none;
+  margin: var(--space-5) 0 0;
+  font-family: var(--font-ui);
+}
+
+/* Tablet and up: the grid, every card on the shelf, and the button under it. */
+@media (min-width: 640px) {
+  .track {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+    contain: none;
+  }
+
+  .track > .item:nth-child(n + 6):not(.viewAllItem) {
+    display: flex;
+  }
+
+  .viewAllItem {
+    display: none;
+  }
+
+  .more {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .track {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

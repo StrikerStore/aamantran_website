@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import JsonLd from '@/components/JsonLd';
 import { TemplateCard } from '@/components/gallery/TemplateCard';
 import { InstagramStrip } from '@/components/home/InstagramStrip';
 import { PaymentFailedRedirect } from '@/components/home/PaymentFailedRedirect';
 import { ReviewList } from '@/components/product/ReviewList';
 import { AisleTiles } from '@/components/shop/AisleTiles';
+import { DisplayShelf, type DisplayShelfOption } from '@/components/shop/DisplayShelf';
 import { PriceBoard } from '@/components/shop/PriceBoard';
 import { ProofStrip } from '@/components/shop/ProofStrip';
 import { ShopWindow } from '@/components/shop/ShopWindow';
@@ -17,6 +18,10 @@ import { Container } from '@/components/ui/Container';
 import { Reveal } from '@/components/ui/Reveal';
 import { getCatalogueStats, getFeaturedReviews, getTemplates } from '@/lib/api/templates';
 import { showcase } from '@/lib/showcase';
+import { COLLECTIONS } from '@/lib/collections';
+import { AISLE_BY_KEY, templatesInAisle } from '@/lib/content/shopTaxonomy';
+import { subAisles, templatesInSubAisle } from '@/lib/subAisle';
+import type { TemplateSummary } from '@/lib/api/types';
 import { ACCESS } from '@/lib/content/entitlements';
 import { PURCHASE_FAQ_IDS, faqsByIds } from '@/lib/content/faqs';
 import { HERO_REASSURANCE, SHOP_STEPS } from '@/lib/content/shopHome';
@@ -93,6 +98,40 @@ export default async function HomePage() {
   const cheapest = lowestPrice(templates);
   // The window shows the leading invite of each category (see lib/showcase.ts);
   // if the popular list is unavailable it falls back to the newest.
+  // "On display" by wedding tradition: the capsules come from the wedding
+  // designs actually in stock (lib/subAisle), so none can open onto nothing.
+  // Each shelf is that tradition's best sellers; "View all" opens the wedding
+  // aisle already narrowed to it.
+  const cardId = (design: TemplateSummary) => design.id || design.slug;
+  const weddingAisle = AISLE_BY_KEY.get('wedding');
+  const weddingDesigns = weddingAisle ? templatesInAisle(ranked, weddingAisle) : [];
+  const shortName = new Map(COLLECTIONS.map((collection) => [collection.community, collection.short]));
+  const shelves: DisplayShelfOption[] = [
+    { key: 'all', label: 'All', count: designCount, href: '/templates', viewAllLabel: 'every invite', ids: designs.map(cardId) },
+    ...subAisles(weddingDesigns, weddingAisle).map((tradition) => {
+      const label = shortName.get(tradition.value) ?? `${tradition.label} weddings`;
+      return {
+        key: tradition.value,
+        label,
+        count: tradition.count,
+        href: `/wedding-invitations?tradition=${encodeURIComponent(tradition.value)}`,
+        viewAllLabel: label,
+        ids: templatesInSubAisle(weddingDesigns, tradition.value).slice(0, FEATURED_DESIGNS).map(cardId),
+      };
+    }),
+  ];
+  // Every card any shelf needs, rendered once here on the server.
+  const shelfIds = new Set(shelves.flatMap((shelf) => shelf.ids));
+  const shelfCards: Record<string, ReactNode> = {};
+  for (const design of ranked) {
+    const id = cardId(design);
+    if (!shelfIds.has(id) || id in shelfCards) continue;
+    const position = designs.indexOf(design);
+    shelfCards[id] = (
+      <TemplateCard template={design} eager={position >= 0 && position < 2} source="home" lowestPrice={cheapest} />
+    );
+  }
+
   const windowDesigns = ranked.length > 0
     ? showcase(ranked, WINDOW_DESIGNS)
     : templates.slice(0, WINDOW_DESIGNS);
@@ -178,18 +217,7 @@ export default async function HomePage() {
                 Every invite has a live demo you can open before you buy.
                 {hasTryable && ` Invites marked “${TRY_DEMO.cta}” can show your own names and dates first, free.`}
               </p>
-              <ul className={styles.grid}>
-                {designs.map((design, i) => (
-                  <li key={design.id || design.slug}>
-                    <TemplateCard template={design} eager={i < 2} source="home" lowestPrice={cheapest} />
-                  </li>
-                ))}
-              </ul>
-              <p className={styles.more}>
-                <LinkButton href="/templates" variant="secondary">
-                  See every invite{designCount > 0 ? ` (${designCount})` : ''}
-                </LinkButton>
-              </p>
+              <DisplayShelf shelves={shelves} cards={shelfCards} />
             </Reveal>
           )}
 

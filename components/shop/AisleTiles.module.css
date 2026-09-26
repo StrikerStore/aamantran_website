@@ -75,32 +75,6 @@
   }
 }
 
-/*
- * An aisle with nothing in it. Deliberately flatter and quieter than a stocked
- * one — it leads to a conversation, not to designs — but it is a link, so it
- * answers to hover and focus like one.
- */
-.empty {
-  background: var(--surface-sunken);
-  border: 1px dashed var(--color-divider);
-  color: var(--color-text-muted);
-  transition:
-    background-color var(--dur-press) var(--ease-standard),
-    border-color var(--dur-press) var(--ease-standard);
-}
-
-.empty:hover,
-.empty:focus-visible {
-  border-style: solid;
-  border-color: var(--color-primary);
-  background: var(--surface-raised);
-}
-
-.empty:hover .count,
-.empty:focus-visible .count {
-  color: var(--color-primary);
-}
-
 .label {
   margin: 0;
   font-family: var(--font-heading);
@@ -125,8 +99,4 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-primary);
-}
-
-.empty .count {
-  color: var(--color-text-muted);
 }
