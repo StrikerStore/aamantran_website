@@ -39,6 +39,8 @@ export function normalizeTemplateSummary(raw: unknown): TemplateSummary | null {
     priceUsd: numOrNull(raw.priceUsd),
     originalPriceUsd: numOrNull(raw.originalPriceUsd),
     gstPercent: num(raw.gstPercent),
+    // Only an explicit true: an older backend sends nothing and priced exclusive.
+    gstInclusive: raw.gstInclusive === true,
     buyerCount: num(raw.buyerCount),
     // 0 is how the database says "no reviews yet", not a zero-star rating.
     avgRating: rating !== null && rating > 0 ? rating : null,

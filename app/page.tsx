@@ -134,9 +134,9 @@ export default async function HomePage() {
     ? showcase(ranked, WINDOW_DESIGNS)
     : templates.slice(0, WINDOW_DESIGNS);
 
-  // The cheapest design's own price — ₹999, not ₹1,178.82. The headline is the
-  // price of the thing, the way a shelf edge is; GST is added at checkout and
-  // shown there in full, and the pricing page explains it.
+  // The cheapest design's own listed price. The headline is the price of the
+  // thing, the way a shelf edge is. Prices normally include GST; one that does
+  // not has its GST added at checkout, where it is shown in full.
   //
   // `stats.lowest.price` is that figure straight from the catalogue, so it moves
   // when the catalogue does. The fallback is the same number derived on the

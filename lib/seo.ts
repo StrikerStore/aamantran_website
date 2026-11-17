@@ -165,10 +165,10 @@ export const STATIC_PAGE_UPDATED: Record<string, string> = {
   '/wedding-planning-tools': '2026-09-17',
   '/blog': '2026-09-17',
   '/about': '2026-09-19',
-  '/faq': '2026-09-19',
+  '/faq': '2026-11-18',
   '/contact': '2026-09-17',
   '/privacy': '2026-09-19',
   '/refund': '2026-09-17',
-  '/terms': '2026-09-19',
+  '/terms': '2026-11-18',
   '/stories': '2026-09-17',
 };

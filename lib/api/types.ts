@@ -17,7 +17,7 @@ export interface TemplateListQuery {
   eventType?: string;
   /** Slug to leave out. */
   exclude?: string;
-  /** Base INR price bounds in paise, before GST. */
+  /** Bounds on the listed INR price in paise (GST-inclusive or not, per template). */
   minPrice?: number;
   maxPrice?: number;
   sort?: GallerySort;
@@ -49,6 +49,8 @@ export interface TemplateSummary {
   priceUsd: number | null;
   originalPriceUsd: number | null;
   gstPercent: number;
+  /** Whether `price` already includes GST (India only). False from older backends, which only priced exclusive. */
+  gstInclusive: boolean;
   buyerCount: number;
   /** Average of every published review; null when there are none. */
   avgRating: number | null;
@@ -167,6 +169,8 @@ export interface PriceBreakup {
   discountAmount: number;
   discountPct: number;
   gstPercent: number;
+  /** True when gstAmount is already inside finalAmount. Absent from older backends, which only added GST. */
+  gstInclusive?: boolean;
   gstAmount: number;
   finalAmount: number;
   /** Every amount above is in the minor unit of this currency. */

@@ -9,8 +9,8 @@ import { formatMoney, priceFor } from './storefront';
  * down: a new price tier appears as a band the day it ships, and a retired one
  * disappears.
  *
- * TWO CURRENCIES, ONE FILTER. The backend filters on `minPrice`/`maxPrice` in
- * INR paise before GST — the same number for both storefronts — so the band's
+ * TWO CURRENCIES, ONE FILTER. The backend applies `minPrice`/`maxPrice` to the
+ * listed INR price in paise — the same number for both storefronts — so the band's
  * bounds are always INR. What the shopper reads is this storefront's currency,
  * taken from the designs in the band, which is why a band carries both.
  */
@@ -23,7 +23,7 @@ export interface PriceBand {
   key: string;
   /** What the option reads, in this storefront's currency. */
   label: string;
-  /** INR paise, before GST — what the backend filters on. */
+  /** Listed INR price in paise — what the backend filters on. */
   minPrice: number;
   maxPrice: number;
   count: number;

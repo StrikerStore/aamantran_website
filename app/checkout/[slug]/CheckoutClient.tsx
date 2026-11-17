@@ -51,6 +51,7 @@ export interface CheckoutTemplate {
   originalPrice: number | null;
   originalPriceUsd: number | null;
   gstPercent: number;
+  gstInclusive: boolean;
   image: string | null;
 }
 
@@ -68,12 +69,18 @@ type CouponState =
 /** The figures before the server has answered. International orders are zero-rated. */
 function firstPaintBreakup(template: CheckoutTemplate): PriceBreakup {
   const intl = IS_INTL && template.priceUsd != null;
-  const b = computePriceBreakdown({ base: priceFor(template) ?? template.price, gstPercent: template.gstPercent, intl });
+  const b = computePriceBreakdown({
+    base: priceFor(template) ?? template.price,
+    gstPercent: template.gstPercent,
+    gstInclusive: template.gstInclusive,
+    intl,
+  });
   return {
     baseAmount: b.base,
     discountAmount: 0,
     discountPct: 0,
     gstPercent: b.gstPercent,
+    gstInclusive: b.gstInclusive,
     gstAmount: b.gst,
     finalAmount: b.total,
     currency: intl ? 'USD' : 'INR',
@@ -494,10 +501,15 @@ function CheckoutForm({
                   <dd>− {money(breakup.discountAmount)}</dd>
                 </div>
               )}
-              {/* International orders are zero-rated exports: no GST line at all. */}
+              {/*
+                * International orders are zero-rated exports: no GST line at all.
+                * A GST-inclusive price already contains the tax, so its line says
+                * "includes" and is not added again; the total is the price less
+                * any discount.
+                */}
               {breakup.gstPercent > 0 && (
                 <div>
-                  <dt>GST ({breakup.gstPercent}%)</dt>
+                  <dt>{breakup.gstInclusive ? `Includes GST (${breakup.gstPercent}%)` : `GST (${breakup.gstPercent}%)`}</dt>
                   <dd>{money(breakup.gstAmount)}</dd>
                 </div>
               )}

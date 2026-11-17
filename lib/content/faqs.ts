@@ -148,7 +148,7 @@ const ALL_CATEGORIES: FaqCategory[] = [
       {
         id: 'gst',
         q: 'Is GST included in the price?',
-        a: 'GST is added to the invite price at checkout, and you see the full total, GST included, before you pay.',
+        a: "Usually, yes: an invite's price includes GST, so the price you see is the price you pay. If an invite's price does not include GST, the GST is added at checkout. Either way, checkout shows the full total and the GST in it before you pay.",
         storefront: 'IN',
       },
       {

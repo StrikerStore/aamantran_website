@@ -37,6 +37,7 @@ export default async function CheckoutPage({ params }: Props) {
         originalPrice: template.originalPrice,
         originalPriceUsd: template.originalPriceUsd,
         gstPercent: template.gstPercent,
+        gstInclusive: template.gstInclusive,
         image: template.desktopThumbnailUrl ?? template.thumbnailUrl ?? template.mobileThumbnailUrl,
       }}
     />

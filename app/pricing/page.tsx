@@ -18,8 +18,8 @@ import pricing from './pricing.module.css';
  *
  * The page leads with the price list itself — every invite and its price — so
  * the answer to "how much" is on the first screen and never goes stale when an
- * invite is repriced. Prices are the invites' own; tax is worked out and shown
- * line by line at checkout, before anyone pays, and nowhere else.
+ * invite is repriced. Prices are the invites' own and normally include GST;
+ * tax is itemised line by line at checkout, before anyone pays, and nowhere else.
  */
 
 export const revalidate = 300;

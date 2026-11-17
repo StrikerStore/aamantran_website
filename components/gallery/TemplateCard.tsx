@@ -26,8 +26,8 @@ export const CARD_IMAGE_SIZES = '(max-width: 639px) 100vw, (max-width: 1023px) 5
  * One design in a list. Server-rendered, built only from links, so it works
  * before JavaScript loads.
  *
- * Price: the invite's own price in this storefront's currency; tax is shown at checkout only,
- * because checkout adds it; the product page shows the full breakdown.
+ * Price: the invite's own listed price in this storefront's currency. It normally includes
+ * GST; tax is only ever itemised at checkout.
  *
  * MERCHANDISING. The rating and the buyer count were in the API payload from the
  * start and the card ignored both. They are shown now, but only when they are

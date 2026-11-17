@@ -7,9 +7,9 @@ import styles from './PriceBreakdown.module.css';
  *
  *   ₹999  ~~₹1,699~~  41% off
  *
- * The price of the invite and nothing else. Tax is added at checkout and shown
- * there in full, line by line, before anyone pays — that is the one place the
- * sum is worked out, so it is the one place it is shown.
+ * The invite's listed price and nothing else. It normally includes GST; when it
+ * does not (Template.gstInclusive false), checkout adds the GST. Either way the
+ * GST is shown in full, line by line, only at checkout, before anyone pays.
  *
  * The price comes first and largest, because it is the number being decided on;
  * what it was, and how much of a cut that is, are the same fact said twice and
